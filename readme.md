@@ -153,17 +153,24 @@ Add line 39: 'rrect = tuple(rrect)' and comment line 41: 'print(r)' in nms.py of
 python main_train_0.py
 ```
 
-* To evaluate the model, modifying the path and run
+* To evaluate the model, modify the path and run
 ```
 python main_val_0.py (for evaluation)
 python main_cond_0.py (for conditional evaluation)
 ```
 
-* To visualize the inference result, modifying the path and run
+* To visualize the inference result, modify the path and run
 ```
 python main_test_0.py (with code)
 python main_vis.py (with GUI)
 ```
+## Model Zoo
+The reported values are ${AP_{3D}}$ for `Sedan` class.
+|Name|Total|Normal|Overcast|Fog|Rain|Sleet|LightSnow|HeavySnow|Pretrained|
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+|RTNH|47.4|49.9|56.7|52.8|42.0|41.5|50.6|44.5|<a href="TBD1">Link</a>|
+|RTN|40.1|45.6|48.8|46.9|32.9|22.6|36.8|36.8|<a href="TBD2">Link</a>|
+|PILLARS|45.4|52.3|61.0|42.2|44.5|22.7|40.6|29.7|<a href="TBD3">Link</a>|
 
 ## License
 The `K-Radar` dataset is published under the CC BY-NC-ND License, and all codes are published under the Apache License 2.0.
