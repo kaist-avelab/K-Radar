@@ -1,0 +1,11 @@
+open3d==0.15.2
+easydict
+tensorboard
+opencv-python==4.2.0.32
+spconv-cu113
+nms
+setuptools==59.5.0
+PyQt5
+scikit-image
+numba
+einops
