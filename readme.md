@@ -184,16 +184,14 @@ We thank the maintainers of the following projects that enable us to develop `K-
 This work was partly supported by Institute of Information & communications Technology Planning & Evaluation (IITP) grant funded by the Korea government (MSIT) (No. 01210790) and the National Research Foundation of Korea (NRF) grant funded by the Korea government (MSIT) (No. 2021R1A2C3008370).
 
 ## Citation
-
 If you find this work is useful for your research, please consider citing:
 ```
-@InProceedings{paek2022kradar,
-  title     = {K-Radar: 4D Radar Object Detection for Autonomous Driving in Various Weather Conditions},
-  author    = {Paek, Dong-Hee and Kong, Seung-Hyun and Wijaya, Kevin Tirta},
-  booktitle = {Proceedings of the Neural Information Processing Systems (NeurIPS) Track on Datasets and Benchmarks},
-  month     = {December},
-  year      = {2022},
-  url       = {https://github.com/kaist-avelab/K-Radar}
+@inproceedings{
+  paek2022kradar,
+  title={K-Radar: 4D Radar Object Detection for Autonomous Driving in Various Weather Conditions},
+  author={Dong-Hee Paek and Seung-Hyun Kong and Kevin Tirta Wijaya},
+  booktitle={Thirty-sixth Conference on Neural Information Processing Systems Datasets and Benchmarks Track},
+  year={2022},
+  url={https://openreview.net/forum?id=W_bsDmzwaZ7}
 }
 ```
-
