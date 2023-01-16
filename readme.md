@@ -38,6 +38,8 @@ We tested the K-Radar detection frameworks on the following environment:
 
 [2022-12-19] The NAS server's URL has changed and is now accessible.
 
+[2023-01-16] The pipepline for `K-Radar` dataset is updated, and the previous repository has been depracated.
+
 ## Preparing the Dataset
 
 * Via our server
@@ -50,7 +52,7 @@ We tested the K-Radar detection frameworks on the following environment:
 3. After all files are downloaded, please arrange the workspace directory with the following structure:
 ```
 KRadarFrameworks
-      ├── dataset_utils
+      ├── tools
       ├── configs
       ├── datasets
       ├── models
@@ -59,14 +61,23 @@ KRadarFrameworks
       ├── uis
       ├── utils
       ├── logs
-├── kradar_dataset
-      ├── kradar_0
-            ├── 1
+├── kradar_dataset (We handle the K-Radar dataset with multiple HDDs due to its large capacity.)
+      ├── dir_2to5
             ├── 2
             ...
-      ├── kradar_1
+            ├── 5
+      ├── dir_1to20
+            ├── 1
+            ├── 6
             ...
-            ├── 57
+            ├── 20
+      ├── dir_21to37
+            ├── 21
+            ...
+            ├── 37
+      ├── dir_38to58
+            ├── 38
+            ...
             ├── 58
 ```
 
@@ -75,12 +86,6 @@ KRadarFrameworks
 The `K-Radar` dataset is being uploaded to Google Drive. It will take time to upload our entire dataset.
 The 4D Radar tensor is only available on our server because it is too large to upload to Google Drive. (We can charge for up to 2TB of Google Drive storage space.)
 We provide camera images, Lidar point cloud, RTK-GPS, and Radar tensor (for network input) via Google Drive for flexibility.
-
-1. Sequence 1 - <a href="https://drive.google.com/drive/folders/1nOZ6kbJYpevn9qKHDA4kLNtGUgyd9UHe?usp=share_link" title="seq1">link1</a>, <a href="https://drive.google.com/drive/folders/1vAJsPcMjon8fJCPfDmb0LosdtmYP51kE?usp=share_link" title="seq1">link2</a>, <a href="https://drive.google.com/drive/folders/1qFoy0GsZ0Pbp2_IBNlBQbBPT0ln2O77o?usp=share_link" title="seq1">link3</a>, <a href="https://drive.google.com/drive/folders/10BMtMDFH-qTGjwtP7I3NSmSqISuS6ST0?usp=share_link" title="seq1">link4</a>
-
-2. Sequence 2 - <a href="https://drive.google.com/drive/folders/1jwDrkCesbnMCPtqSl12GKlnkb--NKcxN?usp=sharing_link" title="seq2">link1</a>, <a href="https://drive.google.com/drive/folders/1SBPnsVNzRYq2PQzWOivJXmjQjLBwJ_0l?usp=sharing_link" title="seq2">link2</a>, <a href="https://drive.google.com/drive/folders/1BrMdurvFAx3Le49Br1pYzcCWDge2lfW0?usp=sharing_link" title="seq2">link3</a>, <a href="https://drive.google.com/drive/folders/1tgtw8owHFOgEuRNMTMaQVtfYryzg0a5Y?usp=share_link" title="seq2">link4</a>
-
-3. (On going)
 
 ## Sequence composition
 
@@ -93,20 +98,20 @@ Sequence_number.zip (e.g. 1.zip)
 ├── cam-rear: Rear camera images
 ├── cam-right: Right camera images
 ├── cell_path: File to generate data from bag or radar ADC files (refer to the matlab file generation code.)
-├── description.txt: 
-├── info_calib:
-├── info_label: 
-├── info_label_rev: 
-├── lidar_bev_image:
-├── lidar_bev_image_origin:
-├── lidar_point_cloud:
-├── os1-128:
-├── os2-64:
-├── radar_bev_image:
-├── radar_bev_image_origin:
-├── radar_tesseract:
-├── radar_zyx_cube:
-├── time_info:
+├── description.txt: Required for conditional evaluation (e.g., weather conditions)
+├── info_calib: Calibration info btwn 4D radar and Lidar
+├── info_label: Label of frames in txt
+├── info_label_rev: not used
+├── lidar_bev_image: Used for the labeling program
+├── lidar_bev_image_origin: not used
+├── lidar_point_cloud: Used for the labeling program
+├── os1-128: High resolution mid-range Lidar point cloud
+├── os2-64: Long-range Lidar point cloud (mainly used)
+├── radar_bev_image: Used for the labeling program
+├── radar_bev_image_origin: not used
+├── radar_tesseract: 4D (DRAE) Radar tensor (250MB per frame) 
+├── radar_zyx_cube: 3D (ZYX) Radar tensor (used for Sparse tensor generation)
+├── time_info: Used for calibration
 ```
 
 ## Requirements
@@ -119,11 +124,11 @@ cd K-Radar
 
 2. Create a conda environment
 ```
-conda create -n kradar python=3.9
+conda create -n kradar python=3.8.13
 conda activate kradar
 ```
 
-3. Install PyTorch
+3. Install PyTorch (We recommend pytorch 1.10.0.)
 
 4. Install the dependencies
 ```
@@ -145,26 +150,20 @@ Add line 39: 'rrect = tuple(rrect)' and comment line 41: 'print(r)' in nms.py of
 ## Train & Evaluation
 * To train the model, prepare the total dataset and run
 ```
-python train_gpu_0.py ...
+python main_train_0.py
 ```
 
-* To evaluate the model, modifying the lines that we have noted and run
+* To evaluate the model, modifying the path and run
 ```
-python eval_conditional_0.py ...
+python main_val_0.py (for evaluation)
+python main_cond_0.py (for conditional evaluation)
 ```
 
-## Code Hierarchy
-![image](./resources/imgs/code_hierarchy.png)
-
-## Annotation process
-
-1. [Data generation process] (from rosbag and radar ADC files)
-2. [Calibration process]
-
-## GUI-based devkits
-
-1. [Visualization]
-2. [Inference]
+* To visualize the inference result, modifying the path and run
+```
+python main_test_0.py (with code)
+python main_vis.py (with GUI)
+```
 
 ## License
 The `K-Radar` dataset is published under the CC BY-NC-ND License, and all codes are published under the Apache License 2.0.
@@ -182,7 +181,7 @@ This work was partly supported by Institute of Information & communications Tech
 If you find this work is useful for your research, please consider citing:
 ```
 @InProceedings{paek2022kradar,
-  title     = {K-Radar: 4D Radar Object Detection Dataset and Benchmark for Autonomous Driving in Various Weather Conditions},
+  title     = {K-Radar: 4D Radar Object Detection for Autonomous Driving in Various Weather Conditions},
   author    = {Paek, Dong-Hee and Kong, Seung-Hyun and Wijaya, Kevin Tirta},
   booktitle = {Proceedings of the Neural Information Processing Systems (NeurIPS) Track on Datasets and Benchmarks},
   month     = {December},
