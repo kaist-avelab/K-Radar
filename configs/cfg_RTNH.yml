@@ -1,0 +1,316 @@
+### ----- General ----- ###
+GENERAL:
+  NAME: 'RTNH'
+  COMMENT1: 'Driving corridor, LR 0.001~0.0001'
+  COMMENT2: 'Adam'
+  VERSION: '1.1'
+  SEED: 202206
+  IS_CUDA_SEED: False
+  IS_DETERMINISTIC: True
+  DEVICE: 'gpu'
+  RESUME:
+    IS_RESUME: False
+    PATH_EXP: # None
+    START_EP: # None
+    IS_COPY_LOGS: True
+
+  LOGGING:
+    IS_LOGGING: True
+    PATH_LOGGING: './logs'
+    IS_SAVE_MODEL: True
+    INTERVAL_EPOCH_MODEL: 1
+    INTERVAL_EPOCH_UTIL: 5
+### ----- General ----- ###
+
+### ----- Dataset ----- ###
+# Frequently change: [TYPE_COORD, LABEL.ROI_CONSIDER_TYPE, GET_ITEM]
+DATASET:
+  NAME: 'KRadarDetection_v1_0'
+  TYPE_LOADING: 'path' # in ['dict','path']
+
+  NUM: # Total number of frames, just make this blank
+
+  DIR:
+    ### Server room 1 ###
+    # The directory order may affect the performance due to sampling order
+    LIST_DIR: ['/media/ave/HDD_4_1/gen_2to5', '/media/ave/HDD_4_1/radar_bin_lidar_bag_files/generated_files', '/media/ave/e95e0722-32a4-4880-a5d5-bb46967357d6/radar_bin_lidar_bag_files/generated_files', '/media/ave/4f089d0e-7b60-493d-aac7-86ead9655194/radar_bin_lidar_bag_files/generated_files']
+    DIR_DOPPLER_CB: '/media/ave/e78bd5a4-c129-4564-aa97-2e14a886444c/doppler_data_from_SB' # Total 2.2 TB
+    DIR_SPARSE_CB: '/media/ave/HDD_4_1/dir_sp_rdr_cube'
+    ### Server room 1 ###
+
+    ### Lab server 1 ###
+    # LIST_DIR: ['/media/oem/HDD_3_1/gen_2to5', '/media/oem/HDD_3_1/radar_bin_lidar_bag_files/generated_files', '/media/oem/HDD_3_2/radar_bin_lidar_bag_files/generated_files', '/media/oem/data_21/radar_bin_lidar_bag_files/generated_files']
+    # DIR_DOPPLER_CB: '/media/oem/HDD_3_2/doppler_data_from_SB' # Total 2.2 TB
+    # DIR_SPARSE_CB: '/media/oem/data_21/dir_sp_rdr_cube'
+    ### Lab server 1 ###
+
+    ### Build directories for K-Radar ###
+    # LIST_DIR: list of folders containing sequences e.g. ['seq2-5', 'seq1-20except2-5', 'seq21-37', 'seq38-58']
+    # DIR_DOPPLER_CB: directory for Doppler cube (generating Doppler cube from 4D tesseract via gen_doppler_ubuntu.m in ./tools/mfiles/gen_doppler_ubuntu.m)
+    # DIR_SPARSE_CB: directory for Radar sparse cube (much faster, generating them via ./datasets/kradar_detection_v1_0.py)
+    ### directories for K-Radar ###
+  
+  PATH_SPLIT: {
+    'train': './resources/split/train.txt',
+    'test':  './resources/split/test.txt',
+  }
+  
+  TYPE_COORD: 1 # 1: Radar, 2: Lidar, 3: Camera
+
+  LABEL:
+    IS_CONSIDER_ROI: True
+    ROI_TYPE: 'sparse_cube' # in ['default', 'cube', 'sparse_cube', 'lpc']
+    ROI_DEFAULT: [0,120,-100,100,-50,50] # x_min_max, y_min_max, z_min_max / Dim: [m]
+    
+    IS_CHECK_VALID_WITH_AZIMUTH: True
+    MAX_AZIMUTH_DEGREE: [-50, 50]
+    TYPE_CHECK_AZIMUTH: 'center' # in ['center', 'apex']
+  
+  # Generated from Radar cube
+  RDR_SP_CUBE:
+    NAME_RDR_SP_CUBE: 'sp_rdr_cube_corridor' # same as folder name
+    METHOD: 'quantile'
+    GRID_SIZE: 0.4 # [m]
+    IS_ANOTHER_DIR: True
+    ROI: { # each bin is 0.4 [m] (minimum range resolution)
+      'z': [-2, 6.0],   # Dim: [m] / [-2.0, 6.0] for Driving corridor / None (erase)
+      'y': [-6.4, 6.4], # Dim: [m] / [-6.4, 6.4] for Driving corridor
+      'x': [0, 72.0],   # Dim: [m] / [0.0, 72.0] for Driving corridor
+    } # Cartesian (+ 0.4m from setting of RDR_CUBE: Consider this as LPC)
+
+  # Currently not used
+  RDR_TESSERACT:
+    IS_CONSIDER_ROI: False
+    ROI: {
+      'range':     , # [0, 118],  / Dim: [m]
+      'azimuth':   , # [-51, 52], / Dim: [deg]
+      'elevation': , # [-17, 18], / Dim: [deg] / None (erase) if without roi
+    } # Polar
+
+  # For generating sparse cube
+  RDR_CUBE:
+    DOPPLER:
+      IS_ANOTHER_DIR: True
+      OFFSET: 1.9326
+    
+    IS_COUNT_MINUS_ONE_FOR_BEV: True # Null value = -1 for pw & -10 for Doppler
+    IS_CONSIDER_ROI: True
+    ROI: { # each bin is 0.4 [m] (minimum range resolution)
+      'z': [-2, 5.6],     # Dim: [m] / [-2.0, 5.6] for Driving corridor / None (erase)
+      'y': [-40.0, 39.6], # Dim: [m] / [-6.4, 6.0] for Driving corridor
+      'x': [0, 98.8],     # Dim: [m] / [0.0, 71.6] for Driving corridor
+    } # Cartesian
+    CONSIDER_ROI_ORDER: 'cube -> num' # in ['cube -> num', 'num -> cube']
+    BEV_DIVIDE_WITH: 'bin_z' # in ['bin_z', 'none_minus_1']
+    GRID_SIZE: 0.4 # [m]
+
+    ARR_Z: # automatically consider, just make this blank
+    ARR_Y: # automatically consider, just make this blank
+    ARR_X: # automatically consider, just make this blank
+
+    GENERATE_SPARSE_CUBE:
+      # Saving sp cube
+      NAME_SPARSE_CUBE: 'sp_rdr_cube'
+      DIM: 5 # in [4, 5] / 5: x,y,z,pw,Doppler
+      IS_SAVE_TO_SAME_SEQUENCE: False
+      DIR_SAVE: # '/media/oem/data_21/dir_sp_rdr_cube'
+
+      # Attributes of sp cube
+      IS_ADD_HALF_GRID_OFFSET: True
+      TYPE_OFFSET: 'minus' # in ['plus', 'minus']
+
+      # norm
+      NORM: 'fixed' # in ['fixed', 'pw-norm']
+      NORMALIZING_VALUE: 1e+13 # 'fixed'
+
+      # cfar
+      METHOD: 'quantile' # in ['quantile', 'ca-cfar', 'os-cfar']
+      PICK_RATE: 0.1 # quantile / up to 10%
+
+    CFAR_PARAMS:
+      IS_CFAR: False
+      GUARD_CELL: [1, 2, 4] # Z, Y, X / num of cell
+      TRAIN_CELL: [4, 8, 16]
+      FA_RATE: 0.001 # ca-cfar
+      THR_RATE: 0.02 # os-cfar
+
+  LPC:
+    ROI: {
+      'z': [-2, 6.0],   # Dim: [m] / [-2.0, 6.0] for Driving corridor / None (erase)
+      'y': [-6.4, 6.4], # Dim: [m] / [-6.4, 6.4] for Driving corridor
+      'x': [0, 72.0],   # Dim: [m] / [0.0, 72.0] for Driving corridor
+    } # LPC ROI is based on coordinate after calibration
+  
+  CLASS_INFO:
+    # If containing cls, make the ID as number
+    # In this case, we consider ['Sedan', 'Bus or Truck'] as Sedan (Car)
+    CLASS_ID: {
+      'Sedan': 1,
+      'Bus or Truck': -1,
+      'Motorcycle': -1,
+      'Bicycle': -1,
+      'Bicycle Group': -1,
+      'Pedestrian': -1,
+      'Pedestrian Group': -1,
+      'Background': 0,
+    }
+    IS_CONSIDER_CLASS_NAME_CHANGE: False # V2: change loaded dictionary
+    CLASS_NAME_CHANGE: {
+      'Sedan': 'Sedan',
+      # 'Bus or Truck': 'Sedan',
+    }
+    NUM_CLS: # automatically consider, just make this blank (not including background)
+    SCALE_SMALL_CLS: 1.5
+
+  Z_OFFSET: 0.7 # Radar to Lidar [m] / prior value = 1.25
+
+  # List of items to be returned by the dataloader
+  GET_ITEM: {
+    'rdr_sparse_cube'   : True,
+    'rdr_tesseract'     : False,
+    'rdr_cube'          : False,
+    'rdr_cube_doppler'  : False,
+    'ldr_pc_64'         : False,
+    'cam_front_img'     : False,
+  }
+### ----- Dataset ----- ###
+
+### ----- Model ----- ###
+MODEL:
+  NAME: 'RTNH'
+  SKELETON: 'RadarBase'
+
+  PRE_PROCESSOR:
+    NAME: 'RadarSparseProcessor'
+    INPUT_DIM: 4 # in [4, 5] / 5 for Doppler
+
+  BACKBONE:
+    TYPE: '3D'
+    NAME: 'RadarSparseBackbone'
+    ENCODING:
+      CHANNEL: [64, 128, 256]
+      STRIDE:  [1, 2, 2]
+      PADDING: [1, 1, 1]
+    TO_BEV:
+      IS_Z_EMBED: False
+      CHANNEL: [256, 256, 256]
+      KERNEL_SIZE: [3, 6, 12]
+      STRIDE:  [1, 2, 4]
+      PADDING: [1, 2, 4]
+  
+  HEAD:
+    NAME: 'RdrSpcubeHead'
+    DIM: 768
+    BOX_CODE: ['xc', 'yc', 'zc', 'xl', 'yl', 'zl', 'cos', 'sin']
+    
+    BG_WEIGHT: 1.
+    NMS_OVERLAP_THRESHOLD: 0.1
+
+  ROI_HEAD:
+
+  # order should be matched regarding CLASS_INFO.CLS_ID
+  ANCHOR_GENERATOR_CONFIG: [
+      {
+          'class_name': 'Sedan',
+          'anchor_sizes': [[4.2, 2.1, 2.0]],
+          'anchor_rotations': [0, 1.5708],
+          'anchor_bottom_heights': [0.0],
+          'matched_threshold': 0.5,
+          'unmatched_threshold': 0.2
+      }
+    ]
+### ----- Model ----- ###
+
+### ----- Optimizer ----- ###
+OPTIMIZER: # Training
+  NAME: 'Adam'
+
+  LR: 0.001
+  MIN_LR: 0.0001 # for scheduler
+  BETAS: [0.9, 0.999]
+  WEIGHT_DECAY: 0.01
+  MOMENTUM: 0.9
+
+  BATCH_SIZE: 4
+  NUM_WORKERS: 0 # 0 for dataloader_error / 4 for batch 16
+
+  MAX_EPOCH: 11
+  
+  SCHEDULER: 'CosineAnnealingLR' # in [None (empty), 'LambdaLR', 'CosineAnnealingLR']
+  TYPE_TOTAL_ITER: 'every' # in ['every', 'all'] / every epoch
+### ----- Optimizer ----- ###
+
+### ----- Validation ----- ###
+VAL:
+  IS_VALIDATE: True
+  IS_CONSIDER_VAL_SUBSET: True
+  VAL_PER_EPOCH_SUBSET: 1
+  NUM_SUBSET: 500 # 500
+  VAL_PER_EPOCH_FULL: 11 # epoch for validate full dataset
+
+  LIST_VAL_CONF_THR: [0.3]
+  LIST_VAL_IOU: [0.7, 0.5, 0.3]
+  # This is for logging, change the iou threshold in 'utils/kitti_eval'
+
+  CLASS_VAL_KEYWORD: {
+    'Sedan': 'sed',
+    'Bus or Truck': 'bus',
+    'Motorcycle': 'mot',
+    'Bicycle': 'bic',
+    'Bicycle Group': 'big',
+    'Pedestrian': 'ped',
+    'Pedestrian Group': 'peg'
+  }
+
+  REGARDING: 'anchor' # in ['anchor']
+  LIST_CARE_VAL: ['Sedan']
+### ----- Validation ----- ###
+
+### ----- Visualization ----- ###
+VIS:
+  # OpenCV
+  CLASS_BGR: {
+    'Sedan': [0,255,0],
+    'Bus or Truck': [0,50,255],
+    'Motorcycle': [0,0,255],
+    'Bicycle': [0,255,255],
+    'Pedestrian': [255,0,0],
+    'Pedestrian Group': [255,0,100],
+    'Label': [128,128,128]
+  }
+
+  # Open3D
+  CLASS_RGB: {
+    'Sedan': [0, 1, 0],
+    'Bus or Truck': [1, 0.2, 0],
+    'Motorcycle': [1, 0, 0],
+    'Bicycle': [1, 1, 0],
+    'Pedestrian': [0, 0, 1],
+    'Pedestrian Group': [0.4, 0, 1],
+    'Label': [0.5, 0.5, 0.5]
+  }
+  
+  ROI:
+    TYPE: 'default' # ['default', 'cube']
+    DEFAULT: [0,100,-40,40,-10,60] # x_min_max, y_min_max, z_min_max / Dim: [m]
+
+  # For BEV model visualization
+  Z_CENTER: {
+    'Sedan': 0.5,
+    'Bus or Truck': 1.5,
+    'Motorcycle': 0.5,
+    'Bicycle': 0.5,
+    'Pedestrian': 0.5,
+    'Pedestrian Group': 0.5,
+  }
+
+  # For BEV model visualization
+  Z_HEIGHT: {
+    'Sedan': 1.9,
+    'Bus or Truck': 1.9,
+    'Motorcycle': -1,
+    'Bicycle': -1,
+    'Pedestrian': 2,
+    'Pedestrian Group': -1,
+  }
+### ----- Visualization ----- ###
