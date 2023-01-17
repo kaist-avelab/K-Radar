@@ -1,0 +1,9 @@
+# Set a setting into Piksi firmware by specifying the section of the setting (e.g. "surveyed_position"),
+# the setting name (e.g. "surveyed_lat") and its value (e.g. "8.57").
+
+string section_setting
+string setting
+string value
+---
+bool success
+string message

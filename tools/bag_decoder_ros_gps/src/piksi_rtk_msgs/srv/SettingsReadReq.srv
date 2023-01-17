@@ -1,0 +1,8 @@
+# Request a read of a setting into Piksi firmware by specifying the section of the setting (e.g. "surveyed_position")
+# and the setting name (e.g. "surveyed_lat").
+
+string section_setting
+string setting
+---
+bool success
+string message

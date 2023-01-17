@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>piksi_rtk_msgs</name>
+  <version>1.10.0</version>
+  <description>
+    Package containing messages for Piksi RTK GPS ROS Driver.
+  </description>
+
+  <maintainer email="marcot@ethz.ch">Marco Tranzatto</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>rospy</depend>
+  <depend>message_generation</depend>
+  <depend>message_runtime</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+
+</package>
