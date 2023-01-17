@@ -45,7 +45,7 @@ class PipelineDetection_v1_0():
 
         if self.cfg.GENERAL.SEED is not None:
             try:
-                set_random_seed(cfg.GENERAL.SEED, cfg.GENERAL.IS_CUDA_SEED, cfg.IS_DETERMINISTIC)
+                set_random_seed(cfg.GENERAL.SEED, cfg.GENERAL.IS_CUDA_SEED, cfg.GENERAL.IS_DETERMINISTIC)
             except:
                 print('* Exception error: check cfg.GENERAL for seed')
                 set_random_seed(cfg.GENERAL.SEED)
