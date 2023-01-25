@@ -87,6 +87,23 @@ The `K-Radar` dataset is being uploaded to Google Drive. It will take time to up
 The 4D Radar tensor is only available on our server because it is too large to upload to Google Drive. (We can charge for up to 2TB of Google Drive storage space.)
 We provide camera images, Lidar point cloud, RTK-GPS, and Radar tensor (for network input) via Google Drive for flexibility.
 
+<a href="https://drive.google.com/drive/folders/1IfKu-jKB1InBXmfacjMKQ4qTm8jiHrG_?usp=share_link"> Download link </a>
+
+After downloading all the dataset, please arrange the sequence directory with the following structure:
+```
+├── sequence_number (i.e., 1, 2, ..., 58)
+      ├── cam_front
+      ├── cam_left
+      ├── cam_rear
+      ├── cam_right
+      ├── description.txt
+      ├── info_calib
+      ├── info_label
+      ├── os1-128
+      ├── os2-64
+      ├── radar_zyx_cube
+```
+
 ## Sequence composition
 
 Each of the 58 sequences consists of listed files or folders as follows.
