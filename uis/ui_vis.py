@@ -73,6 +73,7 @@ class MainFrame(QMainWindow, class_ui):
             'pushButtonInfLidar',           # 10
             'pushButtonInfRadar',           # 11
             'pushButtonReset',              # 12
+            'pushButtonSRTVis',             # 13
             ]
         for i in range(len(list_name_fuction)):
             getattr(self, f'pushButton_{i}').clicked.\
@@ -82,9 +83,12 @@ class MainFrame(QMainWindow, class_ui):
     def pushButtonLoad(self):
         ### Change cfg for vis ###
         self.split = 'train' if self.radioButton_training.isChecked() else 'test'
-        self.cfg.DATASET.RDR_CUBE.ROI['x'] = [0, 120]
-        self.cfg.DATASET.RDR_CUBE.ROI['y'] = [-100, 100]
-        self.cfg.DATASET.RDR_CUBE.ROI['z'] = [-50, 50]
+        # self.cfg.DATASET.RDR_CUBE.ROI['x'] = [0, 120]
+        # self.cfg.DATASET.RDR_CUBE.ROI['y'] = [-100, 100]
+        # self.cfg.DATASET.RDR_CUBE.ROI['z'] = [-50, 50]
+        self.cfg.DATASET.RDR_CUBE.ROI['x'] = [0, 98.8]
+        self.cfg.DATASET.RDR_CUBE.ROI['y'] = [-40.0, 39.6]
+        self.cfg.DATASET.RDR_CUBE.ROI['z'] = [-2, 5.6]
         ### Change cfg for vis ###
 
         self.kradar = datasets.__all__[self.cfg.DATASET.NAME](cfg=self.cfg, split=self.split)
@@ -479,6 +483,7 @@ class MainFrame(QMainWindow, class_ui):
             bboxes = None
 
         print(alpha,lthick)
+        print(bboxes)
         self.kradar.show_radar_tensor_bev(self.dict_datum, bboxes, \
             roi_x = [0, 0.4, 80], roi_y = [-60, 0.4, 60], alpha = alpha, lthick = lthick)
         
@@ -703,6 +708,143 @@ class MainFrame(QMainWindow, class_ui):
 
         self.pred_objects = dict_obj["pred"]
         self.gt_objects = dict_obj["gt"]
+
+    def pushButtonSRTVis(self):
+        if self.dict_datum is None:
+            print('* select at least one item')
+            return
+
+        # dealing cube data
+        cfg = self.cfg
+        _, _, _, self.kradar.arr_doppler = self.kradar.load_physical_values(is_with_doppler=True)
+        # To make BEV -> averaging power
+        self.kradar.is_count_minus_1_for_bev = cfg.DATASET.RDR_CUBE.IS_COUNT_MINUS_ONE_FOR_BEV
+
+        # Default ROI for CB (When generating CB from matlab applying interpolation)
+        self.kradar.arr_bev_none_minus_1 = None
+        self.kradar.arr_z_cb = np.arange(-30, 30, 0.4)
+        self.kradar.arr_y_cb = np.arange(-80, 80, 0.4)
+        self.kradar.arr_x_cb = np.arange(0, 100, 0.4)
+
+        self.kradar.is_consider_roi_rdr_cb = cfg.DATASET.RDR_CUBE.IS_CONSIDER_ROI
+        if self.kradar.is_consider_roi_rdr_cb:
+            self.kradar.consider_roi_cube(cfg.DATASET.RDR_CUBE.ROI)
+            if cfg.DATASET.RDR_CUBE.CONSIDER_ROI_ORDER == 'cube -> num':
+                self.kradar.consider_roi_order = 1
+            elif cfg.DATASET.RDR_CUBE.CONSIDER_ROI_ORDER == 'num -> cube':
+                self.kradar.consider_roi_order = 2
+            else:
+                raise AttributeError('Check consider roi order in cfg')
+            if cfg.DATASET.RDR_CUBE.BEV_DIVIDE_WITH == 'bin_z':
+                self.kradar.bev_divide_with = 1
+            elif cfg.DATASET.RDR_CUBE.BEV_DIVIDE_WITH == 'none_minus_1':
+                self.kradar.bev_divide_with = 2
+            else:
+                raise AttributeError('Check consider bev divide with in cfg')
+        self.kradar.is_get_cube_dop = cfg.DATASET.GET_ITEM['rdr_cube_doppler']
+        self.kradar.offset_doppler = cfg.DATASET.RDR_CUBE.DOPPLER.OFFSET
+        self.kradar.is_dop_another_dir = cfg.DATASET.RDR_CUBE.DOPPLER.IS_ANOTHER_DIR
+        self.kradar.dir_dop = cfg.DATASET.DIR.DIR_DOPPLER_CB
+
+        self.dict_datum['rdr_cube'] = self.kradar.get_cube(self.dict_datum['meta']['path_rdr_cube'], mode=1)
+
+        print(self.dict_datum['rdr_cube'].shape)
+
+        if self.checkBox_bbox.isChecked():
+            bboxes = self.dict_datum['meta']['label']
+        else:
+            bboxes = None
+        
+        import torch
+        rdr_cube = torch.from_numpy(self.dict_datum['rdr_cube'])
+        rdr_cube_roi = self.cfg.DATASET.RDR_CUBE.ROI
+        grid_size = self.cfg.DATASET.RDR_CUBE.GRID_SIZE
+        # print(grid_size)
+        
+        z_min, z_max = rdr_cube_roi['z']
+        y_min, y_max = rdr_cube_roi['y']
+        x_min, x_max = rdr_cube_roi['x']
+
+        sample_rdr_cube = rdr_cube
+        norm_val = float(1e+13)
+        sample_rdr_cube = sample_rdr_cube / norm_val
+        quantile_rate = 1.0-self.doubleSpinBox_rate.value()
+        z_ind, y_ind, x_ind = torch.where(sample_rdr_cube > sample_rdr_cube.quantile(quantile_rate))
+        
+        power_val = sample_rdr_cube[z_ind, y_ind, x_ind].unsqueeze(-1)
+
+        z_pc_coord = ((z_min + z_ind * grid_size) - grid_size / 2).unsqueeze(-1)
+        y_pc_coord = ((y_min + y_ind * grid_size) - grid_size / 2).unsqueeze(-1)
+        x_pc_coord = ((x_min + x_ind * grid_size) - grid_size / 2).unsqueeze(-1)
+
+        sparse_rdr_cube = torch.cat((x_pc_coord, y_pc_coord, z_pc_coord, power_val), dim=-1)
+        sparse_rdr_cube = sparse_rdr_cube.numpy()
+
+        pc_lidar = []
+        with open(self.dict_datum['meta']['path_ldr_pc_64'], 'r') as f:
+            lines = [line.rstrip('\n') for line in f][13:]
+            pc_lidar = [point.split() for point in lines]
+            f.close()
+        pc_lidar = np.array(pc_lidar, dtype = float).reshape(-1, 9)[:, :4]
+        # 0.01: filter out missing values
+        # pc_lidar = pc_lidar[np.where(pc_lidar[:, 0] > 0.01)].reshape(-1, 4)
+
+        # if self.type_coord == 1: # Rdr coordinate
+        #     if calib_info is None:
+        #         raise AttributeError('* Exception error (Dataset): Insert calib info!')
+            # else:
+        calib_info = self.dict_datum['calib_info']
+        pc_lidar = np.array(list(map(lambda x: \
+            [x[0]+calib_info[0], x[1]+calib_info[1], x[2]+calib_info[2], x[3]],\
+            pc_lidar.tolist())))
+
+        self.dict_datum['ldr_pc_64'] = pc_lidar
+        pc_lidar = self.dict_datum['ldr_pc_64']
+
+        lpc_roi = self.cfg.DATASET.LPC.ROI
+        roi_x = lpc_roi['x']
+        roi_y = lpc_roi['y']
+        roi_z = lpc_roi['z']
+        # ROI filtering
+        pc_lidar = pc_lidar[
+            np.where(
+                (pc_lidar[:, 0] > roi_x[0]) & (pc_lidar[:, 0] < roi_x[1]) &
+                (pc_lidar[:, 1] > roi_y[0]) & (pc_lidar[:, 1] < roi_y[1]) &
+                (pc_lidar[:, 2] > roi_z[0]) & (pc_lidar[:, 2] < roi_z[1])
+            )]
+
+        bboxes = self.dict_datum['meta']['label']
+
+        bboxes_o3d = []
+        list_color_bbox = []
+        for obj in bboxes:
+            cls_name, idx_cls, [x,y,z,theta,l,w,h], idx_obj = obj
+            # try item()
+            bboxes_o3d.append(Object3D(x, y, z, l, w, h, theta))
+
+            lines = [[0, 1], [2, 3], #[1, 2], [0, 3],
+                    [4, 5], [6, 7], #[5, 6],[4, 7],
+                    [0, 4], [1, 5], [2, 6],[3, 7],
+                    [0, 2], [1, 3], [4, 6], [5, 7]]
+            colors_bbox = [self.cfg.VIS.CLASS_RGB[cls_name] for _ in range(len(lines))]
+            list_color_bbox.append(colors_bbox)
+
+        line_sets_bbox = []
+        for idx_obj, gt_obj in enumerate(bboxes_o3d):
+            line_set = o3d.geometry.LineSet()
+            line_set.points = o3d.utility.Vector3dVector(gt_obj.corners)
+            line_set.lines = o3d.utility.Vector2iVector(lines)
+            line_set.colors = o3d.utility.Vector3dVector(list_color_bbox[idx_obj])
+            line_sets_bbox.append(line_set)
+
+        pcd = o3d.geometry.PointCloud()
+        pcd.points = o3d.utility.Vector3dVector(pc_lidar[:, :3])
+
+        pcd_radar = o3d.geometry.PointCloud()
+        pcd_radar.points = o3d.utility.Vector3dVector(sparse_rdr_cube[:, :3])
+        pcd_radar.colors = o3d.utility.Vector3dVector(np.repeat(np.array([[0.,0.,0.]]), len(sparse_rdr_cube), axis=0))
+
+        o3d.visualization.draw_geometries([pcd, pcd_radar] + line_sets_bbox)
 
 def startUi(path_cfg):
     f = open(path_cfg, 'r')
