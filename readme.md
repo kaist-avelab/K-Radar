@@ -184,11 +184,13 @@ python main_vis.py (with GUI)
 
 ## Model Zoo
 The reported values are ${AP_{3D}}$ for `Sedan` class.
-|Name|Total|Normal|Overcast|Fog|Rain|Sleet|LightSnow|HeavySnow|Pretrained|
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-|RTNH|47.4|49.9|56.7|52.8|42.0|41.5|50.6|44.5|<a href="TBD1">Link</a>|
-|RTN|40.1|45.6|48.8|46.9|32.9|22.6|36.8|36.8|<a href="TBD2">Link</a>|
-|PILLARS|45.4|52.3|61.0|42.2|44.5|22.7|40.6|29.7|<a href="TBD3">Link</a>|
+|Name|Total|Normal|Overcast|Fog|Rain|Sleet|LightSnow|HeavySnow|Pretrained|Logs|
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+|RTNH|47.4|49.9|56.7|52.8|42.0|41.5|50.6|44.5|<a href="TBD1">Link</a>|Link|
+|RTN|40.1|45.6|48.8|46.9|32.9|22.6|36.8|36.8|<a href="TBD2">Link</a>|Link|
+|PILLARS|45.4|52.3|61.0|42.2|44.5|22.7|40.6|29.7|<a href="TBD3">Link</a>|Link|
+
+Based on our findings presented, we elucidate the capability of the 4D Radar in terms of 3D object detection and its resilience in the face of adverse weather conditions. This is evident from its relatively stable performance under conditions of sleet and heavy snow, especially when compared to the performance metrics of LiDAR neural networks. We do not claim that 4D Radar is always superior to LiDAR in 3D object detection. In other words, we note that the performance of LiDAR neural networks could surpass that of the 4D Radar neural network with improvements in its structure or hyper-parameters.
 
 ## License
 The `K-Radar` dataset is published under the CC BY-NC-ND License, and all codes are published under the Apache License 2.0.
@@ -198,6 +200,8 @@ The K-Radar dataset is contributed by [Dong-Hee Paek](http://ave.kaist.ac.kr/bbs
 
 We thank the maintainers of the following projects that enable us to develop `K-Radar`:
 [`OpenPCDet`](https://github.com/open-mmlab/OpenPCDet) by MMLAB, [`Rotated_IoU`](https://github.com/lilanxiao/Rotated_IoU) by lilanxiao, and [`kitti-object-eval-python`](https://github.com/traveller59/kitti-object-eval-python) by traveller59.
+
+We extend our gratitude to the students in the Information Processing Lab at the University of Washington for providing the refined K-Radar label.
 
 This work was partly supported by Institute of Information & communications Technology Planning & Evaluation (IITP) grant funded by the Korea government (MSIT) (No. 01210790) and the National Research Foundation of Korea (NRF) grant funded by the Korea government (MSIT) (No. 2021R1A2C3008370).
 
