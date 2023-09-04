@@ -186,9 +186,9 @@ python main_vis.py (with GUI)
 The reported values are ${AP_{3D}}$ for `Sedan` class.
 |Name|Total|Normal|Overcast|Fog|Rain|Sleet|LightSnow|HeavySnow|Pretrained|Logs|
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-|RTNH|47.4|49.9|56.7|52.8|42.0|41.5|50.6|44.5|<a href="TBD1">Link</a>|Link|
-|RTN|40.1|45.6|48.8|46.9|32.9|22.6|36.8|36.8|<a href="TBD2">Link</a>|Link|
-|PILLARS|45.4|52.3|61.0|42.2|44.5|22.7|40.6|29.7|<a href="TBD3">Link</a>|Link|
+|RTNH|47.4|49.9|56.7|52.8|42.0|41.5|50.6|44.5|<a href="TBD1">Link</a>|<a href="https://drive.google.com/file/d/1b4DTwO_SnKOfPrn1F6UQZ-dy4Gi91Eun/view?usp=drive_link">Link</a>|
+|RTN|40.1|45.6|48.8|46.9|32.9|22.6|36.8|36.8|<a href="TBD2">Link</a>|<a href="https://drive.google.com/file/d/1b4DTwO_SnKOfPrn1F6UQZ-dy4Gi91Eun/view?usp=drive_link">Link</a>|
+|PILLARS|45.4|52.3|61.0|42.2|44.5|22.7|40.6|29.7|<a href="TBD3">Link</a>|<a href="https://drive.google.com/file/d/1b4DTwO_SnKOfPrn1F6UQZ-dy4Gi91Eun/view?usp=drive_link">Link</a>|
 
 Based on our findings presented, we elucidate the capability of the 4D Radar in terms of 3D object detection and its resilience in the face of adverse weather conditions. This is evident from its relatively stable performance under conditions of sleet and heavy snow, especially when compared to the performance metrics of LiDAR neural networks. We do not claim that 4D Radar is always superior to LiDAR in 3D object detection. In other words, we note that the performance of LiDAR neural networks could surpass that of the 4D Radar neural network with improvements in its structure or hyper-parameters.
 
