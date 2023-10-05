@@ -130,7 +130,7 @@ conda create -n kradar python=3.8.13
 conda activate kradar
 ```
 
-3. Install PyTorch (We recommend pytorch 1.10.0.)
+3. Install PyTorch (We recommend pytorch 1.11.0.)
 
 4. Install the dependencies
 ```
