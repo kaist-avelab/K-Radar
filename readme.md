@@ -25,21 +25,6 @@ We tested the K-Radar detection frameworks on the following environment:
 * opencv 4.2.0.32
 * open3d 0.15.2
 
-## Notice
-[2022-10-14] We have realized that the network-attached storage (NAS) download link is unstable. As such, we are preparing the Google Drive download link similar to our other project <a href="https://github.com/kaist-avelab/K-Lane">K-Lane</a>.
-
-[2022-09-30] The `K-Radar` dataset is made available via a network-attached storage (NAS) <a href="http://QuickConnect.to/kaistavelab">download link</a>.
-
-[2022-12-01] The `K-Radar` dataset is being uploaded to Google Drive. It will take time to upload our entire dataset.
-
-[2022-12-06] We are checking and fixing the NAS server after realizing it has been down.
-
-[2022-12-16] We have an unidentified problem in allocating IP to our NAS server. We apologize for this inconvenience.
-
-[2022-12-19] The NAS server's URL has changed and is now accessible.
-
-[2023-01-16] The pipepline for `K-Radar` dataset is updated, and the previous repository has been depracated.
-
 ## Preparing the Dataset
 
 * Via our server
@@ -201,7 +186,7 @@ Given the considerable size of our research dataset, distributing it via Google 
 
 If you're able to provide us with a hard drive of 16TB capacity or larger, we can directly transfer the raw data to it and send it to your institution. The method of provision is flexible: you could opt for international shipping, make a purchase via Amazon, or consider other avenues.
 
-It's important to emphasize that we're offering this service on a **non-profit** basis. Several esteemed research institutions (like Washington Univ., KAIST, and National Yang Ming Chiao Tung Univ.) as well as companies (like Motional and GM) have previously received data using this method.
+It's important to emphasize that we're offering this service on a **non-profit** basis. Several esteemed research institutions (like Washington Univ., KAIST, NYU, and National Yang Ming Chiao Tung Univ.) as well as companies (like Motional and GM) have previously received data using this method.
 
 ## Model Zoo
 The reported values are ${AP_{3D}}$ for `Sedan` class. (based on the label v1.0)
@@ -212,6 +197,9 @@ The reported values are ${AP_{3D}}$ for `Sedan` class. (based on the label v1.0)
 |PILLARS|45.4|52.3|61.0|42.2|44.5|22.7|40.6|29.7|<a href="https://drive.google.com/drive/folders/1Z9f0yiddLKkygkg-QKBsrCDK2OvNWGIA?usp=drive_link">Link</a>|<a href="https://drive.google.com/file/d/1b4DTwO_SnKOfPrn1F6UQZ-dy4Gi91Eun/view?usp=drive_link">Link</a>|
 
 Based on our findings presented, we elucidate the capability of the 4D Radar in terms of 3D object detection and its resilience in the face of adverse weather conditions. This is evident from its relatively stable performance under conditions of sleet and heavy snow, especially when compared to the performance metrics of LiDAR neural networks. We do not claim that 4D Radar is always superior to LiDAR in 3D object detection. In other words, we note that the performance of LiDAR neural networks could surpass that of the 4D Radar neural network with improvements in its structure or hyper-parameters.
+
+## Odometry
+TODO
 
 ## License
 The `K-Radar` dataset is published under the CC BY-NC-ND License, and all codes are published under the Apache License 2.0.
