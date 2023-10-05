@@ -1,4 +1,4 @@
-open3d==0.15.2
+open3d==0.15.1
 easydict
 tensorboard
 opencv-python==4.2.0.32
