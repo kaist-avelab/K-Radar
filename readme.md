@@ -126,7 +126,7 @@ cd K-Radar
 
 2. Create a conda environment
 ```
-conda create -n kradar python=3.8.13
+conda create -n kradar python=3.8.13 -y
 conda activate kradar
 ```
 
