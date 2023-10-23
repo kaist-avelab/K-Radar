@@ -82,16 +82,29 @@ def build_scheduler(p_pline, optimizer):
 def set_random_seed(seed, is_cuda_seed=False, is_deterministic=True):
     # We haven't considered cuda seed for released models. The reproduced result could be slightly different.
     # is_deterministic affects speed of training. We only recommend this for getting the final result.
-    random.seed(seed)
-    np.random.seed(seed)
+
+    ### b4 ###
+    # random.seed(seed)
+    # np.random.seed(seed)
+    # torch.manual_seed(seed)
+
+    # if is_cuda_seed:
+    #     torch.cuda.manual_seed_all(seed)
+
+    # if is_deterministic:
+    #     torch.backends.cudnn.deterministic = True
+    #     torch.backends.cudnn.benchmark = False
+    ### b4 ###
+
+    ### changed ###
     torch.manual_seed(seed)
-
-    if is_cuda_seed:
-        torch.cuda.manual_seed_all(seed)
-
-    if is_deterministic:
-        torch.backends.cudnn.deterministic = True
-        torch.backends.cudnn.benchmark = False
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)  # if using multi-GPU
+    torch.backends.cudnn.deterministic = True  # CUDNN determinism
+    torch.backends.cudnn.benchmark = False  # set False whenever input size changes
+    np.random.seed(seed)
+    random.seed(seed)
+    ### changed ###
 
 def vis_tesseract_pline(p_pline, idx=0, vis_type='ra', is_in_deg=True, is_vis_local_maxima_along_range=False):
     '''
