@@ -1056,6 +1056,8 @@ class KRadarDetection_v1_1(Dataset):
         norm_val = float(cfg_sparse_data.NORM_VAL) # 1e+13
         grid_size = 0.4
 
+        quantile_rate = 1.0-cfg_sparse_data.QUANTILE_RATE
+
         arr_z_cb = np.arange(-30, 30, grid_size)
         arr_y_cb = np.arange(-80, 80, grid_size)
         arr_x_cb = np.arange(0, 100, grid_size)
@@ -1085,7 +1087,6 @@ class KRadarDetection_v1_1(Dataset):
             arr_cube = np.flip(loadmat(path_cube)['arr_zyx'], axis=0) # z-axis is flipped
             arr_cube /= norm_val
         
-            quantile_rate = 1.0-self.cfg.DATASET.RDR_CUBE.GENERATE_SPARSE_CUBE.PICK_RATE
             z_ind, y_ind, x_ind = np.where(arr_cube > np.quantile(arr_cube, quantile_rate))
 
             power_val = arr_cube[z_ind, y_ind, x_ind]
@@ -1138,7 +1139,7 @@ if __name__ == '__main__':
     import yaml
     from easydict import EasyDict
 
-    path_cfg = './configs/sparse_rdr_data_generation/cfg_gen_wider_rtnh_10p.yml'
+    path_cfg = './configs/sparse_rdr_data_generation/cfg_gen_wider_rtnh_1p.yml'
 
     f = open(path_cfg, 'r')
     try:
