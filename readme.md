@@ -203,7 +203,7 @@ Based on our findings presented, we elucidate the capability of the 4D Radar in 
 We provide the location of a GPS antenna, essential for accurate ground-truth odometry. This location is precisely processed by integrating data from high-resolution LiDAR, RTK-GPS, and IMU data. To ensure the utmost accuracy, we verify the vehicle's location by correlating the LiDAR sensor data against a detailed, high-resolution map, as illustrated below. For security purposes, we present this location information in local coordinates rather than global coordinates (i.e., UTM). The data of Sequence 1 is accessible in the `resources/odometry` directory. The data for the remaining sequences will be made available within the next few weeks.
 
 <p align="center">
-  <img src = "./docs/imgs/processed_odometry" width="50%">
+  <img src = "./docs/imgs/processed_odometry.png" width="50%">
 </p>
 
 ## License
