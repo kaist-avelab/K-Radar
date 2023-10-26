@@ -200,9 +200,9 @@ The reported values are ${AP_{3D}}$ for `Sedan` class. (based on the label v1.0)
 Based on our findings presented, we elucidate the capability of the 4D Radar in terms of 3D object detection and its resilience in the face of adverse weather conditions. This is evident from its relatively stable performance under conditions of sleet and heavy snow, especially when compared to the performance metrics of LiDAR neural networks. We do not claim that 4D Radar is always superior to LiDAR in 3D object detection. In other words, we note that the performance of LiDAR neural networks could surpass that of the 4D Radar neural network with improvements in its structure or hyper-parameters.
 
 ## Odometry
-We offer a service wherein the location of the vehicle is ascertained using a GPS antenna, essential for accurate ground-truth odometry. This location is precisely determined by integrating data from high-resolution LiDAR, RTK-GPS, and IMU systems. To ensure the utmost accuracy, we verify the vehicle's location by correlating the LiDAR sensor data against a detailed, high-resolution map, as illustrated below. For security purposes, we present this location information in local coordinates rather than global coordinates (i.e., UTM). The data of Sequence 1 is accessible in the `resources/odometry` directory.
+We provide the location of a GPS antenna, essential for accurate ground-truth odometry. This location is precisely processed by integrating data from high-resolution LiDAR, RTK-GPS, and IMU data. To ensure the utmost accuracy, we verify the vehicle's location by correlating the LiDAR sensor data against a detailed, high-resolution map, as illustrated below. For security purposes, we present this location information in local coordinates rather than global coordinates (i.e., UTM). The data of Sequence 1 is accessible in the `resources/odometry` directory. The data for the remaining sequences will be made available within the next few weeks.
 
-![image](./docs/imgs/odometry.png)
+![image](./docs/imgs/processed_odometry.png)
 
 ## License
 The `K-Radar` dataset is published under the CC BY-NC-ND License, and all codes are published under the Apache License 2.0.
