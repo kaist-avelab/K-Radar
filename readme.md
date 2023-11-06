@@ -190,7 +190,7 @@ If you're able to provide us with a hard drive of 16TB capacity or larger, we ca
 It's important to emphasize that we're offering this service on a **non-profit** basis. Several esteemed research institutions (like Washington Univ., KAIST, NYU, and National Yang Ming Chiao Tung Univ.) as well as companies (like Motional and GM) have previously received data using this method.
 
 ## Model Zoo
-The reported values are ${AP_{3D}}$ for `Sedan` class. (based on the label v1.0)
+The reported values are ${AP_{3D}}$ for Sedan class. (based on the label v1.0)
 |Name|Total|Normal|Overcast|Fog|Rain|Sleet|LightSnow|HeavySnow|Pretrained|Logs|
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 |RTNH|47.4|49.9|56.7|52.8|42.0|41.5|50.6|44.5|<a href="https://drive.google.com/drive/folders/1Z9f0yiddLKkygkg-QKBsrCDK2OvNWGIA?usp=drive_link">Link</a>|<a href="https://drive.google.com/file/d/1b4DTwO_SnKOfPrn1F6UQZ-dy4Gi91Eun/view?usp=drive_link">Link</a>|
@@ -198,6 +198,24 @@ The reported values are ${AP_{3D}}$ for `Sedan` class. (based on the label v1.0)
 |PILLARS|45.4|52.3|61.0|42.2|44.5|22.7|40.6|29.7|<a href="https://drive.google.com/drive/folders/1Z9f0yiddLKkygkg-QKBsrCDK2OvNWGIA?usp=drive_link">Link</a>|<a href="https://drive.google.com/file/d/1b4DTwO_SnKOfPrn1F6UQZ-dy4Gi91Eun/view?usp=drive_link">Link</a>|
 
 Based on our findings presented, we elucidate **the capability of the 4D Radar in terms of 3D object detection and its resilience in the face of adverse weather conditions**. This is evident from its relatively stable performance under conditions of sleet and heavy snow, especially when compared to the performance metrics of LiDAR neural networks. We **do not claim** that 4D Radar is always superior to LiDAR in 3D object detection. In other words, we note that the performance of LiDAR neural networks could surpass that of the 4D Radar neural network with improvements in its structure or hyper-parameters.
+
+### Performance of RTNH on wider areas and multiple classes (Sedan & Bus or Truck)
+The performance reported below has three major differences compared to the performance reported above (as in the existing NeurIPS22 paper):
+
+1. Instead of considering a narrow area (x, y, z each ranging from 0 to 72, -6.4 to 6.4, -2 to 6m) as before, a wider area (x, y, z each ranging from 0 to 72, -16 to 16, -2 to 7.6m) has been taken into account.
+2. In addition to the previously considered Sedan class, the Bus or Truck class has also been considered. These correspond to compact and large vehicles, respectively.
+3. The updated v2.0 labels have been utilized. For updates compared to Label v1.0, please refer to Revising K-Radar label.
+
+For a more detailed performance review (e.g., performance for each road environment), please refer to the logs at the following link: (available at logs/exp_231106_145532_RTNH/test_kitti/none/0.3/complete_results.txt).
+
+For the model below, please check the configuration in configs/cfg_RTNH_wide.yml and the pretrained model at the corresponding link.
+
+
+(1) ${AP_{3D}}$
+|Class|Total|Normal|Overcast|Fog|Rain|Sleet|LightSnow|HeavySnow|
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+|Sedan|48.2||56.7|52.8|42.0|41.5|50.6|44.5|
+|Bus or Truck|47.4|49.9|56.7|52.8|42.0|41.5|50.6|44.5|
 
 ## Odometry
 We provide the location of a GPS antenna, essential for accurate ground-truth odometry. This location is precisely processed by integrating data from high-resolution LiDAR, RTK-GPS, and IMU data. To ensure the utmost accuracy, we verify the vehicle's location by correlating the LiDAR sensor data against a detailed, high-resolution map, as illustrated below. For security purposes, we present this location information in local coordinates rather than global coordinates (i.e., UTM). The data of Sequence 1 is accessible in the `resources/odometry` directory. The data for the remaining sequences will be made available within the next few weeks.
