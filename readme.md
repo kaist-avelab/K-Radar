@@ -210,7 +210,7 @@ The reported values are ${AP_{3D}}$ for Sedan class. (based on the label v1.0)
 Based on our findings presented, we elucidate **the capability of the 4D Radar in terms of 3D object detection and its resilience in the face of adverse weather conditions**. This is evident from its relatively stable performance under conditions of sleet and heavy snow, especially when compared to the performance metrics of LiDAR neural networks. We **do not claim** that 4D Radar is always superior to LiDAR in 3D object detection. In other words, we note that the performance of LiDAR neural networks could surpass that of the 4D Radar neural network with improvements in its structure or hyper-parameters.
 
 ### Performance of RTNH on wider areas and multiple classes (Sedan & Bus or Truck)
-The performance reported below has three major differences compared to the performance reported above (as in the existing NeurIPS22 paper):
+The performance reported below has three major differences compared to the performance reported above (as in the NeurIPS22 paper):
 
 1. Instead of considering a narrow area (x, y, z each ranging from 0 to 72, -6.4 to 6.4, -2 to 6m) as before, a wider area (x, y, z each ranging from 0 to 72, -16 to 16, -2 to 7.6m) has been taken into account.
 2. In addition to the previously considered `Sedan` class, `Bus or Truck` class has also been considered. These correspond to compact and large vehicles, respectively.
