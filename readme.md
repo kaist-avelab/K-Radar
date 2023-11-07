@@ -222,7 +222,7 @@ For the model below, please check the configuration in configs/cfg_RTNH_wide.yml
 | Sedan        | 56.7  | 53.8   | 68.3     | 89.6 | 49.3 | 55.6  | 69.4      | 60.3      |
 | Bus or Truck | 45.3  | 31.8   | 32.0     | -    | -    | 34.4  | 89.3      | 78.0      |
 
-(We denote the performance of the Bus or Truck class with '-' in both Rain and Sleet conditions, as they do not exist in these conditions.)
+(We denote the performance of the `Bus or Truck` class with '-' in both Rain and Sleet conditions, as they do not exist in these conditions.)
 
 ## Odometry
 We provide the location of a GPS antenna, essential for accurate ground-truth odometry. This location is precisely processed by integrating data from high-resolution LiDAR, RTK-GPS, and IMU data. To ensure the utmost accuracy, we verify the vehicle's location by correlating the LiDAR sensor data against a detailed, high-resolution map, as illustrated below. For security purposes, we present this location information in local coordinates rather than global coordinates (i.e., UTM). The data of Sequence 1 is accessible in the `resources/odometry` directory. The data for the remaining sequences will be made available within the next few weeks.
