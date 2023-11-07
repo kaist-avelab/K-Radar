@@ -11,17 +11,6 @@ import sys
 
 from glob import glob
 
-# For executing the '__main__' directly
-try:
-    from utils.util_geometry import *
-    from utils.util_dataset import *
-    from utils.util_cfar import *
-except:
-    sys.path.append(osp.dirname(osp.dirname(osp.abspath(__file__))))
-    from utils.util_geometry import *
-    from utils.util_dataset import *
-    from utils.util_cfar import *
-
 class Label_revisor():
     def __init__(self, cfg=None, split='train'):
         super().__init__()
@@ -48,13 +37,21 @@ class Label_revisor():
                 seq_label_paths = sorted(glob(osp.join(dir_seq, seq, 'info_calib', '*.txt')))
                 list_path_calib.extend(seq_label_paths)
         self.list_path_calib = sorted(list_path_calib, key=lambda x : int(x.split('/')[-3]))
-        # self.dict_cls_id = self.cfg.DATASET.CLASS_INFO.CLASS_ID
-        # self.is_consider_cls_name_change = self.cfg.DATASET.CLASS_INFO.IS_CONSIDER_CLASS_NAME_CHANGE
-        # if self.is_consider_cls_name_change:
-        #     self.dict_cls_name_change = self.cfg.DATASET.CLASS_INFO.CLASS_NAME_CHANGE
-        
 
-    def get_label_bboxes(self, path_label_1, path_label_2, calib_info):
+    def compare_file_lines(self, file_path1, file_path2):
+        with open(file_path1, 'r') as file1:
+            lines1 = file1.readlines()
+        
+        with open(file_path2, 'r') as file2:
+            lines2 = file2.readlines()
+
+        if len(lines1) != len(lines2):
+            print(f"The number of lines is different in the files:")
+            print(f"File path 1: {file_path1}")
+            print(f"File path 2: {file_path2}")
+
+
+    def get_label_bboxes(self, path_label_1, path_label_2, calib_info, base_path_label_2_1):
         with open(path_label_1, 'r') as f1:
             lines_1 = f1.readlines()
             f1.close()
@@ -67,14 +64,23 @@ class Label_revisor():
         line_objects_1 = lines_1[1:]
         line_objects_2 = lines_2[1:]
 
+
+        path_label_2_1 = os.path.join(base_path_label_2_1, path_label_2.split('/')[-2], path_label_2.split('/')[-1])
+        os.makedirs(os.path.dirname(path_label_2_1), exist_ok=True)
+
         iou = 0
         new_label = []
         origin_label = []
         extra_label = []
-        # print(dict_temp['meta']['path_label'])
-        with open(path_label_2, 'w') as w2:
+
+
+        with open(path_label_2_1, 'w') as w2:
             w2.write('{0}'.format(lines_2[0]))
+            
             for i in range(len(line_objects_2)):
+                best_iou = 0
+                best_line = None
+                
                 for j in range(len(line_objects_1)):
                     line2 = line_objects_2[i].split(',')
                     line1 = line_objects_1[j].split(',')
@@ -84,10 +90,15 @@ class Label_revisor():
                         bbox2 = float(line2[3]), float(line2[4]), float(line2[5]), float(line2[7]), float(line2[8]), float(line2[9]) 
                         bbox1 = float(line1[5]), float(line1[6]), float(line1[7]), float(line1[9]), float(line1[10]), float(line1[11]) 
                         iou = self.compute_3d_iou(bbox2, bbox1)
-                        if iou > 0.01:
-                            new_label.append(line_objects_2[i])
-                            line2.insert(1, line1[1])
-                            w2.write('{0}'.format(line2[0]+str(',')+line2[1]+str(',')+line2[2]+str(',')+line2[3]+str(',')+line2[4]+str(','))+line2[5]+str(',')+line2[6]+str(',')+line2[7]+str(',')+line2[8]+str(',')+line2[9]+str(',')+line2[10])
+                        if iou > best_iou:
+                            best_iou = iou
+                            best_line = line1
+                
+                if best_iou > 0.01:
+                    new_label.append(line_objects_2[i])
+                    line2.insert(1, best_line[1])
+                    w2.write('{0}'.format(','.join(line2)))
+
                 origin_label.append(line_objects_2[i])
             for i in origin_label :
                 if i not in new_label :
@@ -98,10 +109,10 @@ class Label_revisor():
                         continue
                     else:
                         extra_label.insert(1, ' L1')
-                        print("extra_label")
-                        print(extra_label)
-                        print(len(extra_label))
                         w2.write('{0}'.format(extra_label[0]+str(',')+extra_label[1]+str(',')+extra_label[2]+str(',')+extra_label[3]+str(',')+extra_label[4]+str(','))+extra_label[5]+str(',')+extra_label[6]+str(',')+extra_label[7]+str(',')+extra_label[8]+str(',')+extra_label[9]+str(',')+extra_label[10])
+        
+        revisor.compare_file_lines(path_label_2, path_label_2_1) ### For error check
+
         return iou
 
     def compute_3d_iou(self, box1, box2):
@@ -140,8 +151,8 @@ if __name__ == '__main__':
     import yaml
     from easydict import EasyDict
 
-    path_cfg = './cfg_RTNH_refined.yml'
-
+    path_cfg = './configs/cfg_RTNH_refined_label_revisor.yml'
+    label_2_1_path = './tools/revise_label/kradar_revised_label_v2_1/KRadar_revised_visibility'
     f = open(path_cfg, 'r')
     try:
         cfg = yaml.load(f, Loader=yaml.FullLoader)
@@ -155,7 +166,7 @@ if __name__ == '__main__':
     label_2_path_list = revisor.list_path_label_2
     calib_path_list = revisor.list_path_calib
 
-    ### 1. revise false label with \n problem * (revise washington label false --> washington label true (e.g., Washington_label/2/00488_00458.txt))
+    ## 1. revise false label with \n problem * (revise washington label false --> washington label true (e.g., Washington_label/2/00488_00458.txt))
     error_label = []
     for i in range(len(label_1_path_list)):
         calib_index = int(label_1_path_list[i].split('/')[-2].split('_')[0])
@@ -170,12 +181,12 @@ if __name__ == '__main__':
                     elif i==1:
                         w1.write('{0}'.format(str('*,')+lines_1[0].split(',')[2]+str(',')+lines_1[0].split(',')[3]+str(',')+lines_1[0].split(',')[4]+str(',')+lines_1[0].split(',')[5]+str(',')+lines_1[0].split(',')[6]+str(',')+lines_1[0].split(',')[7]+str(',')+lines_1[0].split(',')[8]+str(',')+lines_1[0].split(',')[9]+str(',')+lines_1[0].split(',')[10]))
                     else:
-                        w1.write('{0} \n'.format(lines_1[i-1]))
-    ### 1. revise false label with \n problem * (revise washington label false --> washington label true (e.g., Washington_label/2/00488_00458.txt))
+                        w1.write('{0}'.format(lines_1[i-1]))
+    ## 1. revise false label with \n problem * (revise washington label false --> washington label true (e.g., Washington_label/2/00488_00458.txt))
 
     ### 2. revise label with ioU (washington label true --> kradar_v_2_1 (using kradar_v_1_1))
     for i in range(len(label_1_path_list)):
         calib_index = int(label_1_path_list[i].split('/')[-2].split('_')[0])
-        iou = revisor.get_label_bboxes(label_1_path_list[i], label_2_path_list[i], calib_path_list[calib_index-1])
+        iou = revisor.get_label_bboxes(label_1_path_list[i], label_2_path_list[i], calib_path_list[calib_index-1], label_2_1_path)
     ### 2. revise label with ioU (washington label true --> kradar_v_2_1 (using kradar_v_1_1))
     
