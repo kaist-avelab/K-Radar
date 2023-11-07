@@ -156,7 +156,9 @@ cd ../../../ops
 python setup.py develop
 ```
 
-(We use the operations from <a href="https://github.com/open-mmlab/OpenPCDet">OpenPCDet</a> repository and acknowledge that all code in `ops` directory is sourced from there. To align with our project requirements, we have made several modifications to the original code and have uploaded the revised versions to our repository. We extend our gratitude to MMLab for their great work.)"
+We use the operations from <a href="https://github.com/open-mmlab/OpenPCDet">OpenPCDet</a> repository and acknowledge that all code in `ops` directory is sourced from there.
+To align with our project requirements, we have made several modifications to the original code and have uploaded the revised versions to our repository.
+We extend our gratitude to MMLab for their great work.
 
 ## Train & Evaluation
 * To train the model, prepare the total dataset and run
