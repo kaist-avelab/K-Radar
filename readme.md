@@ -138,7 +138,7 @@ conda activate kradar
 pip install -r requirements.txt
 ```
 
-5. Build packages for kradar
+5. Build packages for Rotated IoU
 ```
 cd utils/Rotated_IoU/cuda_op
 python setup.py install
@@ -149,6 +149,14 @@ python setup.py install
 Add line 11: 'from .nms import rboxes' for __init__.py of nms module.
 Add line 39: 'rrect = tuple(rrect)' and comment line 41: 'print(r)' in nms.py of nms module.
 ```
+
+7. Build packages for OpenPCDet operations
+```
+cd ../../../ops
+python setup.py develop
+```
+
+(We use the operations from <a href="https://github.com/open-mmlab/OpenPCDet">OpenPCDet</a> repository and acknowledge that all code in `ops` directory is sourced from there. To align with our project requirements, we have made several modifications to the original code and have uploaded the revised versions to our repository. We extend our gratitude to MMLab for their great work.)"
 
 ## Train & Evaluation
 * To train the model, prepare the total dataset and run
