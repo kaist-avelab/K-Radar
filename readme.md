@@ -203,19 +203,26 @@ Based on our findings presented, we elucidate **the capability of the 4D Radar i
 The performance reported below has three major differences compared to the performance reported above (as in the existing NeurIPS22 paper):
 
 1. Instead of considering a narrow area (x, y, z each ranging from 0 to 72, -6.4 to 6.4, -2 to 6m) as before, a wider area (x, y, z each ranging from 0 to 72, -16 to 16, -2 to 7.6m) has been taken into account.
-2. In addition to the previously considered Sedan class, the Bus or Truck class has also been considered. These correspond to compact and large vehicles, respectively.
-3. The updated v2.0 labels have been utilized. For updates compared to Label v1.0, please refer to Revising K-Radar label.
+2. In addition to the previously considered `Sedan` class, `Bus or Truck` class has also been considered. These correspond to compact and large vehicles, respectively.
+3. The updated v2.0 labels have been utilized. For updates compared to the label v1.0, please refer to `Revising K-Radar label` section.
 
-For a more detailed performance review (e.g., performance for each road environment), please refer to the logs at the following link: (available at logs/exp_231106_145532_RTNH/test_kitti/none/0.3/complete_results.txt).
+For a more detailed performance review (e.g., performance for each road environment), please refer to the logs at this link: (available at logs/exp_231106_145532_RTNH/test_kitti/none/0.3/complete_results.txt).
 
-For the model below, please check the configuration in configs/cfg_RTNH_wide.yml and the pretrained model at the corresponding link.
-
+For the model below, please check the configuration in configs/cfg_RTNH_wide.yml and the pretrained model at this link. (We have updated the RTNH head code within the same anchor head format provided by <a href="https://github.com/open-mmlab/OpenPCDet">OpenPCDet</a> to enhance its stability and compatibility. We extend our sincere gratitude to MMLab for their great work.)
 
 (1) ${AP_{3D}}$
 |Class|Total|Normal|Overcast|Fog|Rain|Sleet|LightSnow|HeavySnow|
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-|Sedan|48.2||56.7|52.8|42.0|41.5|50.6|44.5|
-|Bus or Truck|47.4|49.9|56.7|52.8|42.0|41.5|50.6|44.5|
+|Sedan|48.2||45.5|58.8|79.3||40.3|48.1|65.6|52.6|
+|Bus or Truck|34.4|25.3|31.1|-|-|28.5|78.2|46.3|
+
+(2) ${AP_{BEV}}$
+|Class|Total|Normal|Overcast|Fog|Rain|Sleet|LightSnow|HeavySnow|
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+|Sedan|56.7||53.8|68.3|89.6||49.3|55.6|69.4|60.3|
+|Bus or Truck|45.3|31.8|32.0|-|-|34.4|89.3|78.0|
+
+(We denote the performance of the Bus or Truck class with '-' in both Rain and Sleet conditions, as they do not exist in these conditions.)
 
 ## Odometry
 We provide the location of a GPS antenna, essential for accurate ground-truth odometry. This location is precisely processed by integrating data from high-resolution LiDAR, RTK-GPS, and IMU data. To ensure the utmost accuracy, we verify the vehicle's location by correlating the LiDAR sensor data against a detailed, high-resolution map, as illustrated below. For security purposes, we present this location information in local coordinates rather than global coordinates (i.e., UTM). The data of Sequence 1 is accessible in the `resources/odometry` directory. The data for the remaining sequences will be made available within the next few weeks.
