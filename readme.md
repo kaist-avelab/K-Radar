@@ -216,9 +216,9 @@ The performance reported below has three major differences compared to the perfo
 2. In addition to the previously considered `Sedan` class, `Bus or Truck` class has also been considered. These correspond to compact and large vehicles, respectively.
 3. The updated v2.0 labels have been utilized. For updates compared to the label v1.0, please refer to `Revising K-Radar label` section.
 
-For a more detailed performance review (e.g., performance for each road environment), please refer to the logs at this link: (available at logs/exp_231106_145532_RTNH/test_kitti/none/0.3/complete_results.txt).
+For a more detailed performance review (e.g., performance for each road environment), please refer to the logs at <a href="https://drive.google.com/drive/folders/11x45ozlnaLDe6plEACi55UwFVSAcwlNW?usp=drive_link">this link</a>: (available at log_test_RTNH_wide_11epoch/exp_231106_145532_RTNH/test_kitti/none/0.3/complete_results.txt).
 
-For the model below, please check the configuration in configs/cfg_RTNH_wide.yml and the pretrained model at this link. (We have updated the RTNH head code within the same anchor head format provided by <a href="https://github.com/open-mmlab/OpenPCDet">OpenPCDet</a> to enhance its stability and compatibility. We extend our sincere gratitude to MMLab for their great work.)
+For the model below, please check the configuration in configs/cfg_RTNH_wide.yml and <a herf="https://drive.google.com/file/d/1ZMtq9BiWCHKKOc20pClCHyhOEI2LLiNM/view?usp=drive_link">the pretrained model</a> in the Google Drive. (We have updated the RTNH head code within the same anchor head format provided by <a href="https://github.com/open-mmlab/OpenPCDet">OpenPCDet</a> to enhance its stability and compatibility. We extend our sincere gratitude to MMLab for their great work.)
 
 (1) ${AP_{3D}}$
 | Class        | Total | Normal | Overcast | Fog  | Rain | Sleet | LightSnow | HeavySnow |
