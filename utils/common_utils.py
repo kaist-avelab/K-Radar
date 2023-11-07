@@ -1,3 +1,4 @@
+# Thanks to OpenPCDet (https://github.com/open-mmlab/OpenPCDet)
 import logging
 import os
 import pickle
@@ -55,6 +56,24 @@ def rotate_points_along_z(points, angle):
     points_rot = torch.matmul(points[:, :, 0:3], rot_matrix)
     points_rot = torch.cat((points_rot, points[:, :, 3:]), dim=-1)
     return points_rot.numpy() if is_numpy else points_rot
+
+
+def angle2matrix(angle):
+    """
+    Args:
+        angle: angle along z-axis, angle increases x ==> y
+    Returns:
+        rot_matrix: (3x3 Tensor) rotation matrix
+    """
+
+    cosa = torch.cos(angle)
+    sina = torch.sin(angle)
+    rot_matrix = torch.tensor([
+        [cosa, -sina, 0],
+        [sina, cosa,  0],
+        [   0,    0,  1]
+    ])
+    return rot_matrix
 
 
 def mask_points_by_range(points, limit_range):

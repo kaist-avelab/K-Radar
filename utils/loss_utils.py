@@ -1,9 +1,11 @@
+# Thanks to OpenPCDet (https://github.com/open-mmlab/OpenPCDet)
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 from . import box_utils
+from iou3d_nms import iou3d_nms_utils
 
 
 class SigmoidFocalClassificationLoss(nn.Module):
@@ -148,6 +150,7 @@ class WeightedL1Loss(nn.Module):
             self.code_weights = np.array(code_weights, dtype=np.float32)
             self.code_weights = torch.from_numpy(self.code_weights).cuda()
 
+    @torch.cuda.amp.custom_fwd(cast_inputs=torch.float16)
     def forward(self, input: torch.Tensor, target: torch.Tensor, weights: torch.Tensor = None):
         """
         Args:
@@ -299,6 +302,37 @@ def neg_loss_cornernet(pred, gt, mask=None):
     return loss
 
 
+def neg_loss_sparse(pred, gt):
+    """
+    Refer to https://github.com/tianweiy/CenterPoint.
+    Modified focal loss. Exactly the same as CornerNet. Runs faster and costs a little bit more memory
+    Args:
+        pred: (batch x c x n)
+        gt: (batch x c x n)
+    Returns:
+    """
+    pos_inds = gt.eq(1).float()
+    neg_inds = gt.lt(1).float()
+
+    neg_weights = torch.pow(1 - gt, 4)
+
+    loss = 0
+
+    pos_loss = torch.log(pred) * torch.pow(1 - pred, 2) * pos_inds
+    neg_loss = torch.log(1 - pred) * torch.pow(pred, 2) * neg_weights * neg_inds
+
+    num_pos = pos_inds.float().sum()
+
+    pos_loss = pos_loss.sum()
+    neg_loss = neg_loss.sum()
+
+    if num_pos == 0:
+        loss = loss - neg_loss
+    else:
+        loss = loss - (pos_loss + neg_loss) / num_pos
+    return loss
+
+
 class FocalLossCenterNet(nn.Module):
     """
     Refer to https://github.com/tianweiy/CenterPoint
@@ -384,3 +418,233 @@ class RegLossCenterNet(nn.Module):
             pred = _transpose_and_gather_feat(output, ind)
         loss = _reg_loss(pred, target, mask)
         return loss
+
+
+class FocalLossSparse(nn.Module):
+    """
+    Refer to https://github.com/tianweiy/CenterPoint
+    """
+    def __init__(self):
+        super(FocalLossSparse, self).__init__()
+        self.neg_loss = neg_loss_sparse
+
+    def forward(self, out, target):
+        return self.neg_loss(out, target)
+
+
+class RegLossSparse(nn.Module):
+    """
+    Refer to https://github.com/tianweiy/CenterPoint
+    """
+
+    def __init__(self):
+        super(RegLossSparse, self).__init__()
+
+    def forward(self, output, mask, ind=None, target=None, batch_index=None):
+        """
+        Args:
+            output: (N x dim)
+            mask: (batch x max_objects)
+            ind: (batch x max_objects)
+            target: (batch x max_objects x dim)
+        Returns:
+        """
+
+        pred = []
+        batch_size = mask.shape[0]
+        for bs_idx in range(batch_size):
+            batch_inds = batch_index==bs_idx
+            pred.append(output[batch_inds][ind[bs_idx]])
+        pred = torch.stack(pred)
+
+        loss = _reg_loss(pred, target, mask)
+        return loss
+
+
+class IouLossSparse(nn.Module):
+    '''IouLoss loss for an output tensor
+    Arguments:
+        output (batch x dim x h x w)
+        mask (batch x max_objects)
+        ind (batch x max_objects)
+        target (batch x max_objects x dim)
+    '''
+
+    def __init__(self):
+        super(IouLossSparse, self).__init__()
+
+    def forward(self, iou_pred, mask, ind, box_pred, box_gt, batch_index):
+        if mask.sum() == 0:
+            return iou_pred.new_zeros((1))
+        batch_size = mask.shape[0]
+        mask = mask.bool()
+
+        loss = 0
+        for bs_idx in range(batch_size):
+            batch_inds = batch_index==bs_idx
+            pred = iou_pred[batch_inds][ind[bs_idx]][mask[bs_idx]]
+            pred_box = box_pred[batch_inds][ind[bs_idx]][mask[bs_idx]]
+            target = iou3d_nms_utils.boxes_aligned_iou3d_gpu(pred_box, box_gt[bs_idx])
+            target = 2 * target - 1
+            loss += F.l1_loss(pred, target, reduction='sum')
+
+        loss = loss / (mask.sum() + 1e-4)
+        return loss
+
+class IouRegLossSparse(nn.Module):
+    '''Distance IoU loss for output boxes
+        Arguments:
+            output (batch x dim x h x w)
+            mask (batch x max_objects)
+            ind (batch x max_objects)
+            target (batch x max_objects x dim)
+    '''
+
+    def __init__(self, type="DIoU"):
+        super(IouRegLossSparse, self).__init__()
+
+    def center_to_corner2d(self, center, dim):
+        corners_norm = torch.tensor([[-0.5, -0.5], [-0.5, 0.5], [0.5, 0.5], [0.5, -0.5]],
+                                    dtype=torch.float32, device=dim.device)
+        corners = dim.view([-1, 1, 2]) * corners_norm.view([1, 4, 2])
+        corners = corners + center.view(-1, 1, 2)
+        return corners
+
+    def bbox3d_iou_func(self, pred_boxes, gt_boxes):
+        assert pred_boxes.shape[0] == gt_boxes.shape[0]
+
+        qcorners = self.center_to_corner2d(pred_boxes[:, :2], pred_boxes[:, 3:5])
+        gcorners = self.center_to_corner2d(gt_boxes[:, :2], gt_boxes[:, 3:5])
+
+        inter_max_xy = torch.minimum(qcorners[:, 2], gcorners[:, 2])
+        inter_min_xy = torch.maximum(qcorners[:, 0], gcorners[:, 0])
+        out_max_xy = torch.maximum(qcorners[:, 2], gcorners[:, 2])
+        out_min_xy = torch.minimum(qcorners[:, 0], gcorners[:, 0])
+
+        # calculate area
+        volume_pred_boxes = pred_boxes[:, 3] * pred_boxes[:, 4] * pred_boxes[:, 5]
+        volume_gt_boxes = gt_boxes[:, 3] * gt_boxes[:, 4] * gt_boxes[:, 5]
+
+        inter_h = torch.minimum(pred_boxes[:, 2] + 0.5 * pred_boxes[:, 5], gt_boxes[:, 2] + 0.5 * gt_boxes[:, 5]) - \
+                torch.maximum(pred_boxes[:, 2] - 0.5 * pred_boxes[:, 5], gt_boxes[:, 2] - 0.5 * gt_boxes[:, 5])
+        inter_h = torch.clamp(inter_h, min=0)
+
+        inter = torch.clamp((inter_max_xy - inter_min_xy), min=0)
+        volume_inter = inter[:, 0] * inter[:, 1] * inter_h
+        volume_union = volume_gt_boxes + volume_pred_boxes - volume_inter
+
+        # boxes_iou3d_gpu(pred_boxes, gt_boxes)
+        inter_diag = torch.pow(gt_boxes[:, 0:3] - pred_boxes[:, 0:3], 2).sum(-1)
+
+        outer_h = torch.maximum(gt_boxes[:, 2] + 0.5 * gt_boxes[:, 5], pred_boxes[:, 2] + 0.5 * pred_boxes[:, 5]) - \
+                torch.minimum(gt_boxes[:, 2] - 0.5 * gt_boxes[:, 5], pred_boxes[:, 2] - 0.5 * pred_boxes[:, 5])
+        outer_h = torch.clamp(outer_h, min=0)
+        outer = torch.clamp((out_max_xy - out_min_xy), min=0)
+        outer_diag = outer[:, 0] ** 2 + outer[:, 1] ** 2 + outer_h ** 2
+
+        dious = volume_inter / volume_union - inter_diag / outer_diag
+        dious = torch.clamp(dious, min=-1.0, max=1.0)
+
+        return dious
+
+    def forward(self, box_pred, mask, ind, box_gt, batch_index):
+        if mask.sum() == 0:
+            return box_pred.new_zeros((1))
+        mask = mask.bool()
+        batch_size = mask.shape[0]
+
+        loss = 0
+        for bs_idx in range(batch_size):
+            batch_inds = batch_index==bs_idx
+            pred_box = box_pred[batch_inds][ind[bs_idx]]
+            iou = self.bbox3d_iou_func(pred_box[mask[bs_idx]], box_gt[bs_idx])
+            loss += (1. - iou).sum()
+
+        loss =  loss / (mask.sum() + 1e-4)
+        return loss
+
+class L1Loss(nn.Module):
+    def __init__(self):
+        super(L1Loss, self).__init__()
+       
+    def forward(self, pred, target):
+        if target.numel() == 0:
+            return pred.sum() * 0
+        assert pred.size() == target.size()
+        loss = torch.abs(pred - target)
+        return loss
+
+
+class GaussianFocalLoss(nn.Module):
+    """GaussianFocalLoss is a variant of focal loss.
+
+    More details can be found in the `paper
+    <https://arxiv.org/abs/1808.01244>`_
+    Code is modified from `kp_utils.py
+    <https://github.com/princeton-vl/CornerNet/blob/master/models/py_utils/kp_utils.py#L152>`_  # noqa: E501
+    Please notice that the target in GaussianFocalLoss is a gaussian heatmap,
+    not 0/1 binary target.
+
+    Args:
+        alpha (float): Power of prediction.
+        gamma (float): Power of target for negative samples.
+        reduction (str): Options are "none", "mean" and "sum".
+        loss_weight (float): Loss weight of current loss.
+    """
+
+    def __init__(self,
+                 alpha=2.0,
+                 gamma=4.0):
+        super(GaussianFocalLoss, self).__init__()
+        self.alpha = alpha
+        self.gamma = gamma
+
+    def forward(self, pred, target):
+        eps = 1e-12
+        pos_weights = target.eq(1)
+        neg_weights = (1 - target).pow(self.gamma)
+        pos_loss = -(pred + eps).log() * (1 - pred).pow(self.alpha) * pos_weights
+        neg_loss = -(1 - pred + eps).log() * pred.pow(self.alpha) * neg_weights
+
+        return pos_loss + neg_loss
+
+
+def calculate_iou_loss_centerhead(iou_preds, batch_box_preds, mask, ind, gt_boxes):
+    """
+    Args:
+        iou_preds: (batch x 1 x h x w)
+        batch_box_preds: (batch x (7 or 9) x h x w)
+        mask: (batch x max_objects)
+        ind: (batch x max_objects)
+        gt_boxes: (batch x N, 7 or 9)
+    Returns:
+    """
+    if mask.sum() == 0:
+        return iou_preds.new_zeros((1))
+
+    mask = mask.bool()
+    selected_iou_preds = _transpose_and_gather_feat(iou_preds, ind)[mask]
+
+    selected_box_preds = _transpose_and_gather_feat(batch_box_preds, ind)[mask]
+    iou_target = iou3d_nms_utils.paired_boxes_iou3d_gpu(selected_box_preds[:, 0:7], gt_boxes[mask][:, 0:7])
+    # iou_target = iou3d_nms_utils.boxes_iou3d_gpu(selected_box_preds[:, 0:7].clone(), gt_boxes[mask][:, 0:7].clone()).diag()
+    iou_target = iou_target * 2 - 1  # [0, 1] ==> [-1, 1]
+
+    # print(selected_iou_preds.view(-1), iou_target)
+    loss = F.l1_loss(selected_iou_preds.view(-1), iou_target, reduction='sum')
+    loss = loss / torch.clamp(mask.sum(), min=1e-4)
+    return loss
+
+
+def calculate_iou_reg_loss_centerhead(batch_box_preds, mask, ind, gt_boxes):
+    if mask.sum() == 0:
+        return batch_box_preds.new_zeros((1))
+
+    mask = mask.bool()
+
+    selected_box_preds = _transpose_and_gather_feat(batch_box_preds, ind)
+
+    iou = box_utils.bbox3d_overlaps_diou(selected_box_preds[mask][:, 0:7], gt_boxes[mask][:, 0:7])
+
+    loss = (1.0 - iou).sum() / torch.clamp(mask.sum(), min=1e-4)
+    return loss
