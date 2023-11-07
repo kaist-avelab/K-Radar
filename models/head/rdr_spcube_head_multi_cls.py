@@ -15,8 +15,19 @@ class RdrSpcubeHeadMultiCls(nn.Module):
     def __init__(self, cfg):
         super().__init__()
         self.cfg = cfg
-        self.roi = self.cfg.DATASET.RDR_SP_CUBE.ROI
-        self.grid_size = self.cfg.DATASET.RDR_SP_CUBE.GRID_SIZE
+        self.cfg_dataset_ver2 = self.cfg.get('cfg_dataset_ver2', False)
+        if self.cfg_dataset_ver2:
+            roi = self.cfg.DATASET.roi
+            x_min, y_min, z_min, x_max, y_max, z_max = roi.xyz
+            self.roi = {
+                'x': [x_min, x_max],
+                'y': [y_min, y_max],
+                'z': [z_min, z_max],
+            }
+            self.grid_size = roi.grid_size
+        else:
+            self.roi = self.cfg.DATASET.RDR_SP_CUBE.ROI
+            self.grid_size = self.cfg.DATASET.RDR_SP_CUBE.GRID_SIZE
         try:
             self.nms_thr = self.cfg.MODEL.HEAD.NMS_OVERLAP_THRESHOLD
         except:
@@ -35,11 +46,18 @@ class RdrSpcubeHeadMultiCls(nn.Module):
 
         # for inference
         self.list_anc_idx_to_cls_id = [] # except bg
-        self.dict_cls_name_to_id = self.cfg.DATASET.CLASS_INFO.CLASS_ID
-        # self.dict_cls_id_to_name = dict()
-        # for k, v in self.dict_cls_name_to_id.items():
-        #     if v != -1:
-        #         self.dict_cls_id_to_name[v] = k
+        if self.cfg_dataset_ver2:
+            dict_label = self.cfg.DATASET.label.copy()
+            list_for_pop = ['calib', 'onlyR', 'Label', 'consider_cls', 'consider_roi', 'remove_0_obj']
+            for temp_key in list_for_pop:
+                dict_label.pop(temp_key)
+            self.dict_cls_name_to_id = dict()
+            for k, v in dict_label.items():
+                _, logit_idx, _, _ = v
+                self.dict_cls_name_to_id[k] = logit_idx
+                self.dict_cls_name_to_id['Background'] = 0
+        else:
+            self.dict_cls_name_to_id = self.cfg.DATASET.CLASS_INFO.CLASS_ID
 
         num_prior_anchor_idx = 0
         for info_anchor in self.cfg.MODEL.ANCHOR_GENERATOR_CONFIG: # per class
@@ -66,7 +84,6 @@ class RdrSpcubeHeadMultiCls(nn.Module):
                         self.anchor_per_grid.append(temp_anchor) # [bot, xl, yl, zl, cos, sin]
                         self.list_anc_idx_to_cls_id.append(self.dict_cls_name_to_id[now_cls_name])
         self.num_anchor_per_grid = num_anchor_temp
-        self.num_class = self.cfg.DATASET.CLASS_INFO.NUM_CLS
         self.num_box_code = len(self.cfg.MODEL.HEAD.BOX_CODE)
         ### Anchors ###
 
@@ -105,7 +122,6 @@ class RdrSpcubeHeadMultiCls(nn.Module):
 
         return dict_item
 
-    # V2
     def create_anchors(self):
         '''
         * e.g., 2 anchors (a,b) per class for 3 classes (A,B,C),
@@ -115,34 +131,34 @@ class RdrSpcubeHeadMultiCls(nn.Module):
         x_min, x_max = self.roi['x']
         y_min, y_max = self.roi['y']
         grid_size = self.grid_size
-        n_x = int((x_max-x_min)/grid_size)
-        n_y = int((y_max-y_min)/grid_size)
+        n_x = int(round((x_max-x_min)/grid_size))
+        n_y = int(round((y_max-y_min)/grid_size))
         
         # anchor location = center
         half_grid_size = grid_size/2.
-        anchor_y = torch.arange(y_min, y_max, grid_size, dtype=dtype) - half_grid_size # minus: checked with visualization
-        anchor_x = torch.arange(x_min, x_max, grid_size, dtype=dtype) - half_grid_size
-        # print(anchor_y) # 200
-        # print(anchor_x) # 248
+        anchor_y = torch.arange(y_min, y_max, grid_size, dtype=dtype) + half_grid_size
+        anchor_x = torch.arange(x_min, x_max, grid_size, dtype=dtype) + half_grid_size
+        # print(anchor_y)
+        # print(anchor_x)
 
         anchor_y = anchor_y.repeat_interleave(n_x)
         anchor_x = anchor_x.repeat(n_y)
-        # print(anchor_y.shape) # 49600
-        # print(anchor_x.shape) # 49600
+        # print(anchor_y.shape) # n_total_anc
+        # print(anchor_x.shape) # n_total_anc
 
         flattened_anchor_map = torch.stack((anchor_x, anchor_y), dim=1).unsqueeze(0).repeat(self.num_anchor_per_grid, 1, 1)
-        # print(flattened_anchor_map.shape) # 2 x 49600 x 2 (xc, yc)
+        # print(flattened_anchor_map.shape) # 4 x n_total_anc x 2 (xc, yc)
         flattened_anchor_attr = torch.tensor(self.anchor_per_grid, dtype=dtype)
-        # print(flattened_anchor_attr.shape) # 2 x 6 (bottom, xl, yl, zl, cos, sin)
+        # print(flattened_anchor_attr.shape) # 4 x 6 (bottom, xl, yl, zl, cos, sin)
         flattened_anchor_attr = flattened_anchor_attr.unsqueeze(1).repeat(1, flattened_anchor_map.shape[1], 1)
-        # print(flattened_anchor_attr.shape) # 2 x 49600 x 6
+        # print(flattened_anchor_attr.shape) # 4 x n_total_anc x 6
 
         anchor_map = torch.cat((flattened_anchor_map, flattened_anchor_attr), \
             dim=-1).view(self.num_anchor_per_grid, n_y, n_x, 8).contiguous().permute(0,3,1,2)
-        anchor_map = anchor_map.reshape(-1, n_y, n_x).contiguous() # 16, 200, 248
-        # print(anchor_map.shape) # 2 * (2+6) x 200 x 248
+        anchor_map = anchor_map.reshape(-1, n_y, n_x).contiguous()
+        # print(anchor_map.shape) # 4 * (2+6) x n__y x n_x
 
-        anchor_map_for_batch = anchor_map.unsqueeze(0) # 1 x 16 x 200 x 248
+        anchor_map_for_batch = anchor_map.unsqueeze(0) # 1 x 4 * (2+6) x n_y x n_x
 
         return anchor_map_for_batch
 
@@ -160,8 +176,8 @@ class RdrSpcubeHeadMultiCls(nn.Module):
         reg_pred = anchor_maps + reg_pred # prediction = residual
 
         # for iou calculation
-        cls_pred = cls_pred.view(B, 1+self.num_anchor_per_grid, n_y, n_x)
-        reg_pred = reg_pred.view(B, self.num_anchor_per_grid, -1, n_y, n_x)
+        # cls_pred = cls_pred.view(B, 1+self.num_anchor_per_grid, n_y, n_x)
+        reg_pred = reg_pred.view(B, self.num_anchor_per_grid, -1, n_y, n_x) # B, 4, 8, n_y, n_x
         
         # make labels
         anc_idx_targets = torch.full((B, n_y, n_x), -1, dtype = torch.long, device = device)
@@ -169,13 +185,10 @@ class RdrSpcubeHeadMultiCls(nn.Module):
         pos_reg_pred = []
         pos_reg_targ = []
 
-        is_label_contain_objs = False # at least one
         for batch_idx, list_objs in enumerate(dict_item['label']):
-            if len(list_objs) != 0:
-                is_label_contain_objs = True
-
             prior_anc_idx = 0
             list_anchor_per_cls = []
+            # print(self.list_anchor_classes) # Sedan, Bus or Truck
             for idx_anc_cls, anc_cls_name in enumerate(self.list_anchor_classes):
                 now_anc_idx = self.list_anchor_idx[idx_anc_cls]
                 # x,y,xl,yl,theta (sin, cos)
@@ -186,7 +199,7 @@ class RdrSpcubeHeadMultiCls(nn.Module):
                 # print(temp_anc.shape) # n_anchor x 5 x n_y x n_x
                 temp_anc = temp_anc.permute(0, 2, 3, 1).contiguous()
                 temp_anc = temp_anc.view(1,-1,5)
-                # print(temp_anc.shape) # 1 x (n_anchor*n_y*n_x) x 5
+                # print(temp_anc.shape) # 1 x (n_anchor*n_y*n_x) x 5 (1 for batch)
                 list_anchor_per_cls.append(temp_anc)
                 prior_anc_idx = now_anc_idx
             
@@ -249,41 +262,37 @@ class RdrSpcubeHeadMultiCls(nn.Module):
                 pos_reg_pred.append(temp_reg_box_pred) # remain batch dim for concat
                 pos_reg_targ.append(temp_reg_box_targ)
         
-        if not is_label_contain_objs: # All batches without objs
-            loss_reg = 0.
-            loss_cls = 0. # focal loss
-        else:
-            ### Focal loss ###
-            counted_anc_idx = torch.where(anc_idx_targets > -1) # pos and neg boxes only
+        ### Focal loss ###
+        counted_anc_idx = torch.where(anc_idx_targets > -1) # pos and neg boxes only
 
-            # anc_idx (long)
-            anc_idx_targets_counted = anc_idx_targets[counted_anc_idx]
-            # print(anc_idx_targets_counted.shape)
+        # anc_idx (long)
+        anc_idx_targets_counted = anc_idx_targets[counted_anc_idx]
+        # print(anc_idx_targets_counted.shape)
 
-            # logit
-            anc_logit_counted = cls_pred[counted_anc_idx[0],:,counted_anc_idx[1],counted_anc_idx[2]]
-            # print(anc_logit_counted.shape)
+        # logit
+        anc_logit_counted = cls_pred[counted_anc_idx[0],:,counted_anc_idx[1],counted_anc_idx[2]]
+        # print(anc_logit_counted.shape)
 
-            # weight
-            anc_cls_weights = torch.ones(1+self.num_anchor_per_grid, device = device)
-            for idx_anc in range(1+self.num_anchor_per_grid):
-                len_targ_anc = float(len(torch.where(anc_idx_targets_counted==idx_anc)[0]))
-                if idx_anc == 0: # background
-                    temp_weight = self.bg_weight/len_targ_anc
+        # weight
+        anc_cls_weights = torch.ones(1+self.num_anchor_per_grid, device = device)
+        for idx_anc in range(1+self.num_anchor_per_grid):
+            len_targ_anc = float(len(torch.where(anc_idx_targets_counted==idx_anc)[0]))
+            if idx_anc == 0: # background
+                temp_weight = self.bg_weight/len_targ_anc
+            else:
+                if len_targ_anc == 0.: # if nothing in such class
+                    temp_weight = 0.
                 else:
-                    if len_targ_anc == 0.: # if nothing in such class
-                        temp_weight = 0.
-                    else:
-                        temp_weight = 1./len_targ_anc
-                anc_cls_weights[idx_anc] = min(temp_weight, 1.)
+                    temp_weight = 1./len_targ_anc
+            anc_cls_weights[idx_anc] = min(temp_weight, 1.)
 
-            self.categorical_focal_loss.weight = anc_cls_weights
-            loss_cls = self.categorical_focal_loss(anc_logit_counted, anc_idx_targets_counted)
-            ### Focal loss ###
+        self.categorical_focal_loss.weight = anc_cls_weights
+        loss_cls = self.categorical_focal_loss(anc_logit_counted, anc_idx_targets_counted)
+        ### Focal loss ###
 
-            pos_reg_pred = torch.cat(pos_reg_pred, dim=0)
-            pos_reg_targ = torch.cat(pos_reg_targ, dim=0)
-            loss_reg = torch.nn.functional.smooth_l1_loss(pos_reg_pred, pos_reg_targ)
+        pos_reg_pred = torch.cat(pos_reg_pred, dim=0)
+        pos_reg_targ = torch.cat(pos_reg_targ, dim=0)
+        loss_reg = torch.nn.functional.smooth_l1_loss(pos_reg_pred, pos_reg_targ)
         total_loss = loss_cls + loss_reg
 
         if self.is_logging:
@@ -396,7 +405,7 @@ class RdrSpcubeHeadMultiCls(nn.Module):
         # pp: post-processing
         dict_item['pp_bbox'] = pred_reg_bbox_with_conf # score, x, y, z, xl, yl, zl, theta
         dict_item['pp_cls'] = cls_id_per_anc
-        dict_item['pp_desc'] = dict_item['meta'][0]['desc']
+        # dict_item['pp_desc'] = dict_item['meta'][0]['desc']
         dict_item['pp_num_bbox'] = num_of_bbox
         # print(dict_item['label'][0])
         # print(dict_item['pp_bbox'])
