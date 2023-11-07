@@ -211,16 +211,16 @@ For a more detailed performance review (e.g., performance for each road environm
 For the model below, please check the configuration in configs/cfg_RTNH_wide.yml and the pretrained model at this link. (We have updated the RTNH head code within the same anchor head format provided by <a href="https://github.com/open-mmlab/OpenPCDet">OpenPCDet</a> to enhance its stability and compatibility. We extend our sincere gratitude to MMLab for their great work.)
 
 (1) ${AP_{3D}}$
-|Class|Total|Normal|Overcast|Fog|Rain|Sleet|LightSnow|HeavySnow|
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-|Sedan|48.2|45.5|58.8|79.3|40.3|48.1|65.6|52.6|
-|Bus or Truck|34.4|25.3|31.1|-|-|28.5|78.2|46.3|
+| Class        | Total | Normal | Overcast | Fog  | Rain | Sleet | LightSnow | HeavySnow |
+|:------------:|:-----:|:------:|:--------:|:----:|:----:|:-----:|:---------:|:---------:|
+| Sedan        | 48.2  | 45.5   | 58.8     | 79.3 | 40.3 | 48.1  | 65.6      | 52.6      |
+| Bus or Truck | 34.4  | 25.3   | 31.1     | -    | -    | 28.5  | 78.2      | 46.3      |
 
 (2) ${AP_{BEV}}$
-|Class|Total|Normal|Overcast|Fog|Rain|Sleet|LightSnow|HeavySnow|
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-|Sedan|56.7|53.8|68.3|89.6|49.3|55.6|69.4|60.3|
-|Bus or Truck|45.3|31.8|32.0|-|-|34.4|89.3|78.0|
+| Class        | Total | Normal | Overcast | Fog  | Rain | Sleet | LightSnow | HeavySnow |
+|:------------:|:-----:|:------:|:--------:|:----:|:----:|:-----:|:---------:|:---------:|
+| Sedan        | 56.7  | 53.8   | 68.3     | 89.6 | 49.3 | 55.6  | 69.4      | 60.3      |
+| Bus or Truck | 45.3  | 31.8   | 32.0     | -    | -    | 34.4  | 89.3      | 78.0      |
 
 (We denote the performance of the Bus or Truck class with '-' in both Rain and Sleet conditions, as they do not exist in these conditions.)
 
