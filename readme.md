@@ -213,7 +213,7 @@ Based on our findings presented, we elucidate **the capability of the 4D Radar i
 The performance metrics presented below have three main discrepancies compared to the results reported earlier (found in Appendix H and Section 4 of the K-Radar paper, respectively):
 
 1. The evaluation now considers a broader area (with x, y, z each ranging from 0 to 72, -16 to 16, and -2 to 7.6 meters), unlike the narrower range (x, y, z each from 0 to 72, -6.4 to 6.4, and -2 to 6 meters) used previously.
-2. The classes have been expanded to include not only the Sedan class but also the Bus or Truck class, representing compact and large vehicles, respectively.
+2. The classes have been expanded to include not only the `Sedan` class but also the `Bus or Truck` class, representing compact and large vehicles, respectively.
 3. The performance analysis has been updated to incorporate the version 2.0 labels. For changes relative to the version 1.0 labels, please refer to the `Revising K-Radar label` section.
 
 For a more detailed performance review (e.g., performance for each road environment), please refer to the logs at <a href="https://drive.google.com/drive/folders/11x45ozlnaLDe6plEACi55UwFVSAcwlNW?usp=drive_link">this link</a>: available at log_test_RTNH_wide_11epoch.zip.
