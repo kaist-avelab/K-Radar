@@ -210,15 +210,15 @@ The reported values are ${AP_{3D}}$ for Sedan class. (based on the label v1.0)
 Based on our findings presented, we elucidate **the capability of the 4D Radar in terms of 3D object detection and its resilience in the face of adverse weather conditions**. This is evident from its relatively stable performance under conditions of sleet and heavy snow, especially when compared to the performance metrics of LiDAR neural networks. We **do not claim** that 4D Radar is always superior to LiDAR in 3D object detection. In other words, we note that the performance of LiDAR neural networks could surpass that of the 4D Radar neural network with improvements in its structure or hyper-parameters.
 
 ### Performance of RTNH on wider areas and multiple classes (Sedan & Bus or Truck)
-The performance reported below has three major differences compared to the performance reported above (as in the NeurIPS22 paper):
+The performance metrics presented below have three main discrepancies compared to the results reported earlier (found in Appendix H and Section 4 of the K-Radar paper, respectively):
 
-1. Instead of considering a narrow area (x, y, z each ranging from 0 to 72, -6.4 to 6.4, -2 to 6m) as before, a wider area (x, y, z each ranging from 0 to 72, -16 to 16, -2 to 7.6m) has been taken into account.
-2. In addition to the previously considered `Sedan` class, `Bus or Truck` class has also been considered. These correspond to compact and large vehicles, respectively.
-3. The updated v2.0 labels have been utilized. For updates compared to the label v1.0, please refer to `Revising K-Radar label` section.
+1. The evaluation now considers a broader area (with x, y, z each ranging from 0 to 72, -16 to 16, and -2 to 7.6 meters), unlike the narrower range (x, y, z each from 0 to 72, -6.4 to 6.4, and -2 to 6 meters) used previously.
+2. The classes have been expanded to include not only the Sedan class but also the Bus or Truck class, representing compact and large vehicles, respectively.
+3. The performance analysis has been updated to incorporate the version 2.0 labels. For changes relative to the version 1.0 labels, please refer to the `Revising K-Radar label` section.
 
 For a more detailed performance review (e.g., performance for each road environment), please refer to the logs at <a href="https://drive.google.com/drive/folders/11x45ozlnaLDe6plEACi55UwFVSAcwlNW?usp=drive_link">this link</a>: available at log_test_RTNH_wide_11epoch.zip.
 
-For the model below, please check the configuration in configs/cfg_RTNH_wide.yml and <a herf="https://drive.google.com/file/d/1ZMtq9BiWCHKKOc20pClCHyhOEI2LLiNM/view?usp=drive_link">the pretrained model</a> in the Google Drive. (We have updated the RTNH head code within the same anchor head format provided by <a href="https://github.com/open-mmlab/OpenPCDet">OpenPCDet</a> to enhance its stability and compatibility. In addition, we denote the performance of the `Bus or Truck` class with '-' in both Rain and Sleet conditions, as they do not exist in these conditions.
+For the model below, please check the configuration in configs/cfg_RTNH_wide.yml and <a herf="https://drive.google.com/file/d/1ZMtq9BiWCHKKOc20pClCHyhOEI2LLiNM/view?usp=drive_link">the pretrained model</a> in the Google Drive. (We have updated the RTNH head code within the same anchor head format provided by <a href="https://github.com/open-mmlab/OpenPCDet">OpenPCDet</a> to enhance its stability and compatibility. In addition, we denote the performance of the `Bus or Truck` class with '-' in both Rain and Sleet conditions, as they do not exist in these conditions. 
 
 (1) ${AP_{3D}}$
 | Class        | Total | Normal | Overcast | Fog  | Rain | Sleet | LightSnow | HeavySnow |
