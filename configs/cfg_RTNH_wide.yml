@@ -187,24 +187,24 @@ MODEL:
   ROI_HEAD:
 
   # order should be matched regarding CLASS_INFO.CLS_ID
-  ANCHOR_GENERATOR_CONFIG: [
-      {
-          'class_name': 'Sedan',
-          'anchor_sizes': [[4.2, 2.1, 2.0]],
-          'anchor_rotations': [0, 1.5708],
-          'anchor_bottom_heights': [-1.08],
-          'matched_threshold': 0.5,
-          'unmatched_threshold': 0.2
-      },
-      {
-          'class_name': 'Bus or Truck',
-          'anchor_sizes': [[9.5, 3.2, 3.7]],
-          'anchor_rotations': [0, 1.5708],
-          'anchor_bottom_heights': [-1.08],
-          'matched_threshold': 0.45,
-          'unmatched_threshold': 0.15
-      },
-    ]
+  # ANCHOR_GENERATOR_CONFIG: [
+  #     {
+  #         'class_name': 'Sedan',
+  #         'anchor_sizes': [[4.2, 2.1, 2.0]],
+  #         'anchor_rotations': [0, 1.5708],
+  #         'anchor_bottom_heights': [-1.08],
+  #         'matched_threshold': 0.5,
+  #         'unmatched_threshold': 0.2
+  #     },
+  #     {
+  #         'class_name': 'Bus or Truck',
+  #         'anchor_sizes': [[9.5, 3.2, 3.7]],
+  #         'anchor_rotations': [0, 1.5708],
+  #         'anchor_bottom_heights': [-1.08],
+  #         'matched_threshold': 0.45,
+  #         'unmatched_threshold': 0.15
+  #     },
+  #   ]
 ### ----- Model ----- ###
 
 ### ----- Optimizer ----- ###
