@@ -79,7 +79,7 @@ class PipelineDetection_v1_0():
             self.resume_network()
 
         # Vis
-        self.set_vis()
+        # self.set_vis()
         
         self.show_pline_description()
 
