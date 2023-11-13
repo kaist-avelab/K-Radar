@@ -50,8 +50,10 @@ class PipelineDetection_v1_0():
                 print('* Exception error: check cfg.GENERAL for seed')
                 set_random_seed(cfg.GENERAL.SEED)
         
+        print('* K-Radar dataset is being loaded.')
         self.dataset_train = build_dataset(self, split='train') if self.mode == 'train' else None
         self.dataset_test = build_dataset(self, split='test')
+        print('* The dataset is loaded.')
         if mode == 'train':
             self.cfg.DATASET.NUM = len(self.dataset_train)
         elif mode in ['test', 'vis']:
@@ -131,13 +133,17 @@ class PipelineDetection_v1_0():
         ### Consider output of network and dataset ###
 
     def set_vis(self):
-        self.dict_cls_name_to_id = self.cfg.DATASET.CLASS_INFO.CLASS_ID
-        self.dict_cls_id_to_name = dict()
-        for k, v in self.dict_cls_name_to_id.items():
-            if v != -1:
-                self.dict_cls_id_to_name[v] = k
-        self.dict_cls_name_to_bgr = self.cfg.VIS.CLASS_BGR
-        self.dict_cls_name_to_rgb = self.cfg.VIS.CLASS_RGB
+        self.cfg_dataset_ver2 = self.cfg.get('cfg_dataset_ver2', False)
+        if self.cfg_dataset_ver2:
+            pass # TODO
+        else:
+            self.dict_cls_name_to_id = self.cfg.DATASET.CLASS_INFO.CLASS_ID
+            self.dict_cls_id_to_name = dict()
+            for k, v in self.dict_cls_name_to_id.items():
+                if v != -1:
+                    self.dict_cls_id_to_name[v] = k
+            self.dict_cls_name_to_bgr = self.cfg.VIS.CLASS_BGR
+            self.dict_cls_name_to_rgb = self.cfg.VIS.CLASS_RGB
     
     def show_pline_description(self):
         print('* newtork (description start) -------')
@@ -347,7 +353,7 @@ class PipelineDetection_v1_0():
             dict_out = self.network.list_modules[-1].get_nms_pred_boxes_for_single_sample(dict_out, conf_thr, is_nms)
 
             ### Vis data ###
-            pc_lidar = dict_datum['ldr_pc_64']
+            pc_lidar = dict_datum['ldr64']
             # rdr_spcube = dict_datum['rdr_sparse_cube']
             # rdr_cube = dict_datum['rdr_cube']
             ### Vis data ###
@@ -372,7 +378,8 @@ class PipelineDetection_v1_0():
                     conf_score, xc, yc, zc, xl, yl, zl, rot = pred_obj
                     obj = Object3D(xc, yc, zc, xl, yl, zl, rot)
                     list_obj_pred.append(obj)
-                    list_cls_pred.append(self.dict_cls_id_to_name[pp_cls[idx_pred]])
+                    list_cls_pred.append('Sedan')
+                    # list_cls_pred.append(self.dict_cls_id_to_name[pp_cls[idx_pred]])
             ### Preds: post processing bbox ###
 
             ### Vis for open3d ###
@@ -394,7 +401,8 @@ class PipelineDetection_v1_0():
                 line_set = o3d.geometry.LineSet()
                 line_set.points = o3d.utility.Vector3dVector(pred_obj.corners)
                 line_set.lines = o3d.utility.Vector2iVector(lines)
-                colors_pred = [self.dict_cls_name_to_rgb[list_cls_pred[idx_pred]] for _ in range(len(lines))]
+                # colors_pred = [self.dict_cls_name_to_rgb[list_cls_pred[idx_pred]] for _ in range(len(lines))]
+                colors_pred = [[1.,0.,0.] for _ in range(len(lines))]
                 line_set.colors = o3d.utility.Vector3dVector(colors_pred)
                 list_line_set_pred.append(line_set)
             
@@ -550,15 +558,29 @@ class PipelineDetection_v1_0():
                 }, epoch)
         ### Validate per conf ###
 
-    ### V2 ###
     def validate_kitti_conditional(self, epoch=None, list_conf_thr=None, is_subset=False, is_print_memory=False):
         self.network.eval()
+
+        eval_ver2 = self.cfg.get('cfg_eval_ver2', False)
+        if eval_ver2:
+            class_names = []
+            dict_label = self.dataset_test.label.copy()
+            list_for_pop = ['calib', 'onlyR', 'Label', 'consider_cls', 'consider_roi', 'remove_0_obj']
+            for temp_key in list_for_pop:
+                dict_label.pop(temp_key)
+            for k, v in dict_label.items():
+                _, logit_idx, _, _ = v
+                if logit_idx > 0:
+                    class_names.append(k)
+            self.dict_cls_id_to_name = dict()
+            for idx_cls, cls_name in enumerate(class_names):
+                self.dict_cls_id_to_name[(idx_cls+1)] = cls_name # 1 for Background
         
         road_cond_list = ['urban', 'highway', 'countryside', 'alleyway', 'parkinglots', 'shoulder', 'mountain', 'university']
         time_cond_list = ['day', 'night']
         weather_cond_list = ['normal', 'overcast', 'fog', 'rain', 'sleet', 'lightsnow', 'heavysnow']
 
-        ### Check is_validate with small dataset ###
+        # Check is_validate with small dataset
         if is_subset:
             is_shuffle = True
             tqdm_bar = tqdm(total=self.val_num_subset, desc='Test (Subset): ')
@@ -722,7 +744,35 @@ class PipelineDetection_v1_0():
                 os.makedirs(preds_dir_weather, exist_ok=True)
 
                 if is_feature_inferenced:
-                    dict_out_current = self.network.list_modules[-1].get_nms_pred_boxes_for_single_sample(dict_out, conf_thr, is_nms=True)
+                    if eval_ver2:
+                        pred_dicts = dict_out['pred_dicts'][0]
+                        pred_boxes = pred_dicts['pred_boxes'].detach().cpu().numpy()
+                        pred_scores = pred_dicts['pred_scores'].detach().cpu().numpy()
+                        pred_labels = pred_dicts['pred_labels'].detach().cpu().numpy()
+                        list_pp_bbox = []
+                        list_pp_cls = []
+
+                        for idx_pred in range(len(pred_labels)):
+                            x, y, z, l, w, h, th = pred_boxes[idx_pred]
+                            score = pred_scores[idx_pred]
+                            
+                            if score > conf_thr:
+                                cls_idx = int(np.round(pred_labels[idx_pred]))
+                                cls_name = class_names[cls_idx-1]
+                                list_pp_bbox.append([score, x, y, z, l, w, h, th])
+                                list_pp_cls.append(cls_idx)
+                            else:
+                                continue
+                        pp_num_bbox = len(list_pp_cls)
+                        dict_out_current = dict_out
+                        dict_out_current.update({
+                            'pp_bbox': list_pp_bbox,
+                            'pp_cls': list_pp_cls,
+                            'pp_num_bbox': pp_num_bbox,
+                            'pp_desc': dict_out['meta'][0]['desc']
+                        })
+                    else:
+                        dict_out_current = self.network.list_modules[-1].get_nms_pred_boxes_for_single_sample(dict_out, conf_thr, is_nms=True)
                 else:
                     dict_out_current = update_dict_feat_not_inferenced(dict_out) # mostly sleet for lpc (e.g. no measurement)
 
