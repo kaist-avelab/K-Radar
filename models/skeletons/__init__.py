@@ -6,6 +6,7 @@
 
 from .rdr_base import RadarBase
 from .ldr_base import LidarBase
+from .pvrcnn_pp import PVRCNNPlusPlus
 
 def build_skeleton(cfg):
     return __all__[cfg.MODEL.SKELETON](cfg)
@@ -13,4 +14,5 @@ def build_skeleton(cfg):
 __all__ = {
     'RadarBase': RadarBase,
     'LidarBase': LidarBase,
+    'PVRCNNPlusPlus': PVRCNNPlusPlus,
 }
