@@ -134,6 +134,7 @@ class PipelineDetection_v1_0():
 
     def set_vis(self):
         self.cfg_dataset_ver2 = self.cfg.get('cfg_dataset_ver2', False)
+        self.get_loss_from = self.cfg.get('get_loss_from', 'head')
         if self.cfg_dataset_ver2:
             pass # TODO
         else:
@@ -253,48 +254,41 @@ class PipelineDetection_v1_0():
             self.network.training = True
             avg_loss = []
             for idx_iter, dict_datum in enumerate(tqdm(data_loader_train)):
-                    dict_net = self.network(dict_datum)
+                dict_net = self.network(dict_datum)
+                if self.get_loss_from == 'head':
                     loss = self.network.head.loss(dict_net)
+                elif self.get_loss_from == 'detector':
+                    loss = self.network.loss(dict_net)
+                
+                try:
+                    log_avg_loss = loss.cpu().detach().item()
+                except:
+                    log_avg_loss = loss
+                avg_loss.append(log_avg_loss)
 
-                    ### Loss for additional head ### 
-                    if hasattr(self.network, 'point_head'): # PVRCNN_PP
-                        point_loss = self.network.point_head.loss(dict_net)
-                        loss += point_loss
+                if loss == 0.:
+                    pass
+                    # print('loss is 0.') # No objs for all samples
+                elif torch.isfinite(loss):
+                    loss.backward()
+                else:
+                    print('* Exception error (pipeline): nan or inf loss happend')
+                    print('* Meta: ', dict_datum['meta'])
 
-                    if hasattr(self.network, 'roi_head'): # PVRCNN_PP
-                        roi_loss = self.network.roi_head.loss(dict_net)
-                        loss += roi_loss
-                    ### Loss for additional head ### 
-                    
-                    try:
-                        log_avg_loss = loss.cpu().detach().item()
-                    except:
-                        log_avg_loss = loss
-                    avg_loss.append(log_avg_loss)
+                self.optimizer.step()
+                if not (self.scheduler is None):
+                    self.scheduler.step()
+                
+                self.optimizer.zero_grad()
 
-                    if loss == 0.:
-                        pass
-                        # print('loss is 0.') # No objs for all samples
-                    elif torch.isfinite(loss):
-                        loss.backward()
-                    else:
-                        print('* Exception error (pipeline): nan or inf loss happend')
-                        print('* Meta: ', dict_datum['meta'])
-
-                    self.optimizer.step()
+                if self.is_logging:
+                    dict_logging = dict_net['logging']
+                    idx_log_iter +=1
+                    for k, v in dict_logging.items():
+                        self.log_train_iter.add_scalar(f'train/{k}', v, idx_log_iter)
                     if not (self.scheduler is None):
-                        self.scheduler.step()
-                    
-                    self.optimizer.zero_grad()
-
-                    if self.is_logging:
-                        dict_logging = dict_net['logging']
-                        idx_log_iter +=1
-                        for k, v in dict_logging.items():
-                            self.log_train_iter.add_scalar(f'train/{k}', v, idx_log_iter)
-                        if not (self.scheduler is None):
-                            lr = self.scheduler.get_last_lr()
-                            self.log_train_iter.add_scalar(f'train/learning_rate', lr[0], idx_log_iter)
+                        lr = self.scheduler.get_last_lr()
+                        self.log_train_iter.add_scalar(f'train/learning_rate', lr[0], idx_log_iter)
 
             if self.is_save_model:
                 # epoch: indexing from 0
@@ -742,7 +736,7 @@ class PipelineDetection_v1_0():
                 os.makedirs(preds_dir_road, exist_ok=True)
                 os.makedirs(preds_dir_time, exist_ok=True)
                 os.makedirs(preds_dir_weather, exist_ok=True)
-
+                
                 if is_feature_inferenced:
                     if eval_ver2:
                         pred_dicts = dict_out['pred_dicts'][0]
