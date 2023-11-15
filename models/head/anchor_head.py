@@ -85,6 +85,8 @@ class AnchorHeadSingle(nn.Module):
 
         self.is_logging = cfg.GENERAL.LOGGING.IS_LOGGING
         self.use_multihead = False
+
+        self.key_features = cfg.MODEL.HEAD.get('KEY_FEATURES', 'bev_feat')
     
     @staticmethod
     def generate_anchors(anchor_generator_cfg, grid_size, point_cloud_range, anchor_ndim=7):
@@ -344,7 +346,8 @@ class AnchorHeadSingle(nn.Module):
     
     def forward(self, data_dict):
         data_dict['gt_boxes'] = data_dict['gt_boxes'].cuda()
-        spatial_features_2d = data_dict['bev_feat']
+        spatial_features_2d = data_dict[self.key_features]
+        # spatial_features_2d = data_dict['bev_feat']
         # spatial_features_2d = data_dict['spatial_features_2d']
 
         cls_preds = self.conv_cls(spatial_features_2d)
