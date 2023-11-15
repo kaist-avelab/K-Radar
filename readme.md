@@ -156,6 +156,8 @@ cd ../../../ops
 python setup.py develop
 ```
 
+8. Unzip 'kradar_revised_label_v2_0.zip' in the 'tools/revise_label' directory
+
 We use the operations from <a href="https://github.com/open-mmlab/OpenPCDet">OpenPCDet</a> repository and acknowledge that all code in `ops` directory is sourced from there.
 To align with our project requirements, we have made several modifications to the original code and have uploaded the revised versions to our repository.
 We extend our gratitude to MMLab for their great work.
