@@ -364,8 +364,8 @@ OPTIMIZER: # Training
   WEIGHT_DECAY: 0.01
   MOMENTUM: 0.9
 
-  BATCH_SIZE: 2
-  NUM_WORKERS: 0 # 0 for dataloader_error / 4 for batch 16
+  BATCH_SIZE: 8
+  NUM_WORKERS: 4 # 0 for dataloader_error / 4 for batch 16
 
   MAX_EPOCH: 30
   
