@@ -1,0 +1,285 @@
+### ----- General ----- ###
+GENERAL:
+  NAME: 'SECOND'
+  COMMENT1: '0~72, -16~16, -2~7.6'
+  COMMENT2: 'Multi-class (+ Bus or Truck)'
+  VERSION: '2.0'
+  SEED: 2023
+  IS_CUDA_SEED: True
+  IS_DETERMINISTIC: True
+  DEVICE: 'gpu'
+  RESUME:
+    IS_RESUME: False
+    PATH_EXP: # None
+    START_EP: # None
+    IS_COPY_LOGS: True
+
+  LOGGING:
+    IS_LOGGING: True
+    PATH_LOGGING: './logs'
+    IS_SAVE_MODEL: True
+    INTERVAL_EPOCH_MODEL: 1
+    INTERVAL_EPOCH_UTIL: 5
+### ----- General ----- ###
+
+### ----- Dataset ----- ###
+cfg_dataset_ver2: True
+DATASET:
+  NAME: 'KRadarDetection_v2_0'
+
+  NUM: # Total number of frames, just make this blank
+
+  path_data:
+    list_dir_kradar: ['/media/donghee/kradar/dataset']
+    split: ['./resources/split/train.txt', './resources/split/test.txt']
+    revised_label_v1_1: './tools/revise_label/kradar_revised_label_v1_1'
+    revised_label_v2_0: './tools/revise_label/kradar_revised_label_v2_0/KRadar_refined_label_by_UWIPL'
+    revised_label_v2_1: './tools/revise_label/kradar_revised_label_v2_1/KRadar_revised_visibility'
+  label_version: 'v2_0'
+  item: {
+    'calib': True,
+    'ldr64': True,
+    'ldr128': False,
+    'rdr': False,
+    'rdr_sparse': False,
+    'cam': False,
+  }
+  calib: {
+    'z_offset': 0.7
+  }
+  ldr64: {
+    'processed': False,
+    'skip_line': 13,
+    'n_attr': 9,
+    'inside_ldr64': True,
+    'calib': True,
+    'n_used': 4, # x, y, z, intensity
+  }
+  rdr: {
+    'cube': False,
+  }
+  rdr_sparse: {
+    'processed': True,
+    'dir': '/media/donghee/kradar/rdr_sparse_data/rtnh_wider_1p_1'
+  }
+  roi: {
+    'filter': True,
+    'xyz': [0.,-16.,-2.,72.,16.,7.6],
+    'keys': ['ldr64'],
+    'check_azimuth_for_rdr': False,
+    'azimuth_deg': [-53,53],
+    'grid_size': ,
+    'voxel_size': [0.05, 0.05, 0.1], # xyz
+  }
+  label: { # (consider, logit_idx, rgb, bgr)
+    'calib':            True,
+    'onlyR':            False,
+    'consider_cls':     True,
+    'consider_roi':     True,
+    'remove_0_obj':     True,
+    'Sedan':            [True,  1,  [0, 1, 0],       [0,255,0]],
+    'Bus or Truck':     [True,  2,  [1, 0.2, 0],     [0,50,255]],
+    'Motorcycle':       [False, -1, [1, 0, 0],       [0,0,255]],
+    'Bicycle':          [False, -1, [1, 1, 0],       [0,255,255]],
+    'Bicycle Group':    [False, -1, [0, 0.5, 1],     [0,128,255]],
+    'Pedestrian':       [False, -1, [0, 0, 1],       [255,0,0]],
+    'Pedestrian Group': [False, -1, [0.4, 0, 1],     [255,0,100]],
+    'Label':            [False, -1, [0.5, 0.5, 0.5], [128,128,128]],
+  }
+  collate_fn: 'v2_0'
+  load_from_pickle: './pkl'
+### ----- Dataset ----- ###
+
+### ----- Model ----- ###
+MODEL:
+  SKELETON: SECONDNet
+
+  PRE_PROCESSING:
+    VER: 'v1_0'
+    SHUFFLE_POINTS: True
+    TRANSFORM_POINTS_TO_VOXELS: True
+    MAX_POINTS_PER_VOXEL: 5
+    MAX_NUMBER_OF_VOXELS: {
+      'train': 16000,
+      'test': 40000
+    }
+    
+  VFE:
+    NAME: MeanVFE
+
+  BACKBONE_3D:
+    NAME: VoxelBackBone8x
+
+  MAP_TO_BEV:
+    NAME: HeightCompression
+    NUM_BEV_FEATURES: 640
+
+  BACKBONE_2D:
+    NAME: BaseBEVBackbone
+
+    LAYER_NUMS: [5, 5]
+    LAYER_STRIDES: [1, 2]
+    NUM_FILTERS: [128, 256]
+    UPSAMPLE_STRIDES: [1, 2]
+    NUM_UPSAMPLE_FILTERS: [256, 256]
+
+  HEAD:
+    NAME: AnchorHeadSingle
+
+    INPUT_CHANNELS: # Leave it blank
+    KEY_FEATURES: 'spatial_features_2d'
+    CLASS_AGNOSTIC: False
+
+    USE_DIRECTION_CLASSIFIER: True
+    DIR_OFFSET: 0.78539
+    DIR_LIMIT_OFFSET: 0.0
+    NUM_DIR_BINS: 2
+
+    ANCHOR_GENERATOR_CONFIG: [
+      {
+          'class_name': 'Sedan',
+          'anchor_sizes': [[4.2, 2.1, 2.0]],
+          'anchor_rotations': [0, 1.57],
+          'anchor_bottom_heights': [-1.08],
+          'align_center': False,
+          'feature_map_stride': 8,
+          'matched_threshold': 0.6,
+          'unmatched_threshold': 0.45
+      },
+      {
+          'class_name': 'Bus or Truck',
+          'anchor_sizes': [[9.5, 3.2, 3.7]],
+          'anchor_rotations': [0, 1.57],
+          'anchor_bottom_heights': [-1.08],
+          'align_center': False,
+          'feature_map_stride': 8,
+          'matched_threshold': 0.55,
+          'unmatched_threshold': 0.4
+      },
+    ]
+
+    TARGET_ASSIGNER_CONFIG:
+      NAME: AxisAlignedTargetAssigner
+      POS_FRACTION: -1.0
+      SAMPLE_SIZE: 512
+      NORM_BY_NUM_EXAMPLES: False
+      MATCH_HEIGHT: False
+      BOX_CODER: ResidualCoder
+
+    LOSS_CONFIG:
+      LOSS_WEIGHTS: {
+        'cls_weight': 1.0,
+        'loc_weight': 2.0,
+        'dir_weight': 0.2,
+        'code_weights': [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+      }
+
+    POST_PROCESSING:
+      RECALL_THRESH_LIST: [0.3, 0.5, 0.7]
+      SCORE_THRESH: 0.1
+      OUTPUT_RAW_SCORE: False
+
+      EVAL_METRIC: kitti
+
+      NMS_CONFIG:
+        MULTI_CLASSES_NMS: False
+        NMS_TYPE: nms_gpu
+        NMS_THRESH: 0.01
+        NMS_PRE_MAXSIZE: 4096
+        NMS_POST_MAXSIZE: 500
+### ----- Model ----- ###
+
+### ----- Optimizer ----- ###
+OPTIMIZER: # Training
+  NAME: 'AdamW'
+
+  LR: 0.001
+  MIN_LR: 0.0001 # for scheduler
+  BETAS: [0.9, 0.999]
+  WEIGHT_DECAY: 0.01
+  MOMENTUM: 0.9
+
+  BATCH_SIZE: 2
+  NUM_WORKERS: 0 # 0 for dataloader_error / 4 for batch 16
+
+  MAX_EPOCH: 30
+  
+  SCHEDULER: 'CosineAnnealingLR' # in [None (empty), 'LambdaLR', 'CosineAnnealingLR']
+  TYPE_TOTAL_ITER: 'every' # in ['every', 'all'] / every epoch
+### ----- Optimizer ----- ###
+
+### ----- Validation ----- ###
+cfg_eval_ver2: True
+VAL:
+  IS_VALIDATE: True
+  IS_CONSIDER_VAL_SUBSET: True
+  VAL_PER_EPOCH_SUBSET: 1
+  NUM_SUBSET: 500 # 500
+  VAL_PER_EPOCH_FULL: 100 # epoch for validate full dataset
+
+  LIST_VAL_CONF_THR: [0.3, 0.5, 0.7]
+  LIST_VAL_IOU: [0.7, 0.5, 0.3]
+  # This is for logging, change the iou threshold in 'utils/kitti_eval'
+
+  CLASS_VAL_KEYWORD: {
+    'Sedan': 'sed',
+    'Bus or Truck': 'bus',
+    'Motorcycle': 'mot',
+    'Bicycle': 'bic',
+    'Bicycle Group': 'big',
+    'Pedestrian': 'ped',
+    'Pedestrian Group': 'peg'
+  }
+
+  REGARDING: 'anchor' # in ['anchor']
+  LIST_CARE_VAL: ['Sedan', 'Bus or Truck']
+### ----- Validation ----- ###
+
+### ----- Visualization ----- ###
+VIS:
+  # OpenCV
+  CLASS_BGR: {
+    'Sedan': [0,255,0],
+    'Bus or Truck': [0,50,255],
+    'Motorcycle': [0,0,255],
+    'Bicycle': [0,255,255],
+    'Pedestrian': [255,0,0],
+    'Pedestrian Group': [255,0,100],
+    'Label': [128,128,128]
+  }
+
+  # Open3D
+  CLASS_RGB: {
+    'Sedan': [0, 1, 0],
+    'Bus or Truck': [1, 0.2, 0],
+    'Motorcycle': [1, 0, 0],
+    'Bicycle': [1, 1, 0],
+    'Pedestrian': [0, 0, 1],
+    'Pedestrian Group': [0.4, 0, 1],
+    'Label': [0.5, 0.5, 0.5]
+  }
+  
+  ROI:
+    TYPE: 'default' # ['default', 'cube']
+    DEFAULT: [0,100,-40,40,-10,60] # x_min_max, y_min_max, z_min_max / Dim: [m]
+
+  # For BEV model visualization
+  Z_CENTER: {
+    'Sedan': 0.5,
+    'Bus or Truck': 1.5,
+    'Motorcycle': 0.5,
+    'Bicycle': 0.5,
+    'Pedestrian': 0.5,
+    'Pedestrian Group': 0.5,
+  }
+
+  # For BEV model visualization
+  Z_HEIGHT: {
+    'Sedan': 1.9,
+    'Bus or Truck': 1.9,
+    'Motorcycle': -1,
+    'Bicycle': -1,
+    'Pedestrian': 2,
+    'Pedestrian Group': -1,
+  }
+### ----- Visualization ----- ###
