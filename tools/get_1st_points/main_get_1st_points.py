@@ -9,13 +9,17 @@ import os.path as osp
 import numpy as np
 import open3d as o3d
 
+from scipy.io import loadmat # from matlab
 from tqdm import tqdm
 from easydict import EasyDict
 
 roi = [0,-15,-2,72,15,7.6]
 dict_cfg = dict(
     path_data = dict(
-        list_dir_kradar = ['/media/ave/HDD_3_1/radar_bin_lidar_bag_files/generated_files'],
+        list_dir_kradar = ['/media/ave/HDD_3_1/radar_bin_lidar_bag_files/generated_files',\
+                           '/media/ave/HDD_3_1/gen_2to5',\
+                           '/media/ave/HDD_3_2/radar_bin_lidar_bag_files/generated_files',\
+                           '/media/ave/data_2/radar_bin_lidar_bag_files/generated_files'],
         split = ['./resources/split/train.txt', './resources/split/test.txt'],
         revised_label_v1_1 = './tools/revise_label/kradar_revised_label_v1_1',
         revised_label_v2_0 = './tools/revise_label/kradar_revised_label_v2_0/KRadar_refined_label_by_UWIPL',
@@ -73,7 +77,56 @@ class Get1stPoints():
             self.cfg.NUM = len(self)
         
         self.collate_ver = self.cfg.get('collate_fn', 'v1_0') # Post-processing
+
+        self.arr_range, self.arr_azimuth, self.arr_elevation, \
+            self.arr_doppler = self.load_physical_values(is_with_doppler=True)
     
+        arr_r = self.arr_range
+        arr_a = self.arr_azimuth
+        arr_e = self.arr_elevation
+
+        r_min = np.min(arr_r)
+        r_bin = np.mean(arr_r[1:]-arr_r[:-1])
+        r_max = np.max(arr_r)
+        
+        a_min = np.min(arr_a)
+        a_bin = np.mean(arr_a[1:]-arr_a[:-1])
+        a_max = np.max(arr_a)
+
+        e_min = np.min(arr_e)
+        e_bin = np.mean(arr_e[1:]-arr_e[:-1])
+        e_max = np.max(arr_e)
+
+        self.info_rae = [
+            [r_min, r_bin, r_max],
+            [a_min, a_bin, a_max],
+            [e_min, e_bin, e_max]]
+
+
+    def load_physical_values(self, is_in_rad=True, is_with_doppler=False):
+        temp_values = loadmat('./resources/info_arr.mat')
+        arr_range = temp_values['arrRange']
+        if is_in_rad:
+            deg2rad = np.pi/180.
+            arr_azimuth = temp_values['arrAzimuth']*deg2rad
+            arr_elevation = temp_values['arrElevation']*deg2rad
+        else:
+            arr_azimuth = temp_values['arrAzimuth']
+            arr_elevation = temp_values['arrElevation']
+        _, num_0 = arr_range.shape
+        _, num_1 = arr_azimuth.shape
+        _, num_2 = arr_elevation.shape
+        arr_range = arr_range.reshape((num_0,))
+        arr_azimuth = arr_azimuth.reshape((num_1,))
+        arr_elevation = arr_elevation.reshape((num_2,))
+        if is_with_doppler:
+            arr_doppler = loadmat('./resources/arr_doppler.mat')['arr_doppler']
+            _, num_3 = arr_doppler.shape
+            arr_doppler = arr_doppler.reshape((num_3,))
+            return arr_range, arr_azimuth, arr_elevation, arr_doppler
+        else:
+            return arr_range, arr_azimuth, arr_elevation
+
     def load_dict_item(self, path_data, split):
         def get_split(split_txt, list_dict_split, val):
             f = open(split_txt, 'r')
@@ -389,6 +442,27 @@ class Get1stPoints():
             pcd_rdr.points = o3d.utility.Vector3dVector(rdr_sparse[:,:3])
             pcd_rdr.paint_uniform_color([0.,0.,0.])
             vis.add_geometry(pcd_rdr)
+
+        if 'rdr_pc' in vis_list:
+            rdr_pc = dict_item['rdr_pc']
+            pcd_rdr = o3d.geometry.PointCloud()
+            pcd_rdr.points = o3d.utility.Vector3dVector(rdr_pc[:,:3])
+            pcd_rdr.paint_uniform_color([0.,0.,0.])
+            vis.add_geometry(pcd_rdr)
+
+        if 'ldr64_quantized' in vis_list:
+            ldr64_quantized = dict_item['ldr64_quantized']
+            pcd_ldr = o3d.geometry.PointCloud()
+            pcd_ldr.points = o3d.utility.Vector3dVector(ldr64_quantized[:,:3])
+            pcd_ldr.paint_uniform_color([1.,0.,1.])
+            vis.add_geometry(pcd_ldr)
+
+        if 'pc_from_quantized_indices' in vis_list:
+            ldr64_quantized = dict_item['pc_from_quantized_indices']
+            pcd_ldr = o3d.geometry.PointCloud()
+            pcd_ldr.points = o3d.utility.Vector3dVector(ldr64_quantized[:,:3])
+            pcd_ldr.paint_uniform_color([0.,1.,1.])
+            vis.add_geometry(pcd_ldr)
         
         if 'label' in vis_list:
             label = dict_item['meta']['label']
@@ -402,7 +476,182 @@ class Get1stPoints():
     ### Vis ###
 
     ### Get 1st points ###
-    def get_1st_points_from_lpc(self, dict_item):
+    def get_tesseract(self, dict_item):
+        seq = dict_item['meta']['seq']
+        rdr_idx = dict_item['meta']['idx']['rdr']
+        path_tesseract = osp.join(dict_item['meta']['header'],seq,'radar_tesseract',f'tesseract_{rdr_idx}.mat')            
+        arr_tesseract = loadmat(path_tesseract)['arrDREA']
+        arr_tesseract = np.transpose(arr_tesseract, (0, 1, 3, 2)) # DRAE
+        dict_item['tesseract'] = arr_tesseract
+
+        return dict_item
+    
+    def get_cube_polar(self, dict_item):
+        dict_item = self.get_tesseract(dict_item)
+        tesseract = dict_item['tesseract'][1:,:,:,:]/(1e+13)
+        cube_pw = np.mean(tesseract, axis=0, keepdims=False)
+
+        # (1) softmax (not used: overflow)    
+        # tesseract_exp = np.exp(tesseract)
+        # tesseract_exp_sum = np.repeat(np.sum(tesseract_exp, axis=0, keepdims=True), 63, axis=0)
+        # tesseract_dist = tesseract_exp/tesseract_exp_sum
+
+        # (2) sum
+        tesseract_sum = np.repeat(np.sum(tesseract, axis=0, keepdims=True), 63, axis=0)
+        tesseract_dist = tesseract/tesseract_sum
+
+        tesseract_dop = np.reshape(self.arr_doppler[1:], (63,1,1,1)).repeat(256,1).repeat(107,2).repeat(37,3)
+        cube_dop = np.sum(tesseract_dist*tesseract_dop, axis=0, keepdims=False)
+        
+        dict_item['cube_pw_polar'] = cube_pw
+        dict_item['cube_dop_cartesian'] = cube_dop
+
+        return dict_item
+    
+    def get_portional_rdr_points_from_tesseract(self, dict_item, rate=0.001):
+        dict_item = self.get_cube_polar(dict_item)
+
+        cube_pw = dict_item['cube_pw_polar'] # Normalized with 1e+13
+        cube_dop = dict_item['cube_dop_cartesian'] # Expectation w/ pw dist
+
+        extracted_ind = np.where(cube_pw > np.quantile(cube_pw, 1-rate))
+        r_ind, a_ind, e_ind = extracted_ind
+        pw = cube_pw[extracted_ind]
+        dop = cube_dop[extracted_ind]
+        
+        r = self.arr_range[r_ind]
+        az = self.arr_azimuth[a_ind]
+        el = self.arr_elevation[e_ind]
+
+        # Radar polar to General polar coordinate
+        az = -az
+        el = -el
+
+        # For flipped azimuth & elevation angle
+        x = r * np.cos(el) * np.cos(az)
+        y = r * np.cos(el) * np.sin(az)
+        z = r * np.sin(el)
+
+        dict_item['rdr_pc'] = np.stack((x,y,z,pw,dop), axis=1)
+        
+        return dict_item
+    
+    def get_1st_points_from_lpc_for_4drt(self, dict_item):
+        dict_item = self.get_ldr64(dict_item)
+        pc_lidar = dict_item['ldr64']
+        pc_lidar_front = pc_lidar[np.where(pc_lidar[:,0]>0.)[0],:]
+
+        r_min, r_bin, r_max = self.info_rae[0]
+        a_min, a_bin, a_max = self.info_rae[1]
+        e_min, e_bin, e_max = self.info_rae[2]
+
+        n_r = int(np.around((r_max-r_min)/r_bin))+1
+        n_a = int(np.around((a_max-a_min)/a_bin))+1
+        n_e = int(np.around((e_max-e_min)/e_bin))+1
+
+        arr_r = np.linspace(r_min, r_max, n_r)
+        arr_a = np.linspace(a_min, a_max, n_a)
+        arr_e = np.linspace(e_min, e_max, n_e)
+
+        # print(arr_r, arr_a, arr_e)
+        # print(n_r, n_a, n_e)
+
+        x = pc_lidar_front[:,0:1]
+        y = pc_lidar_front[:,1:2]
+        z = pc_lidar_front[:,2:3]
+
+        r = np.sqrt(x**2 + y**2 + z**2)
+        az = np.arctan2(y, x)
+        el = np.arcsin(z / r)
+
+        rae_list = np.concatenate((r, az, el), axis=1) # filter with min/max
+        rae_list = rae_list[np.where(
+            (r>=r_min) & (r<r_max) & (az>=a_min) & (az<a_max) & (el>=e_min) & (el<e_max))[0],:]
+        r_indices = (np.round((rae_list[:,0]-r_min)/r_bin)).astype(int)
+        a_indices = (np.round((rae_list[:,1]-a_min)/a_bin)).astype(int)
+        e_indices = (np.round((rae_list[:,2]-e_min)/e_bin)).astype(int)
+
+        rae_tensor = np.full((n_r, n_a, n_e), False, dtype=bool) # rae
+        rae_tensor[r_indices, a_indices, e_indices] = True
+
+        # Sampling 1st points in range
+        rae_tensor_temp = np.full_like(rae_tensor, False, dtype=bool)
+        for a in range(n_a):
+            for e in range(n_e):
+                range_temp = rae_tensor[:,a,e]
+                ind_r_temp = np.where(range_temp == True)[0]
+                if len(ind_r_temp) == 0:
+                    continue
+                min_ind = np.min(ind_r_temp)
+                rae_tensor_temp[min_ind,a,e] = True
+        rae_tensor = rae_tensor_temp
+
+        r_indices, a_indices, e_indices = np.where(rae_tensor == True)
+        r = (arr_r[r_indices]).reshape(-1,1)
+        az = (arr_a[a_indices]).reshape(-1,1)
+        el = (arr_e[e_indices]).reshape(-1,1)
+
+        # Polar to Cartesian
+        x = r * np.cos(el) * np.cos(az)
+        y = r * np.cos(el) * np.sin(az)
+        z = r * np.sin(el)
+
+        dict_item['ldr64_quantized'] = np.concatenate((x,y,z), axis=1)
+
+        # Global polar to Radar polar coordinate
+        # +1 for matlab representation
+        rdr_ind_r = r_indices+1
+        rdr_ind_a = (n_a-a_indices-1)+1 # 0 -> 106 -> 107
+        rdr_ind_e = (n_e-e_indices-1)+1 # 0 -> 36 -> 37
+
+        rdr_ind_r = rdr_ind_r.reshape(-1,1)
+        rdr_ind_a = rdr_ind_a.reshape(-1,1)
+        rdr_ind_e = rdr_ind_e.reshape(-1,1)
+
+        dict_item['ldr64_quantized_indices'] = np.concatenate((rdr_ind_r, rdr_ind_a, rdr_ind_e), axis=1)
+
+        return dict_item
+    
+    def get_points_from_quantized_indices(self, dict_item):
+        quantized_indices = dict_item['ldr64_quantized_indices']
+        rdr_ind_r = quantized_indices[:,0]-1
+        rdr_ind_a = quantized_indices[:,1]-1
+        rdr_ind_e = quantized_indices[:,2]-1 # -1 for python representation
+        
+        r = self.arr_range[rdr_ind_r]
+        az = self.arr_azimuth[rdr_ind_a]
+        el = self.arr_elevation[rdr_ind_e]
+
+        # Radar polar to General polar coordinate
+        az = -az
+        el = -el
+
+        # Polar to Cartesian
+        x = r * np.cos(el) * np.cos(az) + 0.01 # +0.01 is not to be overlapped
+        y = r * np.cos(el) * np.sin(az)
+        z = r * np.sin(el)
+
+        dict_item['pc_from_quantized_indices'] = np.stack((x,y,z), axis=1)
+
+    def save_quantized_indices(self, root_path='/media/ave/data_2/kradar_quantized_indices_matlab'):
+        for seq_name in range(58):
+            seq_folder = osp.join(root_path, f'{seq_name+1}')
+            os.makedirs(seq_folder, exist_ok=True)
+        
+        for idx_sample in tqdm(range(len(self))):
+            dict_item = self.__getitem__(idx_sample)
+            self.get_ldr64(dict_item)
+            self.get_1st_points_from_lpc_for_4drt(dict_item)
+            
+            dict_meta = dict_item['meta']
+            seq_name = dict_meta['seq']
+            rdr_idx = dict_meta['idx']['rdr']
+            ldr64_quantized_indices = dict_item['ldr64_quantized_indices']
+
+            path_quantized_indices = osp.join(root_path, seq_name, f'ind_{rdr_idx}.npy')
+            np.save(path_quantized_indices, ldr64_quantized_indices)
+
+    def visaulize_1st_points_from_lpc(self, dict_item):
         dict_item = self.get_ldr64(dict_item)
         pc_lidar = dict_item['ldr64']
         pc_lidar_front = pc_lidar[np.where(pc_lidar[:,0]>0.)[0],:]
@@ -495,13 +744,28 @@ class Get1stPoints():
         
         vis.run()
         vis.destroy_window()
-        
     ### Get 1st points ###
 
 if __name__ == '__main__':
     get_1st_points = Get1stPoints(split='all')
-    # print(len(get_1st_points)) # 10764
+    print('* Total samples: ', len(get_1st_points)) # 10764
 
-    dict_item = get_1st_points[100]
-    # get_1st_points.vis_in_open3d(dict_item, ['ldr64', 'label', 'rdr_sparse'])
-    get_1st_points.get_1st_points_from_lpc(dict_item)
+    ### Visualization ###
+    # dict_item = get_1st_points[3000]
+    # # get_1st_points.vis_in_open3d(dict_item, ['ldr64', 'label', 'rdr_sparse'])
+    # # get_1st_points.visaulize_1st_points_from_lpc(dict_item)
+
+    # # get_1st_points.get_tesseract(dict_item)
+    # # get_1st_points.get_cube_polar(dict_item)
+    # get_1st_points.get_ldr64(dict_item)
+    # get_1st_points.get_portional_rdr_points_from_tesseract(dict_item, rate=0.001)
+    # get_1st_points.get_1st_points_from_lpc_for_4drt(dict_item)
+    # get_1st_points.get_points_from_quantized_indices(dict_item)
+
+    # get_1st_points.vis_in_open3d(dict_item, ['label', 'pc_from_quantized_indices'])
+    ### Visualization ###
+
+    ### Generate samples ###
+    get_1st_points.save_quantized_indices()
+    ### Generate samples ###
+
