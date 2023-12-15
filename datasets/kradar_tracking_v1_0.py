@@ -437,6 +437,15 @@ class KRadarTracking_v1_0(Dataset):
 
         return dict_item
     
+    def getitem_with_dict_item(self, dict_item):
+        dict_item = self.get_label(dict_item) if not self.load_label_in_advance else dict_item
+        dict_item = self.get_ldr64(dict_item) if self.item['ldr64'] else dict_item
+        dict_item = self.get_rdr_sparse(dict_item) if self.item['rdr_sparse'] else dict_item
+        dict_item = self.filter_roi(dict_item) if self.roi.filter else dict_item
+        dict_item = self.get_description(dict_item)
+
+        return dict_item
+
     ### Vis ###
     def create_cylinder_mesh(self, radius, p0, p1, color=[1, 0, 0]):
         cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=radius, height=np.linalg.norm(np.array(p1)-np.array(p0)))
@@ -570,7 +579,8 @@ class KRadarTracking_v1_0(Dataset):
             list_new_batch = []
             for dict_item in list_batch:
                 list_new_batch.append(dict_item)
-                list_new_batch.extend(dict_item['following'])
+                for temp_dict_item in dict_item['following']:
+                    list_new_batch.append(self.getitem_with_dict_item(temp_dict_item))
             list_batch = list_new_batch
 
         if self.collate_ver == 'v1_0':
