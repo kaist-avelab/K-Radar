@@ -235,7 +235,7 @@ class RadarFilmDataProcessor(object):
     
     def gen_list_of_rpc_from_tesseract(self, list_rate=[0.01, 0.001], list_key=['1p', '01p']):
         for idx_dict, dict_item in enumerate(tqdm(self.list_dict_item)):
-            if idx_dict < 0:
+            if idx_dict < 920:
                 continue
             dict_item = self.get_cube_polar(dict_item)
             cube_pw = dict_item['cube_pw_polar'] # Normalized with 1e+13
@@ -267,7 +267,7 @@ class RadarFilmDataProcessor(object):
                 file_name = f'rpc_{rdr_idx}.npy'
 
                 dir_rpc = osp.join(self.rdr_dir, dict_item['meta']['seq'], folder_name)
-                # os.makedirs(dir_rpc, exist_ok=True)
+                os.makedirs(dir_rpc, exist_ok=True)
                 
                 path_rdr = osp.join(dir_rpc, file_name)
                 np.save(path_rdr, rpc)
@@ -461,6 +461,63 @@ class RadarFilmDataProcessor(object):
             # print(list_pw_vals_per_seq[idx_seq])
             plt.plot(list_range_vals_per_seq[idx_seq], list_pw_vals_per_seq[idx_seq], label=list_seqs[idx_seq])
 
+        dict_save = dict()
+        for idx_seq in range(len(list_range_vals_per_seq)):
+            seq_name = list_seqs[idx_seq]
+            dict_save[seq_name] = (list_range_vals_per_seq[idx_seq], list_pw_vals_per_seq[idx_seq])
+        
+        with open('./tools/radar_film/pw_dist.pickle', 'wb') as f:
+            pickle.dump(dict_save, f)
+
+        plt.legend()
+        plt.show()
+
+    def get_pw_distribution_from_pickle(self, smoothing_size=21):
+        def low_pass_filter(values, window_size):
+            if window_size <= 1:
+                return values
+
+            filtered_values = []
+            half_window = window_size // 2
+
+            for i in range(len(values)):
+                start = max(i - half_window, 0)
+                end = min(i + half_window + 1, len(values))
+                filtered_values.append(sum(values[start:end]) / (end - start))
+
+            return filtered_values
+
+        with open('./tools/radar_film/pw_dist.pickle', 'rb') as f:
+            dict_pw_dist = pickle.load(f)
+
+        dict_rgb = dict()
+        for seq_name in list(dict_pw_dist.keys()):
+            dict_rgb[seq_name] = (random.random(), random.random(), random.random())
+
+        dict_seq_info = self.cfg.seq_info
+        list_filter_seqs = self.cfg.filter_seqs
+        for seq_name in list(dict_pw_dist.keys()):
+            if seq_name not in list_filter_seqs:
+                continue
+
+            seq_info = dict_seq_info[seq_name]
+            list_range, list_power = dict_pw_dist[seq_name]
+            tuple_rgb = dict_rgb[seq_name]
+            
+            # sort
+            list_power_sorted = sorted(list_power, key=lambda x: list_range[list_power.index(x)])
+            list_range_sorted = sorted(list_range)
+
+            if list_range_sorted[-1] > 19:
+                list_power_sorted = list_power_sorted[:-1]
+                list_range_sorted = list_range_sorted[:-1]
+            
+            # smooth
+            list_power_smooth = low_pass_filter(list_power_sorted, smoothing_size)
+            plt.plot(list_range_sorted, list_power_smooth, label=seq_info, color=tuple_rgb)
+            plt.scatter(list_range_sorted, list_power_sorted, color=tuple_rgb, alpha=0.5)
+            plt.text(list_range_sorted[-1], list_power_smooth[-1], seq_info, color=tuple_rgb)
+
         plt.legend()
         plt.show()
 
@@ -535,7 +592,7 @@ dict_cfg = dict(
         ldr = '/media/donghee/HDD_0/Radar_Film/gen_files',
         rdr = '/media/donghee/BED085ECD085AB6B/RadarFilmData',
     ),
-    include_seqs = None, # ['44'], # None
+    include_seqs = None, # ['14', '16', '31', '33', '35', '37', '42', '46', '48', '49'], # None
     is_filter_for_valid_ldr = True,
     spatial_calib_info = [-2.54, 0.3, 0.7],
     time_calib_info = { # 'seq': [diff, rate]
@@ -543,13 +600,46 @@ dict_cfg = dict(
         '2': [-2, 2],
         '10': [-2, 2],
         '12': [-2, 2],
+        '14': [-2, 2],
+        '16': [-2, 2],
         '30': [-2, 2],
+        '31': [-2, 2],
         '32': [-2, 2],
+        '33': [-2, 2],
         '34': [-2, 2],
+        '35': [-2, 2],
         '36': [-2, 2],
+        '37': [-2, 2],
         '40': [-2, 2],
+        '42': [-2, 2],
         '44': [-2, 2],
+        '46': [-2, 2],
+        '48': [-2, 2],
+        '49': [-2, 2],
     },
+    seq_info = {
+        '1': 'baseline1',
+        '2': 'baseline2',
+        '10': '4mm-rect/0.1T/Open', # '4_off',
+        '12': '4mm-rect/0.1T/3V-200mA', # '4_on_3V_200mA',
+        '14': '8mm-rect/0.1T/Open', # '5_off',
+        '16': '8mm-rect/0.1T/3V-30mA', #'5_on_3V_30mA',
+        '30': '2mm-rect/0.3T/Open', # '9_off',
+        '31': '2mm-rect/0.3T/Open', # '9_off',
+        '32': '9_on_2V_460mA',
+        '33': '2mm-rect/0.3T/2V-460mA', # '9_on_2V_460mA',
+        '34': '4mm-rect/0.3T/Open', # '10_off',
+        '35': '10_off',
+        '36': '10_on_2V_217mA',
+        '37': '4mm-rect/0.3T/2V-217mA', # '10_on_2V_217mA',
+        '40': '0.5mm-rect/0.125T/Open', # '11-2_off',
+        '42': '11-2_off',
+        '44': '0.8mm-round/0.5T/Open 1', # '13_off',
+        '46': '0.8mm-round/0.5T/Open 2', # '14_off',
+        '48': 'Without film 1',
+        '49': 'Without film 2',
+    },
+    filter_seqs = ['10', '12', '14', '16', '31', '33', '34', '37', '40', '44', '46', '48', '49'],
     models = dict(
         roi = [0.,-16.,-2.,72.,16.,7.6],
         seed = 1,
@@ -610,5 +700,9 @@ if __name__ == '__main__':
     ### Step 4. post-processing ###
 
     ### Step 5. get pw distribution ###
-    rdr_film_processor.get_pw_distribution()
+    # rdr_film_processor.get_pw_distribution()
     ### Step 5. get pw distribution ###
+
+    ### Step 6. get smooth pw dist from pickle ###
+    rdr_film_processor.get_pw_distribution_from_pickle()
+    ### Step 6. get smooth pw dist from pickle ###
