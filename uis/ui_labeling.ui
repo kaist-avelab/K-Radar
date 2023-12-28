@@ -17,7 +17,7 @@
    <widget class="QStackedWidget" name="stackedWidget">
     <property name="geometry">
      <rect>
-      <x>0</x>
+      <x>-10</x>
       <y>0</y>
       <width>1920</width>
       <height>800</height>
@@ -1554,7 +1554,7 @@
        <rect>
         <x>1730</x>
         <y>60</y>
-        <width>111</width>
+        <width>131</width>
         <height>16</height>
        </rect>
       </property>
@@ -1593,7 +1593,7 @@
        <rect>
         <x>1730</x>
         <y>10</y>
-        <width>111</width>
+        <width>131</width>
         <height>16</height>
        </rect>
       </property>
@@ -2080,22 +2080,22 @@
      <widget class="QPushButton" name="pushButtonLcCalib_0">
       <property name="geometry">
        <rect>
-        <x>1690</x>
+        <x>1680</x>
         <y>0</y>
-        <width>211</width>
+        <width>181</width>
         <height>31</height>
        </rect>
       </property>
       <property name="text">
-       <string>Back to Radar-Lidar Calibration</string>
+       <string>Go back Radar-Lidar Calib</string>
       </property>
      </widget>
      <widget class="QPushButton" name="pushButtonLcCalib_1">
       <property name="geometry">
        <rect>
-        <x>1690</x>
+        <x>1480</x>
         <y>40</y>
-        <width>211</width>
+        <width>191</width>
         <height>31</height>
        </rect>
       </property>
@@ -2116,157 +2116,11 @@
        <string>Set Initiall Values</string>
       </property>
      </widget>
-     <widget class="QTextEdit" name="textEditLcCalib_0">
-      <property name="geometry">
-       <rect>
-        <x>1280</x>
-        <y>60</y>
-        <width>191</width>
-        <height>301</height>
-       </rect>
-      </property>
-      <property name="html">
-       <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;[projection matrix: pixel/m]&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;fx:579.453223/2.0&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;fy:577.688545/2.0&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;px:624.701668/2.0&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;py:367.172350/2.0&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;[distortion: plumb bob model]&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;k1:-0.028874/0.01&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;k2:0.000602/0.0001&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;k3:0.003957/0.001&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;k4:-0.005047/0.001&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;k5:0.000000/0.001&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;[Rotation-Camera: deg]&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;roll_c:0.0/1.0&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;pitch_c:0.0/1.0&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;yaw_c:0.0/1.0&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;[LidarToCamera: deg, m]&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;roll_l:0.0/0.1&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;pitch_l:1.5/0.1&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;yaw_l:0.0/0.1&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;x_l:0.2/0.05&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;y_l:0.0/0.05&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;z_l:-0.4/0.05&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_40">
-      <property name="geometry">
-       <rect>
-        <x>1290</x>
-        <y>40</y>
-        <width>141</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Initial Value &amp; Offset</string>
-      </property>
-     </widget>
-     <widget class="QSlider" name="horizontalSliderLcCalib_0">
-      <property name="geometry">
-       <rect>
-        <x>1400</x>
-        <y>380</y>
-        <width>491</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="maximum">
-       <number>100</number>
-      </property>
-      <property name="value">
-       <number>50</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-     <widget class="QSlider" name="horizontalSliderLcCalib_1">
-      <property name="geometry">
-       <rect>
-        <x>1400</x>
-        <y>400</y>
-        <width>491</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="maximum">
-       <number>100</number>
-      </property>
-      <property name="value">
-       <number>50</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-     <widget class="QSlider" name="horizontalSliderLcCalib_2">
-      <property name="geometry">
-       <rect>
-        <x>1400</x>
-        <y>420</y>
-        <width>491</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="maximum">
-       <number>100</number>
-      </property>
-      <property name="value">
-       <number>50</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-     <widget class="QSlider" name="horizontalSliderLcCalib_3">
-      <property name="geometry">
-       <rect>
-        <x>1400</x>
-        <y>440</y>
-        <width>491</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="maximum">
-       <number>100</number>
-      </property>
-      <property name="value">
-       <number>50</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-     <widget class="QSlider" name="horizontalSliderLcCalib_4">
-      <property name="geometry">
-       <rect>
-        <x>1400</x>
-        <y>480</y>
-        <width>491</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="maximum">
-       <number>100</number>
-      </property>
-      <property name="value">
-       <number>50</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
      <widget class="QLabel" name="label_fx">
       <property name="geometry">
        <rect>
-        <x>1290</x>
-        <y>380</y>
+        <x>1300</x>
+        <y>440</y>
         <width>101</width>
         <height>16</height>
        </rect>
@@ -2278,8 +2132,8 @@ p, li { white-space: pre-wrap; }
      <widget class="QLabel" name="label_fy">
       <property name="geometry">
        <rect>
-        <x>1290</x>
-        <y>400</y>
+        <x>1300</x>
+        <y>460</y>
         <width>101</width>
         <height>16</height>
        </rect>
@@ -2291,8 +2145,8 @@ p, li { white-space: pre-wrap; }
      <widget class="QLabel" name="label_px">
       <property name="geometry">
        <rect>
-        <x>1290</x>
-        <y>420</y>
+        <x>1300</x>
+        <y>480</y>
         <width>101</width>
         <height>16</height>
        </rect>
@@ -2304,8 +2158,8 @@ p, li { white-space: pre-wrap; }
      <widget class="QLabel" name="label_py">
       <property name="geometry">
        <rect>
-        <x>1290</x>
-        <y>440</y>
+        <x>1300</x>
+        <y>500</y>
         <width>101</width>
         <height>16</height>
        </rect>
@@ -2317,8 +2171,8 @@ p, li { white-space: pre-wrap; }
      <widget class="QLabel" name="label_k1">
       <property name="geometry">
        <rect>
-        <x>1290</x>
-        <y>480</y>
+        <x>1450</x>
+        <y>440</y>
         <width>101</width>
         <height>16</height>
        </rect>
@@ -2330,8 +2184,8 @@ p, li { white-space: pre-wrap; }
      <widget class="QCheckBox" name="checkBox_distortion">
       <property name="geometry">
        <rect>
-        <x>1290</x>
-        <y>460</y>
+        <x>1430</x>
+        <y>420</y>
         <width>261</width>
         <height>17</height>
        </rect>
@@ -2346,8 +2200,8 @@ p, li { white-space: pre-wrap; }
      <widget class="QLabel" name="label_k2">
       <property name="geometry">
        <rect>
-        <x>1290</x>
-        <y>500</y>
+        <x>1450</x>
+        <y>460</y>
         <width>101</width>
         <height>16</height>
        </rect>
@@ -2356,49 +2210,11 @@ p, li { white-space: pre-wrap; }
        <string>k2:</string>
       </property>
      </widget>
-     <widget class="QSlider" name="horizontalSliderLcCalib_5">
-      <property name="geometry">
-       <rect>
-        <x>1400</x>
-        <y>500</y>
-        <width>491</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="maximum">
-       <number>100</number>
-      </property>
-      <property name="value">
-       <number>50</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-     <widget class="QSlider" name="horizontalSliderLcCalib_6">
-      <property name="geometry">
-       <rect>
-        <x>1400</x>
-        <y>520</y>
-        <width>491</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="maximum">
-       <number>100</number>
-      </property>
-      <property name="value">
-       <number>50</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
      <widget class="QLabel" name="label_k3">
       <property name="geometry">
        <rect>
-        <x>1290</x>
-        <y>520</y>
+        <x>1450</x>
+        <y>480</y>
         <width>101</width>
         <height>16</height>
        </rect>
@@ -2410,8 +2226,8 @@ p, li { white-space: pre-wrap; }
      <widget class="QLabel" name="label_k4">
       <property name="geometry">
        <rect>
-        <x>1290</x>
-        <y>540</y>
+        <x>1450</x>
+        <y>500</y>
         <width>101</width>
         <height>16</height>
        </rect>
@@ -2420,30 +2236,11 @@ p, li { white-space: pre-wrap; }
        <string>k4:</string>
       </property>
      </widget>
-     <widget class="QSlider" name="horizontalSliderLcCalib_7">
-      <property name="geometry">
-       <rect>
-        <x>1400</x>
-        <y>540</y>
-        <width>491</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="maximum">
-       <number>100</number>
-      </property>
-      <property name="value">
-       <number>50</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
      <widget class="QLabel" name="label_k5">
       <property name="geometry">
        <rect>
-        <x>1290</x>
-        <y>560</y>
+        <x>1450</x>
+        <y>520</y>
         <width>101</width>
         <height>16</height>
        </rect>
@@ -2452,311 +2249,82 @@ p, li { white-space: pre-wrap; }
        <string>k5:</string>
       </property>
      </widget>
-     <widget class="QSlider" name="horizontalSliderLcCalib_8">
-      <property name="geometry">
-       <rect>
-        <x>1400</x>
-        <y>560</y>
-        <width>491</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="maximum">
-       <number>100</number>
-      </property>
-      <property name="value">
-       <number>50</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-     <widget class="QSlider" name="horizontalSliderLcCalib_9">
-      <property name="geometry">
-       <rect>
-        <x>1400</x>
-        <y>590</y>
-        <width>491</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="maximum">
-       <number>100</number>
-      </property>
-      <property name="value">
-       <number>50</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_yaw_c">
-      <property name="geometry">
-       <rect>
-        <x>1290</x>
-        <y>630</y>
-        <width>101</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>yaw_c:</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_pitch_c">
-      <property name="geometry">
-       <rect>
-        <x>1290</x>
-        <y>610</y>
-        <width>101</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>pitch_c:</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_roll_c">
-      <property name="geometry">
-       <rect>
-        <x>1290</x>
-        <y>590</y>
-        <width>101</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>roll_c:</string>
-      </property>
-     </widget>
-     <widget class="QSlider" name="horizontalSliderLcCalib_10">
-      <property name="geometry">
-       <rect>
-        <x>1400</x>
-        <y>610</y>
-        <width>491</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="maximum">
-       <number>100</number>
-      </property>
-      <property name="value">
-       <number>50</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-     <widget class="QSlider" name="horizontalSliderLcCalib_11">
-      <property name="geometry">
-       <rect>
-        <x>1400</x>
-        <y>630</y>
-        <width>491</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="maximum">
-       <number>100</number>
-      </property>
-      <property name="value">
-       <number>50</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-     <widget class="QSlider" name="horizontalSliderLcCalib_12">
-      <property name="geometry">
-       <rect>
-        <x>1400</x>
-        <y>660</y>
-        <width>491</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="maximum">
-       <number>100</number>
-      </property>
-      <property name="value">
-       <number>50</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
      <widget class="QLabel" name="label_pitch_l">
       <property name="geometry">
        <rect>
-        <x>1290</x>
-        <y>680</y>
+        <x>1300</x>
+        <y>610</y>
         <width>101</width>
         <height>16</height>
        </rect>
       </property>
       <property name="text">
-       <string>pitch_l:</string>
+       <string>pitch:</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_roll_l">
       <property name="geometry">
        <rect>
-        <x>1290</x>
-        <y>660</y>
+        <x>1300</x>
+        <y>590</y>
         <width>101</width>
         <height>16</height>
        </rect>
       </property>
       <property name="text">
-       <string>roll_l:</string>
-      </property>
-     </widget>
-     <widget class="QSlider" name="horizontalSliderLcCalib_13">
-      <property name="geometry">
-       <rect>
-        <x>1400</x>
-        <y>680</y>
-        <width>491</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="maximum">
-       <number>100</number>
-      </property>
-      <property name="value">
-       <number>50</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-     <widget class="QSlider" name="horizontalSliderLcCalib_14">
-      <property name="geometry">
-       <rect>
-        <x>1400</x>
-        <y>700</y>
-        <width>491</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="maximum">
-       <number>100</number>
-      </property>
-      <property name="value">
-       <number>50</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+       <string>roll:</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_yaw_l">
       <property name="geometry">
        <rect>
-        <x>1290</x>
-        <y>700</y>
+        <x>1300</x>
+        <y>630</y>
         <width>101</width>
         <height>16</height>
        </rect>
       </property>
       <property name="text">
-       <string>yaw_l:</string>
-      </property>
-     </widget>
-     <widget class="QSlider" name="horizontalSliderLcCalib_15">
-      <property name="geometry">
-       <rect>
-        <x>1400</x>
-        <y>720</y>
-        <width>491</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="maximum">
-       <number>100</number>
-      </property>
-      <property name="value">
-       <number>50</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+       <string>yaw:</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_x_l">
       <property name="geometry">
        <rect>
-        <x>1290</x>
-        <y>720</y>
+        <x>1480</x>
+        <y>590</y>
         <width>101</width>
         <height>16</height>
        </rect>
       </property>
       <property name="text">
-       <string>x_l:</string>
+       <string>x:</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_z_l">
       <property name="geometry">
        <rect>
-        <x>1290</x>
-        <y>760</y>
+        <x>1480</x>
+        <y>630</y>
         <width>101</width>
         <height>16</height>
        </rect>
       </property>
       <property name="text">
-       <string>z_l:</string>
-      </property>
-     </widget>
-     <widget class="QSlider" name="horizontalSliderLcCalib_16">
-      <property name="geometry">
-       <rect>
-        <x>1400</x>
-        <y>740</y>
-        <width>491</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="maximum">
-       <number>100</number>
-      </property>
-      <property name="value">
-       <number>50</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-     <widget class="QSlider" name="horizontalSliderLcCalib_17">
-      <property name="geometry">
-       <rect>
-        <x>1400</x>
-        <y>760</y>
-        <width>491</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="maximum">
-       <number>100</number>
-      </property>
-      <property name="value">
-       <number>50</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+       <string>z:</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_y_l">
       <property name="geometry">
        <rect>
-        <x>1290</x>
-        <y>740</y>
+        <x>1480</x>
+        <y>610</y>
         <width>101</width>
         <height>16</height>
        </rect>
       </property>
       <property name="text">
-       <string>y_l:</string>
+       <string>y:</string>
       </property>
      </widget>
      <widget class="QPushButton" name="pushButtonLcCalib_3">
@@ -2775,9 +2343,9 @@ p, li { white-space: pre-wrap; }
      <widget class="QTextEdit" name="textEditLcCalib_1">
       <property name="geometry">
        <rect>
-        <x>1480</x>
-        <y>220</y>
-        <width>111</width>
+        <x>1300</x>
+        <y>150</y>
+        <width>221</width>
         <height>111</height>
        </rect>
       </property>
@@ -2785,21 +2353,21 @@ p, li { white-space: pre-wrap; }
        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;[m]&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;x_min: 0&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;x_max: 80&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;y_min: -500&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;y_max: 500&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;z_min: -0.9&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;z_max: 100&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt;&quot;&gt;[m]&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt;&quot;&gt;x_min: 0&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt;&quot;&gt;x_max: 80&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt;&quot;&gt;y_min: -500&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt;&quot;&gt;y_max: 500&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt;&quot;&gt;z_min: -0.9&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt;&quot;&gt;z_max: 100&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_41">
       <property name="geometry">
        <rect>
-        <x>1490</x>
-        <y>200</y>
+        <x>1300</x>
+        <y>130</y>
         <width>141</width>
         <height>16</height>
        </rect>
@@ -2811,8 +2379,8 @@ p, li { white-space: pre-wrap; }
      <widget class="QCheckBox" name="checkBox_pc_roi">
       <property name="geometry">
        <rect>
-        <x>1490</x>
-        <y>340</y>
+        <x>1420</x>
+        <y>130</y>
         <width>101</width>
         <height>17</height>
        </rect>
@@ -2827,7 +2395,7 @@ p, li { white-space: pre-wrap; }
      <widget class="QPushButton" name="pushButtonLcCalib_4">
       <property name="geometry">
        <rect>
-        <x>1480</x>
+        <x>1280</x>
         <y>40</y>
         <width>191</width>
         <height>31</height>
@@ -2835,6 +2403,579 @@ p, li { white-space: pre-wrap; }
       </property>
       <property name="text">
        <string>Show Point Cloud</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_42">
+      <property name="geometry">
+       <rect>
+        <x>1300</x>
+        <y>290</y>
+        <width>151</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Which Cam you want:</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonLcCalib_5">
+      <property name="geometry">
+       <rect>
+        <x>1300</x>
+        <y>320</y>
+        <width>61</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Front(L)</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonLcCalib_6">
+      <property name="geometry">
+       <rect>
+        <x>1360</x>
+        <y>320</y>
+        <width>61</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Front(R)</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonLcCalib_7">
+      <property name="geometry">
+       <rect>
+        <x>1440</x>
+        <y>320</y>
+        <width>61</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Rear(L)</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonLcCalib_8">
+      <property name="geometry">
+       <rect>
+        <x>1500</x>
+        <y>320</y>
+        <width>61</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Rear(R)</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonLcCalib_9">
+      <property name="geometry">
+       <rect>
+        <x>1300</x>
+        <y>360</y>
+        <width>61</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Left(L)</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonLcCalib_10">
+      <property name="geometry">
+       <rect>
+        <x>1360</x>
+        <y>360</y>
+        <width>61</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Left(R)</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonLcCalib_11">
+      <property name="geometry">
+       <rect>
+        <x>1440</x>
+        <y>360</y>
+        <width>61</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Right(L)</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonLcCalib_12">
+      <property name="geometry">
+       <rect>
+        <x>1500</x>
+        <y>360</y>
+        <width>61</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Right(R)</string>
+      </property>
+     </widget>
+     <widget class="QTextEdit" name="textEditLcCalib_2">
+      <property name="geometry">
+       <rect>
+        <x>1450</x>
+        <y>290</y>
+        <width>111</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="html">
+       <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+     <widget class="QTextEdit" name="textEditLcCalib_3">
+      <property name="geometry">
+       <rect>
+        <x>1400</x>
+        <y>80</y>
+        <width>461</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="html">
+       <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_43">
+      <property name="geometry">
+       <rect>
+        <x>1300</x>
+        <y>80</y>
+        <width>91</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Current Dir:</string>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="spinBoxLcCalib_0">
+      <property name="geometry">
+       <rect>
+        <x>1600</x>
+        <y>290</y>
+        <width>51</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <number>600</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_44">
+      <property name="geometry">
+       <rect>
+        <x>1570</x>
+        <y>290</y>
+        <width>31</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Idx</string>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="doubleSpinBoxLcCalib_0">
+      <property name="geometry">
+       <rect>
+        <x>1330</x>
+        <y>440</y>
+        <width>101</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="decimals">
+       <number>5</number>
+      </property>
+      <property name="maximum">
+       <double>1000.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.100000000000000</double>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="doubleSpinBoxLcCalib_1">
+      <property name="geometry">
+       <rect>
+        <x>1330</x>
+        <y>460</y>
+        <width>101</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="decimals">
+       <number>5</number>
+      </property>
+      <property name="maximum">
+       <double>1000.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.100000000000000</double>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="doubleSpinBoxLcCalib_2">
+      <property name="geometry">
+       <rect>
+        <x>1330</x>
+        <y>480</y>
+        <width>101</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="decimals">
+       <number>5</number>
+      </property>
+      <property name="maximum">
+       <double>1000.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.100000000000000</double>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="doubleSpinBoxLcCalib_3">
+      <property name="geometry">
+       <rect>
+        <x>1330</x>
+        <y>500</y>
+        <width>101</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="decimals">
+       <number>5</number>
+      </property>
+      <property name="maximum">
+       <double>1000.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.100000000000000</double>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="doubleSpinBoxLcCalib_4">
+      <property name="geometry">
+       <rect>
+        <x>1480</x>
+        <y>440</y>
+        <width>151</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="decimals">
+       <number>10</number>
+      </property>
+      <property name="minimum">
+       <double>-1.000000000000000</double>
+      </property>
+      <property name="maximum">
+       <double>1.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.000100000000000</double>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="doubleSpinBoxLcCalib_5">
+      <property name="geometry">
+       <rect>
+        <x>1480</x>
+        <y>460</y>
+        <width>151</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="decimals">
+       <number>10</number>
+      </property>
+      <property name="minimum">
+       <double>-1.000000000000000</double>
+      </property>
+      <property name="maximum">
+       <double>1.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.000100000000000</double>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="doubleSpinBoxLcCalib_6">
+      <property name="geometry">
+       <rect>
+        <x>1480</x>
+        <y>480</y>
+        <width>151</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="decimals">
+       <number>10</number>
+      </property>
+      <property name="minimum">
+       <double>-1.000000000000000</double>
+      </property>
+      <property name="maximum">
+       <double>1.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.000100000000000</double>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="doubleSpinBoxLcCalib_7">
+      <property name="geometry">
+       <rect>
+        <x>1480</x>
+        <y>500</y>
+        <width>151</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="decimals">
+       <number>10</number>
+      </property>
+      <property name="minimum">
+       <double>-1.000000000000000</double>
+      </property>
+      <property name="maximum">
+       <double>1.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.000100000000000</double>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="doubleSpinBoxLcCalib_8">
+      <property name="geometry">
+       <rect>
+        <x>1480</x>
+        <y>520</y>
+        <width>151</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="decimals">
+       <number>10</number>
+      </property>
+      <property name="minimum">
+       <double>-1.000000000000000</double>
+      </property>
+      <property name="maximum">
+       <double>1.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.000100000000000</double>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_45">
+      <property name="geometry">
+       <rect>
+        <x>1300</x>
+        <y>420</y>
+        <width>151</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Camera Intrinsic</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_47">
+      <property name="geometry">
+       <rect>
+        <x>1300</x>
+        <y>570</y>
+        <width>321</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Transform from LiDAR to Camera (ldr2cam)</string>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="doubleSpinBoxLcCalib_9">
+      <property name="geometry">
+       <rect>
+        <x>1350</x>
+        <y>590</y>
+        <width>101</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="decimals">
+       <number>2</number>
+      </property>
+      <property name="minimum">
+       <double>-180.000000000000000</double>
+      </property>
+      <property name="maximum">
+       <double>180.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.100000000000000</double>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="doubleSpinBoxLcCalib_10">
+      <property name="geometry">
+       <rect>
+        <x>1350</x>
+        <y>610</y>
+        <width>101</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="decimals">
+       <number>2</number>
+      </property>
+      <property name="minimum">
+       <double>-180.000000000000000</double>
+      </property>
+      <property name="maximum">
+       <double>180.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.100000000000000</double>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="doubleSpinBoxLcCalib_11">
+      <property name="geometry">
+       <rect>
+        <x>1350</x>
+        <y>630</y>
+        <width>101</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="decimals">
+       <number>2</number>
+      </property>
+      <property name="minimum">
+       <double>-180.000000000000000</double>
+      </property>
+      <property name="maximum">
+       <double>180.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.100000000000000</double>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="doubleSpinBoxLcCalib_12">
+      <property name="geometry">
+       <rect>
+        <x>1510</x>
+        <y>590</y>
+        <width>101</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="decimals">
+       <number>2</number>
+      </property>
+      <property name="minimum">
+       <double>-10.000000000000000</double>
+      </property>
+      <property name="maximum">
+       <double>10.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.010000000000000</double>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="doubleSpinBoxLcCalib_13">
+      <property name="geometry">
+       <rect>
+        <x>1510</x>
+        <y>610</y>
+        <width>101</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="decimals">
+       <number>2</number>
+      </property>
+      <property name="minimum">
+       <double>-10.000000000000000</double>
+      </property>
+      <property name="maximum">
+       <double>10.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.010000000000000</double>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="doubleSpinBoxLcCalib_14">
+      <property name="geometry">
+       <rect>
+        <x>1510</x>
+        <y>630</y>
+        <width>101</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="decimals">
+       <number>2</number>
+      </property>
+      <property name="minimum">
+       <double>-10.000000000000000</double>
+      </property>
+      <property name="maximum">
+       <double>10.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.010000000000000</double>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonLcCalib_13">
+      <property name="geometry">
+       <rect>
+        <x>1660</x>
+        <y>280</y>
+        <width>91</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Save Params</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonLcCalib_14">
+      <property name="geometry">
+       <rect>
+        <x>1680</x>
+        <y>40</y>
+        <width>181</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Change Sequence</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonLcCalib_15">
+      <property name="geometry">
+       <rect>
+        <x>1750</x>
+        <y>280</y>
+        <width>101</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Load Params</string>
       </property>
      </widget>
     </widget>
