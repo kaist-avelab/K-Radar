@@ -19,7 +19,8 @@ __all__ = [
 ]
 
 dict_front0 = dict(
-    img_size=(1280,720),
+    img_size_w=1280,
+    img_size_h=720,
     fx=567.720776478944,
     fy=577.2136917114258,
     px=628.72078,
@@ -52,7 +53,7 @@ def get_rpy_reflecting_rotation_default_in_ui_labeling(rotation_matrix):
     return new_rpy
 
 def get_matrices_from_dict_calib(dict_calib=dict_front0):
-    img_size = dict_calib['img_size']
+    img_size = (dict_calib['img_size_w'], dict_calib['img_size_h'])
     intrinsics = np.array([
         [dict_calib['fx'], 0.0, dict_calib['px']],
         [0.0, dict_calib['fy'], dict_calib['py']],
@@ -100,7 +101,7 @@ def show_projected_point_cloud(img, pcd, list_params, undistort=True):
     T_ldr2cam = np.insert(T_ldr2cam, 3, [0,0,0,1], axis=0)
     T_ldr2pix = T_cam2pix@T_ldr2cam
 
-    pcd = pcd[np.where(pcd[:,0]>0)]
+    # pcd = pcd[np.where(pcd[:,0]>0)]
     pc_ldr = (np.insert(pcd[:,:3], 3, [1], axis=1)).T
     pc_cam = T_ldr2pix@pc_ldr
     pc_cam[:2,:] /= pc_cam[2,:]
@@ -126,6 +127,7 @@ if __name__ == '__main__':
     ### Get new calib params reflecting tr_default in ui_labeling ###
     DIR_CALIB = './resources/cam_calib/common'
     DIR_SAVE_CALIB = './resources/cam_calib/new'
+    IMG_SIZE = (1280, 720)
 
     os.makedirs(DIR_SAVE_CALIB, exist_ok=True)
 
@@ -141,6 +143,9 @@ if __name__ == '__main__':
             dict_calib['roll_ldr2cam'] = float(roll_new)
             dict_calib['pitch_ldr2cam'] = float(pitch_new)
             dict_calib['yaw_ldr2cam'] = float(yaw_new)
+            dict_calib['img_size_w'] = IMG_SIZE[0]
+            dict_calib['img_size_h'] = IMG_SIZE[1]
+            dict_calib.pop('cam_number')
 
             with open(os.path.join(DIR_SAVE_CALIB, yml_file_name), 'w') as yml_file_save:
                 yaml.dump(dict_calib, yml_file_save, default_flow_style=False)
