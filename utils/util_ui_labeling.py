@@ -536,7 +536,7 @@ def process_bbox_wrt_state_local(p_frame, state_local, x, y, type_bt):
             p_frame.updateBevImage(cv_img)
             p_frame.is_enable_right_button = True
             
-            return cnf_ui.SL_CLICK_FRONT # Apex 확정 이전 단계
+            return cnf_ui.SL_CLICK_FRONT
 
         elif type_bt == cnf_ui.BT_RIGHT:
             if not p_frame.is_enable_right_button:
@@ -845,7 +845,6 @@ def get_bev_img_from_dict_radar_lidar(dict_radar, dict_lidar, bev_range='50', p_
     list_x_y = list(zip(list_x_empty_new, list_y_empty_new))
 
     if is_rotation:
-        ### 현재 이미지 좌표계 기준으로 Rotation임, 기준점 Lidar Coordiante로 옮겨야함 ###
         yaw_rad = yaw_cal/180.*np.pi
         cos_yaw = np.cos(yaw_rad)
         sin_yaw = np.sin(yaw_rad)
@@ -1157,22 +1156,26 @@ def get_matrices_from_dict_lc_calib(dict_values):
     ]).reshape((-1,1))
 
     ### Processing rotation matrix via scipy ###
-    yaw_c = dict_values['yaw_c']
-    pitch_c = dict_values['pitch_c']
-    roll_c = dict_values['roll_c']
-    r_cam = (R.from_euler('zyx', [yaw_c, pitch_c, roll_c], degrees=True)).as_matrix()
+    try:
+        yaw_c = dict_values['yaw_c']
+        pitch_c = dict_values['pitch_c']
+        roll_c = dict_values['roll_c']
+        r_cam = (R.from_euler('zyx', [yaw_c, pitch_c, roll_c], degrees=True)).as_matrix()
+    except:
+        r_cam = (R.from_euler('zyx', [0.0, 0.0, 0.0], degrees=True)).as_matrix()
 
-    yaw_l = dict_values['yaw_l']
-    pitch_l = dict_values['pitch_l']
-    roll_l = dict_values['roll_l']
+    yaw_l = dict_values['yaw_ldr2cam']
+    pitch_l = dict_values['pitch_ldr2cam']
+    roll_l = dict_values['roll_ldr2cam']
 
     # print(yaw_l, pitch_l, roll_l)
     r_l = (R.from_euler('zyx', [yaw_l, pitch_l, roll_l], degrees=True)).as_matrix()
     ### Processing rotation matrix via scipy ###
 
-    x_l = dict_values['x_l']
-    y_l = dict_values['y_l']
-    z_l = dict_values['z_l']
+    x_l = dict_values['x_ldr2cam']
+    y_l = dict_values['y_ldr2cam']
+    z_l = dict_values['z_ldr2cam']
+    
     tr_lid_cam = np.concatenate([r_l, np.array([x_l,y_l,z_l]).reshape(-1,1)], axis=1)
 
     return intrinsics, distortion, r_cam, tr_lid_cam
