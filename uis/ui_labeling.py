@@ -11,7 +11,6 @@
 # Library
 import sys
 import os
-import yaml
 from PyQt5 import QtGui
 import numpy as np
 import cv2
@@ -34,9 +33,6 @@ from utils.util_point_cloud import *
 
 path_ui = '%s/uis/ui_labeling.ui' % cnf.BASE_DIR
 class_ui = uic.loadUiType(path_ui)[0]
-
-savepath = "/home/capston/SLAM/K-Radar_code_reivew/uis/cam_params/seq_12"
-loadpath = "/home/capston/SLAM/K-Radar_code_reivew/uis/cam_params/seq_12"
 
 class MainFrame(QMainWindow, class_ui):
     def __init__(self):
@@ -143,20 +139,7 @@ class MainFrame(QMainWindow, class_ui):
             'pushButtonLcShowSensorSuite',  # 1
             'pushButtonLcInitValue',        # 2
             'pushButtonLcShowCalib',        # 3
-            'pushButtonLcShowRoiPc',        # 4
-             # camera selection (stereo) #
-            'pushButtonLcFrontLeft',        # 5
-            'pushButtonLcFrontRight',       # 6
-            'pushButtonLcRearLeft',         # 7
-            'pushButtonLcRearRight',        # 8
-            'pushButtonLcLeftLeft',         # 9
-            'pushButtonLcLeftRight',        # 10
-            'pushButtonLcRightLeft',        # 11
-            'pushButtonLcRightRight',       # 12
-            'pushButtonLcSaveParams',       # 13
-            'pushButtonLcChangeSequence',   # 14
-            'pushButtonLcLoadParams',       # 15
-            ]       
+            'pushButtonLcShowRoiPc',]       # 4
         list_name_itemwidget = [ \
             'listWidgetSequence',
             'listWidgetLidar',
@@ -181,7 +164,6 @@ class MainFrame(QMainWindow, class_ui):
         self.horizontalSliderVisRange.valueChanged.connect(\
                 self.horizontalSliderVisRangeChanged)
         self.checkBox_7.stateChanged.connect(self.setLabelingRadarView)
-        self.spinBoxLcCalib_0.valueChanged.connect(self.idx_changed)
 
     def initDetails(self):
         self.stackedWidget.setCurrentIndex(1)
@@ -939,91 +921,129 @@ class MainFrame(QMainWindow, class_ui):
 
     def pushButtonShowTrackInfo(self):
         print('hi')
-        
-    def pushButtonLcChangeSequence(self):
-        self.pushButtonGoToLcCalib()
 
     def pushButtonGoToLcCalib(self):
-        #* REVISION_01: path 지정
-        dir_header = QFileDialog.getExistingDirectory(self, 'Select Directory ', '')
+        if self.dict_lidar is None:
+            ### for debug ###
+            path_header = './resources/imgs/frame/'
+            self.path_pcd_lc = path_header+'pc_example.pcd'
+            self.path_label_lc = path_header+'label_example.txt'
+            path_img = path_header+'img_example.png'
+            ### for debug ###
+        else:
+            self.path_pcd_lc = self.dict_lidar['pc']
+            # print(self.dict_lidar.keys())
+            path_img = self.dict_lidar['front_img']
         
-        self.textEditLcCalib_3.setText(dir_header)
-        self.timestamps = [] # time stamp
-        self.items = [] # cam, ldr, rdr, ...
-        
-        
-        self.info_labels = self.get_info_label(f"{dir_header}/info_label")
-        
-        for timestamps_abs_file in self.info_labels:
-            items, timestamp = self.get_timestamp_and_indices(timestamps_abs_file) 
-            self.timestamps.append(timestamp)
-            self.items.append(items) 
 
-        print(len(self.timestamps))
-        self.spinBoxLcCalib_0.setMaximum(len(self.timestamps)-1)   
+        self.img_lc = cv2.imread(path_img)
+        self.img_lc = self.img_lc[:,:1280,:].copy() # left
+        self.labelLidCamCalibImg.setPixmap(get_q_pixmap_from_cv_img(self.img_lc))
 
-        ###! Init required values ###
+        ### Init required values ###
         self.list_lc_calib_keys = [
             'fx', 'fy', 'px', 'py', \
             'k1', 'k2', 'k3', 'k4', 'k5', \
-            'roll_ldr2cam', 'pitch_ldr2cam', 'yaw_ldr2cam', 'x_ldr2cam', 'y_ldr2cam', 'z_ldr2cam'
+            'roll_c', 'pitch_c', 'yaw_c', \
+            'roll_l', 'pitch_l', 'yaw_l', 'x_l', 'y_l', 'z_l'
         ]
         list_lc_calib_init_values = [
             567.720776478944, 577.2136917114258, 628.720776478944, 369.3068656921387, \
             -0.028873818023371287, 0.0006023302214797655, 0.0039573086622276855, -0.005047176298643093, 0.0, \
-             0.0, 1.9, 0.0, 0.1, 0.0, -0.55
+            0.0, 0.0, 0.0, \
+            0.0, 1.9, 0.0, 0.1, 0.0, -0.55
         ]
-
-        for i in range(15):
-            getattr(self, f'doubleSpinBoxLcCalib_{i}').setValue(list_lc_calib_init_values[i])
-
+        list_lc_calib_init_offsets = [
+            2.0, 2.0, 2.0, 2.0, \
+            0.01, 0.0001, 0.001, 0.001, 0.001, \
+            1.0, 1.0, 1.0, \
+            0.1, 0.1, 0.1, 0.05, 0.05, 0.05
+        ]
+        list_lc_calib_init_values = [
+            557.720776478944, 577.2136917114258, 628.720776478944, 369.3068656921387, \
+            -0.028873818023371287, 0.0006023302214797655, 0.0039573086622276855, -0.005047176298643093, 0.0, \
+            0.0, 0.0, 0.0, \
+            0.0, 1.7, 0.0, 0.1, 0.0, -0.55
+        ]
+        list_lc_calib_init_offsets = [
+            2.0, 2.0, 2.0, 2.0, \
+            0.01, 0.0001, 0.001, 0.001, 0.001, \
+            1.0, 1.0, 1.0, \
+            0.1, 0.1, 0.1, 0.05, 0.05, 0.05
+        ]
+        list_lc_calib_init_values = [
+            557.720776478944, 567.2136917114258, 636.720776478944, 369.3068656921387, \
+            -0.028873818023371287, 0.0006023302214797655, 0.0039573086622276855, -0.005047176298643093, 0.0, \
+            0.0, 0.0, 0.0, \
+            0.0, 0.7, -0.5, 0.1, 0.0, -0.7
+        ]
+        list_lc_calib_init_offsets = [
+            2.0, 2.0, 2.0, 2.0, \
+            0.01, 0.0001, 0.001, 0.001, 0.001, \
+            1.0, 1.0, 1.0, \
+            0.1, 0.1, 0.1, 0.05, 0.05, 0.05
+        ]
         self.dict_lc_calib_init_values = dict()
         self.dict_lc_calib_now_values = dict()
-        for idx, param in enumerate(self.list_lc_calib_keys):
-            # 초기 파라미터들
+        self.dict_lc_calib_offsets = dict()
+        for idx, k in enumerate(self.list_lc_calib_keys):
             self.dict_lc_calib_init_values.update(
-                {param:list_lc_calib_init_values[idx]}
+                {k:list_lc_calib_init_values[idx]}
             )
-            # 현재 파라미터들
             self.dict_lc_calib_now_values.update(
-                {param:list_lc_calib_init_values[idx]}
+                {k:list_lc_calib_init_values[idx]}
             )
+            self.dict_lc_calib_offsets.update(
+                {k:list_lc_calib_init_offsets[idx]}
+            )
+        self.textEditLcCalib_0.setText(\
+            get_txt_from_dict_lc_calib(self.list_lc_calib_keys, self.dict_lc_calib_now_values, self.dict_lc_calib_offsets))
+        set_txt_label_dict_lc_calib(self, self.list_lc_calib_keys, self.dict_lc_calib_now_values)
 
-        for i in range(15):
-            getattr(self, f'doubleSpinBoxLcCalib_{i}').valueChanged.\
-                connect(getattr(self, f'doubleSpinBoxLcCalibValueChanged_{i}'))
-                
-        self.ChangeData("Front(L)")
-
-        #! 일단 제거
+        for i in range(18):
+            getattr(self, f'horizontalSliderLcCalib_{i}').valueChanged.\
+                connect(getattr(self, f'horizontalSliderLcCalibValueChanged_{i}'))
+        ### Init required values ###
+        
         self.stackedWidget.setCurrentIndex(2)
+    
+    def horizontalSliderLcCalibValueChanged(self, i, bar):
+        k = self.list_lc_calib_keys[i]
+        offset = self.dict_lc_calib_offsets[k]
 
-    #* REVISION_02: Slider가 바뀔 때마다 변환하는 과정 바꾸기
-    #* 선 바꾸고, 후 처리하기    
-    def doubleSpinBoxLcCalibValueChanged(self, i, value):
-        key = self.list_lc_calib_keys[i]
-        self.dict_lc_calib_now_values[key] = value
+        mid_val = self.dict_lc_calib_init_values[k]
+        update_val = mid_val + offset*(bar-50.)
+        self.dict_lc_calib_now_values[k] = update_val
 
+        set_txt_label_dict_lc_calib(self, self.list_lc_calib_keys, self.dict_lc_calib_now_values)
 
-    def doubleSpinBoxLcCalibValueChanged_0(self): self.doubleSpinBoxLcCalibValueChanged(0, self.doubleSpinBoxLcCalib_0.value())
-    def doubleSpinBoxLcCalibValueChanged_1(self): self.doubleSpinBoxLcCalibValueChanged(1, self.doubleSpinBoxLcCalib_1.value())
-    def doubleSpinBoxLcCalibValueChanged_2(self): self.doubleSpinBoxLcCalibValueChanged(2, self.doubleSpinBoxLcCalib_2.value())
-    def doubleSpinBoxLcCalibValueChanged_3(self): self.doubleSpinBoxLcCalibValueChanged(3, self.doubleSpinBoxLcCalib_3.value())
-    def doubleSpinBoxLcCalibValueChanged_4(self): self.doubleSpinBoxLcCalibValueChanged(4, self.doubleSpinBoxLcCalib_4.value())
-    def doubleSpinBoxLcCalibValueChanged_5(self): self.doubleSpinBoxLcCalibValueChanged(5, self.doubleSpinBoxLcCalib_5.value())
-    def doubleSpinBoxLcCalibValueChanged_6(self): self.doubleSpinBoxLcCalibValueChanged(6, self.doubleSpinBoxLcCalib_6.value())
-    def doubleSpinBoxLcCalibValueChanged_7(self): self.doubleSpinBoxLcCalibValueChanged(7, self.doubleSpinBoxLcCalib_7.value())
-    def doubleSpinBoxLcCalibValueChanged_8(self): self.doubleSpinBoxLcCalibValueChanged(8, self.doubleSpinBoxLcCalib_8.value())
-    #! 카메라 affine
-    def doubleSpinBoxLcCalibValueChanged_9(self): self.doubleSpinBoxLcCalibValueChanged(9, self.doubleSpinBoxLcCalib_9.value())
-    def doubleSpinBoxLcCalibValueChanged_10(self): self.doubleSpinBoxLcCalibValueChanged(10, self.doubleSpinBoxLcCalib_10.value())
-    def doubleSpinBoxLcCalibValueChanged_11(self): self.doubleSpinBoxLcCalibValueChanged(11, self.doubleSpinBoxLcCalib_11.value())
-    def doubleSpinBoxLcCalibValueChanged_12(self): self.doubleSpinBoxLcCalibValueChanged(12, self.doubleSpinBoxLcCalib_12.value())
-    def doubleSpinBoxLcCalibValueChanged_13(self): self.doubleSpinBoxLcCalibValueChanged(13, self.doubleSpinBoxLcCalib_13.value())
-    def doubleSpinBoxLcCalibValueChanged_14(self): self.doubleSpinBoxLcCalibValueChanged(14, self.doubleSpinBoxLcCalib_14.value())
-    # def doubleSpinBoxLcCalibValueChanged_15(self): self.doubleSpinBoxLcCalibValueChanged(15, self.doubleSpinBoxLcCalib_15.value())
-    # def doubleSpinBoxLcCalibValueChanged_16(self): self.doubleSpinBoxLcCalibValueChanged(16, self.doubleSpinBoxLcCalib_16.value())
-    # def doubleSpinBoxLcCalibValueChanged_17(self): self.doubleSpinBoxLcCalibValueChanged(17, self.doubleSpinBoxLcCalib_17.value())
+        ### Calibration ###
+        # Check the camera size
+        # IMG_H, IMG_W, _ = (self.img_lc).shape
+        # if (IMG_H != 720) and (IMG_W != 1280):
+        #     print('* check the size of image')
+        # img_process = self.img_lc.copy()
+
+        self.pushButtonLcShowCalib()
+
+    def horizontalSliderLcCalibValueChanged_0(self): self.horizontalSliderLcCalibValueChanged(0, self.horizontalSliderLcCalib_0.value())
+    def horizontalSliderLcCalibValueChanged_1(self): self.horizontalSliderLcCalibValueChanged(1, self.horizontalSliderLcCalib_1.value())
+    def horizontalSliderLcCalibValueChanged_2(self): self.horizontalSliderLcCalibValueChanged(2, self.horizontalSliderLcCalib_2.value())
+    def horizontalSliderLcCalibValueChanged_3(self): self.horizontalSliderLcCalibValueChanged(3, self.horizontalSliderLcCalib_3.value())
+    def horizontalSliderLcCalibValueChanged_4(self): self.horizontalSliderLcCalibValueChanged(4, self.horizontalSliderLcCalib_4.value())
+    def horizontalSliderLcCalibValueChanged_5(self): self.horizontalSliderLcCalibValueChanged(5, self.horizontalSliderLcCalib_5.value())
+    def horizontalSliderLcCalibValueChanged_6(self): self.horizontalSliderLcCalibValueChanged(6, self.horizontalSliderLcCalib_6.value())
+    def horizontalSliderLcCalibValueChanged_7(self): self.horizontalSliderLcCalibValueChanged(7, self.horizontalSliderLcCalib_7.value())
+    def horizontalSliderLcCalibValueChanged_8(self): self.horizontalSliderLcCalibValueChanged(8, self.horizontalSliderLcCalib_8.value())
+    def horizontalSliderLcCalibValueChanged_9(self): self.horizontalSliderLcCalibValueChanged(9, self.horizontalSliderLcCalib_9.value())
+    def horizontalSliderLcCalibValueChanged_10(self): self.horizontalSliderLcCalibValueChanged(10, self.horizontalSliderLcCalib_10.value())
+    def horizontalSliderLcCalibValueChanged_11(self): self.horizontalSliderLcCalibValueChanged(11, self.horizontalSliderLcCalib_11.value())
+    def horizontalSliderLcCalibValueChanged_12(self): self.horizontalSliderLcCalibValueChanged(12, self.horizontalSliderLcCalib_12.value())
+    def horizontalSliderLcCalibValueChanged_13(self): self.horizontalSliderLcCalibValueChanged(13, self.horizontalSliderLcCalib_13.value())
+    def horizontalSliderLcCalibValueChanged_14(self): self.horizontalSliderLcCalibValueChanged(14, self.horizontalSliderLcCalib_14.value())
+    def horizontalSliderLcCalibValueChanged_15(self): self.horizontalSliderLcCalibValueChanged(15, self.horizontalSliderLcCalib_15.value())
+    def horizontalSliderLcCalibValueChanged_16(self): self.horizontalSliderLcCalibValueChanged(16, self.horizontalSliderLcCalib_16.value())
+    def horizontalSliderLcCalibValueChanged_17(self): self.horizontalSliderLcCalibValueChanged(17, self.horizontalSliderLcCalib_17.value())
 
     def pushButtonLcBackToRlCalib(self):
         self.stackedWidget.setCurrentIndex(1)
@@ -1031,30 +1051,15 @@ class MainFrame(QMainWindow, class_ui):
     def pushButtonLcShowSensorSuite(self):
         print('hi')
 
-
     def pushButtonLcInitValue(self):
-        list_lc_calib_init_values = [
-            567.720776478944, 577.2136917114258, 628.720776478944, 369.3068656921387, \
-            -0.028873818023371287, 0.0006023302214797655, 0.0039573086622276855, -0.005047176298643093, 0.0, \
-            0.0, 1.9, 0.0, 0.1, 0.0, -0.55
-        ]
+        new_dict_calib_values, new_dict_calib_offsets = \
+            get_dict_lc_calib_from_txt(self.textEditLcCalib_0.toPlainText(), self.list_lc_calib_keys)
+        self.dict_lc_calib_init_values.update(new_dict_calib_values)
+        self.dict_lc_calib_now_values.update(new_dict_calib_values)
+        self.dict_lc_calib_offsets.update(new_dict_calib_offsets)
         
-        for i in range(15):
-            getattr(self, f'doubleSpinBoxLcCalib_{i}').setValue(list_lc_calib_init_values[i])    
-        #! 일단 제거
-        # new_dict_calib_values, new_dict_calib_offsets = \
-        #     get_dict_lc_calib_from_txt(self.textEditLcCalib_0.toPlainText(), self.list_lc_calib_keys)
-        # self.dict_lc_calib_init_values.update(new_dict_calib_values)
-        # self.dict_lc_calib_now_values.update(new_dict_calib_values)
-        # self.dict_lc_calib_offsets.update(new_dict_calib_offsets)
-        
-        # set_txt_label_dict_lc_calib(self, self.list_lc_calib_keys, self.dict_lc_calib_now_values)
+        set_txt_label_dict_lc_calib(self, self.list_lc_calib_keys, self.dict_lc_calib_now_values)
 
-    #* REVISION_03: 각 카메라마다 LiDAR point cloud를 제대로 사영하기
-    #* 일단은 roll과 pitch룰 많이 바꾸어야 한다.
-    #* pitch: 좌우 회전
-    #* roll: 상하 회전
-    #* yaw: 이미지 자체 회전
     def pushButtonLcShowCalib(self):
         img_size = (1280, 720)
         # tr_rotation_default = np.array([
@@ -1072,9 +1077,7 @@ class MainFrame(QMainWindow, class_ui):
 
         intrinsics, distortion, r_cam, tr_lid_cam =  get_matrices_from_dict_lc_calib(self.dict_lc_calib_now_values)
 
-        print("Transformation(ldr2cam)")
         print(tr_lid_cam)
-        print()
 
         img_process = self.img_lc
 
@@ -1095,11 +1098,10 @@ class MainFrame(QMainWindow, class_ui):
             dict_values.update({attribute: read_attribute_from_pcd(attribute, self.path_pcd_lc)})
         ### Get additional attribute for point cloud ###
 
-        #* points_roi에서 내가 원하는 영역을 가져와야 한다.
         points_roi = np.array(np.asarray(pcd.points))
         if self.checkBox_pc_roi.isChecked():
             x_min, x_max, y_min, y_max, z_min, z_max = get_pc_roi_from_txt(self.textEditLcCalib_1.toPlainText())
-            
+
             points = np.array(np.asarray(pcd.points))
             list_for_concatenation = [points]
             for attribute in list_attributes:
@@ -1160,7 +1162,7 @@ class MainFrame(QMainWindow, class_ui):
             x_min, x_max, y_min, y_max, z_min, z_max = get_pc_roi_from_txt(self.textEditLcCalib_1.toPlainText())
 
             points = np.array(np.asarray(pcd.points))
-            list_for_concatenation = [points]   
+            list_for_concatenation = [points]
             for attribute in list_attributes:
                 list_for_concatenation.append(dict_values[attribute])
             points_roi = np.concatenate(list_for_concatenation, axis=1)
@@ -1185,209 +1187,9 @@ class MainFrame(QMainWindow, class_ui):
         # pcd.colors = o3d.utility.Vector3dVector(np.zeros_like(points_roi[:,:3]))
         o3d.visualization.draw_geometries([pcd])
         ### Visualize point cloud ###
-        
-    #* REVISION_01: Camera Selection
-    #* REVISION_04: Config File로 각 8개의 카메라의 intrinsic/extrinsic parameter를 저장
-    def pushButtonLcFrontLeft(self): self.ChangeData("Front(L)")
-    def pushButtonLcFrontRight(self): self.ChangeData("Front(R)")
-    def pushButtonLcRearLeft(self): self.ChangeData("Rear(L)")
-    def pushButtonLcRearRight(self): self.ChangeData("Rear(R)")
-    def pushButtonLcLeftLeft(self): self.ChangeData("Left(L)")
-    def pushButtonLcLeftRight(self): self.ChangeData("Left(R)")
-    def pushButtonLcRightLeft(self): self.ChangeData("Right(L)")
-    def pushButtonLcRightRight(self): self.ChangeData("Right(R)")
-    
-    def ChangeData(self, cam_name:str):
-        self.textEditLcCalib_2.setText(cam_name)
-        
-        # 여기서 파일을 open하기
-        # 파일 이름: cam-front, cam-rear / but L,R은 내가 쪼개야 한다.
-        cam_direction = f"cam-{cam_name.split('(')[0].lower()}"
-        stereo_LR = cam_name[-2].lower()
-        self.cam_direction = cam_direction
-        self.stereo_LR = stereo_LR
-        idx = int(self.spinBoxLcCalib_0.value())        
-            
-        self.switchROI(self.cam_direction.split('-')[-1])
-
-        self.setCondition(cam_direction, stereo_LR, idx)
-
-    #* SpinBox Event 추가
-    def idx_changed(self):
-        idx = int(self.spinBoxLcCalib_0.value())
-        self.setCondition(self.cam_direction, self.stereo_LR, idx)
-
-
-    def switchROI(self, cam_direction):
-        # x_min, x_max, y_min, y_max, z_min, z_max = get_pc_roi_from_txt(self.textEditLcCalib_1.toPlainText())
-        result = dict()
-        roi_info = self.textEditLcCalib_1.toPlainText().split('\n')[1:]
-        if roi_info[-1] == '':
-            roi_info = roi_info[:-1]
-        
-        keys = ['x_min', 'x_max', 'y_min', 'y_max', 'z_min', 'z_max']
-        for info in roi_info:
-            result[info.split(':')[0]] = float(info.split(':')[1])
-        
-        if cam_direction == 'front':
-            result['x_min'] = 0.
-            result['x_max'] = 100.
-            result['y_min'] = -100.
-            result['y_max'] = 100.
-        elif cam_direction == 'rear':
-            result['x_min'] = -100.
-            result['x_max'] = 0.
-            result['y_min'] = -100.
-            result['y_max'] = 100.
-        elif cam_direction == 'left':
-            result['x_min'] = -100.
-            result['x_max'] = 100.
-            result['y_min'] = 0.
-            result['y_max'] = 100.
-        elif cam_direction == 'right':
-            result['x_min'] = -100.
-            result['x_max'] = 100.
-            result['y_min'] = -100.
-            result['y_max'] = 0.
-        
-               
-        text = "[m]\n"
-        for key in keys:
-            text += f"{key}: {result[key]}\n"
-        
-        self.textEditLcCalib_1.setText(text)
-
-    def setCondition(self, cam_direction, stereo_LR, img_idx=0):
-            
-        path_header = self.textEditLcCalib_3.toPlainText()
-        cam_timestamp = cam_direction if cam_direction == "cam-front" else "cam-lrr"
-        
-        
-        self.path_pcd_lc = f"{path_header}/os2-64/os2-64_{str(self.items[img_idx]['os2-64']).zfill(5)}.pcd"
-        self.path_label_lc = f"{path_header}/info_label/{str(self.items[img_idx]['info_label'])}.txt"
-        path_img = f"{path_header}/{cam_direction}/{cam_direction}_{str(self.items[img_idx][cam_timestamp]).zfill(5)}.png"
-        
-        # 33,1 / 629, 597
-        self.img_lc = cv2.imread(path_img)
-        if stereo_LR == 'l': # left
-            self.img_lc = self.img_lc[:,:1280,:].copy() # left
-        else:
-            self.img_lc = self.img_lc[:,1280:,:].copy() #right
-        self.labelLidCamCalibImg.setPixmap(get_q_pixmap_from_cv_img(self.img_lc))
-
-
-        for i in range(15):
-            getattr(self, f'doubleSpinBoxLcCalib_{i}').valueChanged.\
-                connect(getattr(self, f'doubleSpinBoxLcCalibValueChanged_{i}'))
-                
-        
-    def pushButtonLcSaveParams(self):
-        filepath=savepath
-        cam_number = self.assign_cam_number(self.cam_direction, self.stereo_LR)
-        params = dict()
-        params.update({'cam_number':cam_number}) 
-        params.update(self.dict_lc_calib_now_values)
-        
-        self.save_camera_params(f"{filepath}/cam_{cam_number}.yml", params)
-        
-    def pushButtonLcLoadParams(self):
-        try:
-            cam_number = self.assign_cam_number(self.cam_direction, self.stereo_LR)
-            filepath = loadpath
-            params = self.load_camera_params(f"{filepath}/cam_{cam_number}.yml")        
-            _ = params.pop("cam_number", None)  # key가 존재하면 값을 얻고, 그 키를 제거
-            self.dict_lc_calib_now_values = params.copy()            
-            list_lc_calib_init_values = [self.dict_lc_calib_now_values[self.list_lc_calib_keys[i]] for i in range(15)]
-        except:
-            print("(WARNING) You should save the camera params at first.")       
-            list_lc_calib_init_values = [
-            567.720776478944, 577.2136917114258, 628.720776478944, 369.3068656921387, \
-            -0.028873818023371287, 0.0006023302214797655, 0.0039573086622276855, -0.005047176298643093, 0.0, \
-            0.0, 1.9, 0.0, 0.1, 0.0, -0.55
-            ]
-        for i in range(15):
-            getattr(self, f'doubleSpinBoxLcCalib_{i}').setValue(list_lc_calib_init_values[i])
-    
-    def assign_cam_number(self, cam_direction, stereo_LR):
-        cam_direction = cam_direction.split('-')[-1]
-
-        if cam_direction == 'front':
-            cam_number = 1 if stereo_LR == 'l' else 2
-        elif cam_direction == 'right':
-            cam_number = 3 if stereo_LR == 'l' else 4
-        elif cam_direction == 'rear':
-            cam_number = 5 if stereo_LR == 'l' else 6
-        elif cam_direction == 'left':
-            cam_number = 7 if stereo_LR == 'l' else 8
-        
-        return cam_number
-        
-        
-    def save_camera_params(self, yaml_file_path, settings):
-        with open(yaml_file_path, 'w') as yaml_file:
-            yaml.dump(settings, yaml_file, default_flow_style=False)
-        print(f'{yaml_file_path.split("/")[-1]} has been saved in {yaml_file_path}')
-
-    def load_camera_params(self, yaml_file_path):
-        if os.path.exists(yaml_file_path):
-            with open(yaml_file_path, 'r') as yaml_file:
-                settings = yaml.safe_load(yaml_file)
-                return settings
-        else:
-            print(f'{yaml_file_path} 파일이 존재하지 않습니다. 새로운 설정을 생성하세요.')
-            return None
-        
-        
-    def get_info_label(self, dir_path):
-        try:
-            files = os.listdir(dir_path)
-            files = sorted(files, key = lambda x: int(x.split("_")[-1].split(".")[0]))
-            files = [f"{dir_path}/{filename}" for filename in files]
-        except FileNotFoundError:
-            print(f"'{dir_path}' doesn't exist.")
-        return files
-    
-    def get_timestamp_and_indices(self, txt_file_path):
-        items, timestamp = None, None
-        try:
-            with open(txt_file_path, 'r') as file:
-                items, timestamp= file.readline().split(',')  # 파일의 한 줄을 읽어옴 
-                keys, values = items.split('=') # name, value
-                # get tesseract, os2-64, cam-front, os1-128, and cam-lrr 
-                keys = keys.split('_')
-                keys[0] = keys[0].split('(')[-1]
-                keys[-1] = keys[-1].split(')')[0]
-                # match each values
-                values = [int(value) for value in values.split('_')]
-                items = dict(zip(keys, values))                
-                timestamp = float(timestamp.split('=')[-1])
-        except FileNotFoundError:
-            print(f"'{txt_file_path}' doesn't exist.")
-        except Exception as e:
-            print(f"Error happens for reading file: {str(e)}")            
-        items['info_label'] = txt_file_path.split('/')[-1] # info label의 .txt file도 추가
-        return items, timestamp
-        
     
 def startUi():
     app = QApplication(sys.argv)
     main_frame = MainFrame()
     main_frame.show()
     sys.exit(app.exec_())
-
-
-'''
-논문의 summary, contribution
-
-major revision list
-- 중복성 검토: 내가 알고 있는 논문과 완전히 같거나 유사하거나 (이때는 reject)
-- Novelty가 다른 곳에 있다면 reject
-- Contribution이 minor하다면 (수치적으로 미미한 성능을 보이는 경우)
-
-minor revision list
-- Figure 전체가 완전히 개판이면 major revision으로 넘기기
-- 오탈자, 문법, 그림 대응이 되는지를 맞추기
-
-결론 reject
-'''
-
