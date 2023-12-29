@@ -746,7 +746,6 @@ class PipelineDetection_v1_0():
                 dict_out['meta'][0]['desc']['road_type'], dict_out['meta'][0]['desc']['capture_time'], dict_out['meta'][0]['desc']['climate']
             # print(dict_out['desc'][0])
 
-
             ### for every conf in list_conf_thr ###
             for conf_thr in list_conf_thr:
                 ### For All Conditions ###
