@@ -411,6 +411,22 @@ class PipelineDetection_v1_0():
     def validate_kitti(self, epoch=None, list_conf_thr=None, is_subset=False):
         self.network.eval()
 
+        eval_ver2 = self.cfg.get('cfg_eval_ver2', False)
+        if eval_ver2:
+            class_names = []
+            dict_label = self.dataset_test.label.copy()
+            list_for_pop = ['calib', 'onlyR', 'Label', 'consider_cls', 'consider_roi', 'remove_0_obj']
+            for temp_key in list_for_pop:
+                dict_label.pop(temp_key)
+            for k, v in dict_label.items():
+                _, logit_idx, _, _ = v
+                if logit_idx > 0:
+                    class_names.append(k)
+            self.dict_cls_id_to_name = dict()
+            for idx_cls, cls_name in enumerate(class_names):
+                self.dict_cls_id_to_name[(idx_cls+1)] = cls_name # 1 for Background
+        
+
         ### Check is_validate with small dataset ###
         if is_subset:
             is_shuffle = True
@@ -464,10 +480,37 @@ class PipelineDetection_v1_0():
                     os.makedirs(temp_dir, exist_ok=True)
 
                 if is_feature_inferenced:
-                    dict_out = self.network.list_modules[-1].get_nms_pred_boxes_for_single_sample(dict_out, conf_thr, is_nms=True)
+                    if eval_ver2:
+                        pred_dicts = dict_out['pred_dicts'][0]
+                        pred_boxes = pred_dicts['pred_boxes'].detach().cpu().numpy()
+                        pred_scores = pred_dicts['pred_scores'].detach().cpu().numpy()
+                        pred_labels = pred_dicts['pred_labels'].detach().cpu().numpy()
+                        list_pp_bbox = []
+                        list_pp_cls = []
+
+                        for idx_pred in range(len(pred_labels)):
+                            x, y, z, l, w, h, th = pred_boxes[idx_pred]
+                            score = pred_scores[idx_pred]
+                            
+                            if score > conf_thr:
+                                cls_idx = int(np.round(pred_labels[idx_pred]))
+                                cls_name = class_names[cls_idx-1]
+                                list_pp_bbox.append([score, x, y, z, l, w, h, th])
+                                list_pp_cls.append(cls_idx)
+                            else:
+                                continue
+                        pp_num_bbox = len(list_pp_cls)
+                        dict_out_current = dict_out
+                        dict_out_current.update({
+                            'pp_bbox': list_pp_bbox,
+                            'pp_cls': list_pp_cls,
+                            'pp_num_bbox': pp_num_bbox,
+                            'pp_desc': dict_out['meta'][0]['desc']
+                        })
+                    else:
+                        dict_out_current = self.network.list_modules[-1].get_nms_pred_boxes_for_single_sample(dict_out, conf_thr, is_nms=True)
                 else:
-                    dict_out = update_dict_feat_not_inferenced(dict_out) # mostly sleet for lpc (e.g. no measurement)
-                
+                    dict_out_current = update_dict_feat_not_inferenced(dict_out) # mostly sleet for lpc (e.g. no measurement)                
                 if dict_out is None:
                     print('* Exception error (Pipeline): dict_item is None in validation')
                     continue
@@ -702,6 +745,7 @@ class PipelineDetection_v1_0():
             road_cond_tag, time_cond_tag, weather_cond_tag = \
                 dict_out['meta'][0]['desc']['road_type'], dict_out['meta'][0]['desc']['capture_time'], dict_out['meta'][0]['desc']['climate']
             # print(dict_out['desc'][0])
+
 
             ### for every conf in list_conf_thr ###
             for conf_thr in list_conf_thr:
