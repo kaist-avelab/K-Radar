@@ -1,7 +1,7 @@
 ### ----- General ----- ###
 GENERAL:
   NAME: 'RTNH'
-  COMMENT1: '0~72, -15~15, -2~7.6'
+  COMMENT1: '0~72, -16~16, -2~7.6'
   COMMENT2: 'CenterPoint setting'
   COMMENT3: 'Multi-class (+ Bus or Truck)'
   VERSION: '2.0'
