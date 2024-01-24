@@ -1,9 +1,7 @@
 '''
 * Copyright (c) AVELab, KAIST. All rights reserved.
-* author: Donghee Paek & Kevin Tirta Wijaya, AVELab, KAIST
-* e-mail: donghee.paek@kaist.ac.kr, kevin.tirta@kaist.ac.kr
-* description: pipeline for 3D object detection
-* changed: 2023-01-02
+* author: Donghee Paek, AVELab, KAIST
+* e-mail: donghee.paek@kaist.ac.kr
 '''
 
 import torch
@@ -32,6 +30,8 @@ from utils.util_point_cloud import Object3D
 import utils.kitti_eval.kitti_common as kitti
 from utils.kitti_eval.eval import get_official_eval_result
 
+from utils.util_optim import clip_grad_norm_
+
 class PipelineDetection_v1_0():
     def __init__(self, path_cfg=None, mode='train'):
         '''
@@ -54,7 +54,7 @@ class PipelineDetection_v1_0():
         self.dataset_train = build_dataset(self, split='train') if self.mode == 'train' else None
         self.dataset_test = build_dataset(self, split='test')
         print('* The dataset is loaded.')
-        if mode == 'train':
+        if mode == 'train': # for setting scheduler
             self.cfg.DATASET.NUM = len(self.dataset_train)
         elif mode in ['test', 'vis']:
             self.cfg.DATASET.NUM = len(self.dataset_test)
@@ -78,10 +78,16 @@ class PipelineDetection_v1_0():
         if self.cfg.GENERAL.RESUME.IS_RESUME:
             self.resume_network()
 
+        self.cfg_dataset_ver2 = self.cfg.get('cfg_dataset_ver2', False)
+        self.get_loss_from = self.cfg.get('get_loss_from', 'head')
+        self.optim_fastai = True \
+            if self.cfg.OPTIMIZER.NAME in ['adam_onecycle', 'adam_cosineanneal'] else False
+        self.grad_norm_clip = self.cfg.OPTIMIZER.get('GRAD_NORM_CLIP', -1)
+
         # Vis
         self.set_vis()
         
-        self.show_pline_description()
+        # self.show_pline_description()
 
     def update_cfg_regarding_mode(self):
         '''
@@ -133,8 +139,6 @@ class PipelineDetection_v1_0():
         ### Consider output of network and dataset ###
 
     def set_vis(self):
-        self.cfg_dataset_ver2 = self.cfg.get('cfg_dataset_ver2', False)
-        self.get_loss_from = self.cfg.get('get_loss_from', 'head')
         if self.cfg_dataset_ver2:
             pass # TODO
         else:
@@ -245,6 +249,12 @@ class PipelineDetection_v1_0():
         if self.is_logging:
             idx_log_iter = 0 if self.log_iter_start is None else self.log_iter_start
 
+        if self.optim_fastai:
+            accumulated_iter = 0
+            cfg_optim = self.cfg.OPTIMIZER
+            use_amp = cfg_optim.get('USE_AMP', False)
+            scaler = torch.cuda.amp.GradScaler(enabled=use_amp, init_scale=cfg_optim.get('LOSS_SCALE_FP16', 2.0**16))
+
         for epoch in range(epoch_start, epoch_end):
             print(f'* Training epoch = {epoch}/{epoch_end-1}')
             if self.is_logging:
@@ -254,7 +264,14 @@ class PipelineDetection_v1_0():
             self.network.training = True
             avg_loss = []
             for idx_iter, dict_datum in enumerate(tqdm(data_loader_train)):
-                dict_net = self.network(dict_datum)
+                if self.optim_fastai:
+                    self.scheduler.step(accumulated_iter, epoch)
+                
+                try:
+                    dict_net = self.network(dict_datum)
+                except:
+                    print('* error: ', dict_datum['meta'])
+                
                 if self.get_loss_from == 'head':
                     loss = self.network.head.loss(dict_net)
                 elif self.get_loss_from == 'detector':
@@ -266,18 +283,26 @@ class PipelineDetection_v1_0():
                     log_avg_loss = loss
                 avg_loss.append(log_avg_loss)
 
-                if loss == 0.:
-                    pass
-                    # print('loss is 0.') # No objs for all samples
-                elif torch.isfinite(loss):
-                    loss.backward()
+                if self.optim_fastai:
+                    scaler.scale(loss).backward()
+                    scaler.unscale_(self.optimizer)
+                    clip_grad_norm_(self.network.parameters(), cfg_optim.GRAD_NORM_CLIP)
+                    scaler.step(self.optimizer)
+                    scaler.update()
+                    accumulated_iter += 1
                 else:
-                    print('* Exception error (pipeline): nan or inf loss happend')
-                    print('* Meta: ', dict_datum['meta'])
+                    if loss == 0.:
+                        pass
+                        # print('loss is 0.') # No objs for all samples
+                    elif torch.isfinite(loss):
+                        loss.backward()
+                    else:
+                        print('* Exception error (pipeline): nan or inf loss happend')
+                        print('* Meta: ', dict_datum['meta'])
 
-                self.optimizer.step()
-                if not (self.scheduler is None):
-                    self.scheduler.step()
+                    self.optimizer.step()
+                    if not (self.scheduler is None):
+                        self.scheduler.step()
                 
                 self.optimizer.zero_grad()
 
@@ -287,8 +312,21 @@ class PipelineDetection_v1_0():
                     for k, v in dict_logging.items():
                         self.log_train_iter.add_scalar(f'train/{k}', v, idx_log_iter)
                     if not (self.scheduler is None):
-                        lr = self.scheduler.get_last_lr()
-                        self.log_train_iter.add_scalar(f'train/learning_rate', lr[0], idx_log_iter)
+                        if self.optim_fastai:
+                            lr = float(self.optimizer.lr)
+                            self.log_train_iter.add_scalar(f'train/learning_rate', lr, idx_log_iter)
+                        else:
+                            lr = self.scheduler.get_last_lr()
+                            self.log_train_iter.add_scalar(f'train/learning_rate', lr[0], idx_log_iter)
+
+                # free memory (Killed error, checked with htop)
+                if 'pointer' in dict_datum.keys():
+                    for dict_item in dict_datum['pointer']:
+                        for k in dict_item.keys():
+                            if k != 'meta':
+                                dict_item[k] = None
+                for temp_key in dict_datum.keys():
+                    dict_datum[temp_key] = None
 
             if self.is_save_model:
                 # epoch: indexing from 0
@@ -304,15 +342,17 @@ class PipelineDetection_v1_0():
                         'optimizer_state_dict': self.optimizer.state_dict(),
                         'idx_log_iter': idx_log_iter, 
                     }
-                    if not (self.scheduler is None):
-                        dict_util.update({'scheduler_state_dict': self.scheduler.state_dict()})
+                    if self.optim_fastai:
+                        dict_util.update({'it': accumulated_iter})
+                    else:
+                        if not (self.scheduler is None):
+                            dict_util.update({'scheduler_state_dict': self.scheduler.state_dict()})
                     torch.save(dict_util, path_dict_util)
 
             if self.is_logging:
                 self.log_train_epoch.add_scalar(f'train/avg_loss', np.mean(avg_loss), epoch)
 
             if self.is_validate:
-                self.network.training=False
                 if self.is_consider_subset:
                     if ((epoch + 1) % self.val_per_epoch_subset) == 0:
                         self.validate_kitti(epoch, list_conf_thr=self.list_val_conf_thr, is_subset=True)
@@ -409,6 +449,7 @@ class PipelineDetection_v1_0():
 
     # V2
     def validate_kitti(self, epoch=None, list_conf_thr=None, is_subset=False):
+        self.network.training=False
         self.network.eval()
 
         eval_ver2 = self.cfg.get('cfg_eval_ver2', False)
@@ -542,6 +583,15 @@ class PipelineDetection_v1_0():
                     str_log = idx_name + '\n'
                     with open(split_path, 'a') as f:
                         f.write(str_log)
+            
+            # free memory (Killed error, checked with htop)
+            if 'pointer' in dict_datum.keys():
+                for dict_item in dict_datum['pointer']:
+                    for k in dict_item.keys():
+                        if k != 'meta':
+                            dict_item[k] = None
+            for temp_key in dict_datum.keys():
+                dict_datum[temp_key] = None
             tqdm_bar.update(1)
         tqdm_bar.close()
 
@@ -561,21 +611,6 @@ class PipelineDetection_v1_0():
                 dict_metrics, result_log = get_official_eval_result(gt_annos, dt_annos, idx_cls_val, is_return_with_dict=True)
                 print(f'-----conf{conf_thr}-----')
                 print(result_log)
-                # try:
-                #     dict_metrics, result_log = get_official_eval_result(gt_annos, dt_annos, idx_cls_val, is_return_with_dict=True)
-                #     print(result_log)
-                # except:
-                #     dic_cls_val = self.cfg.VAL.DIC_CLASS_VAL
-                #     cls_name = dic_cls_val[list(dic_cls_val.keys())[idx_cls_val]]
-                #     dict_metrics = {
-                #         'cls': cls_name,
-                #         'iou': self.cfg.VAL.LIST_VAL_IOU, # this is for logging, check, 
-                #         'bbox': [0., 0., 0.],
-                #         'bev': [0., 0., 0.],
-                #         '3d': [0., 0., 0.],
-                #     }
-                #     except_log = f'* Exception error (Pipeline): eval error occurs for {cls_name} in conf_thr = {conf_thr}\n'
-                #     print(except_log)
                 list_metrics.append(dict_metrics)
 
             for dict_metrics in list_metrics:
@@ -873,7 +908,7 @@ class PipelineDetection_v1_0():
                                 f.write(pred+'\n')
                             with open(preds_dir_weather + '/' + idx_name + '.txt', mode) as f:
                                 f.write(pred+'\n')
-
+                    
                     str_log = idx_name + '\n'
                     with open(split_path, 'a') as f:
                         f.write(str_log)
@@ -883,6 +918,15 @@ class PipelineDetection_v1_0():
                         f.write(str_log)
                     with open(split_path_weather, 'a') as f:
                         f.write(str_log)
+                        
+            # free memory (Killed error, checked with htop)
+            if 'pointer' in dict_datum.keys():
+                for dict_item in dict_datum['pointer']:
+                    for k in dict_item.keys():
+                        if k != 'meta':
+                            dict_item[k] = None
+            for temp_key in dict_datum.keys():
+                dict_datum[temp_key] = None
             tqdm_bar.update(1)
         tqdm_bar.close()
 
@@ -902,20 +946,7 @@ class PipelineDetection_v1_0():
                     list_metrics = []
                     list_results = []
                     for idx_cls_val in self.list_val_care_idx:
-                        # try:
                         dict_metrics, result = get_official_eval_result(gt_annos, dt_annos, idx_cls_val, is_return_with_dict=True)
-                        # except Exception as e:
-                        #     print(e)
-                        #     dic_cls_val = self.cfg.VAL.DIC_CLASS_VAL
-                        #     cls_name = dic_cls_val[list(dic_cls_val.keys())[idx_cls_val]]
-                        #     dict_metrics = {
-                        #         'cls': cls_name,
-                        #         'iou': self.cfg.VAL.LIST_VAL_IOU,
-                        #         'bbox': [0., 0., 0.],
-                        #         'bev': [0., 0., 0.],
-                        #         '3d': [0., 0., 0.],
-                        #     }
-                        #     result = f'error occurs for {cls_name}\n'
                         list_metrics.append(dict_metrics)
                         list_results.append(result)
                     print('Conf thr: ', str(conf_thr), ', Condition: ', condition)
