@@ -27,7 +27,7 @@ except:
     sys.path.append(osp.dirname(osp.dirname(osp.abspath(__file__))))
     from utils.util_calib import *
 
-roi = [0,-15,-2,72,15,7.6]
+roi = [0,-16,-2,72,16,7.6]
 dict_cfg = dict(
     path_data = dict(
         list_dir_kradar = ['/media/donghee/kradar/dataset'],
@@ -52,14 +52,18 @@ dict_cfg = dict(
         'Label':            [False, -1, [0.5, 0.5, 0.5], [128,128,128]],
     },
     label_version = 'v2_0', # ['v1_0', 'v1_1', 'v2_0', v2_1']
-    item = dict(calib=True, ldr64=True, ldr128=False, rdr=False, rdr_sparse=True, cam=True),
+    item = dict(calib=True, ldr64=True, ldr128=False, rdr=False, rdr_sparse=False, cam=True, rdr_polar_3d=True, rpcs=False),
     calib = dict(z_offset=0.7),
-    cam = dict(front0=True, front1=True, left0=True, left1=True, right0=True, right1=True, rear0=True, rear1=True),
-    cam_calib = dict(load=False, dir='./resources/cam_calib/common'),
+    cam = dict(front0=True, front1=True, left0=False, left1=False, right0=False, right1=False, rear0=False, rear1=False),
+    cam_process = dict(origin=(720,1280), cropped=((127,593),(0,1280)), scaled=(256,704), dir='/media/donghee/HDD_3/undistorted_imgs'),
+    cam_calib = dict(load=True, dir='./resources/cam_calib/common', dir_npy='./resources/cam_calib/T_npy'),
     ldr64 = dict(processed=False, skip_line=13, n_attr=9, inside_ldr64=True, calib=True,),
     rdr = dict(cube=False,),
     rdr_sparse = dict(processed=True, dir='/media/donghee/kradar/rdr_sparse_data/rtnh_wider_1p_1',),
+    rdr_polar_3d = dict(processed=True, dir='/media/donghee/kradar/rdr_polar_3d', in_pc100p=True),
     roi = dict(filter=False, xyz=roi, keys=['ldr64', 'rdr_sparse'], check_azimuth_for_rdr=True, azimuth_deg=[-53,53]),
+    rpcs = dict(processed=True, dir='/media/donghee/kradar/rdr_pc', keys=['pc1p', 'pc10p']),
+    portion = ['10'], # ['7', '8'],
 )
 
 class KRadarDetection_v2_1(Dataset):
@@ -78,11 +82,19 @@ class KRadarDetection_v2_1(Dataset):
         
         self.item = self.cfg.item
         self.calib = self.cfg.calib
-        self.cam = self.cfg.cam
+        self.cam = self.cfg.get('cam', None)
         self.cam_calib = self.cfg.get('cam_calib', None)
         self.ldr64 = self.cfg.ldr64
         self.rdr_sparse = self.cfg.rdr_sparse
+        self.rdr_polar_3d = self.cfg.get('rdr_polar_3d', None)
+        self.rpcs = self.cfg.get('rpcs', None)
         self.roi = self.cfg.roi
+
+        for temp_key in ['cam', 'rdr_polar_3d', 'rpcs']:
+            if temp_key not in self.item.keys():
+                self.item[temp_key] = False
+        
+        self.portion = self.cfg.get('portion', None)
 
         self.list_dict_item = self.load_dict_item(self.cfg.path_data, split)
         if cfg_from_yaml:
@@ -116,6 +128,33 @@ class KRadarDetection_v2_1(Dataset):
         
         self.dict_cam_calib = self.get_dict_cam_calib_from_yml() \
                             if self.cam_calib is not None else None
+        
+        shuffle_points = self.cfg.get('shuffle_points', None)
+        self.shuffle_points = False if shuffle_points is None else \
+                                        shuffle_points.get(split, False)
+        
+        if self.rdr_polar_3d is not None:
+            if self.rdr_polar_3d.get('in_pc100p', False):
+                n_r = len(self.arr_range)
+                n_a = len(self.arr_azimuth)
+                n_e = len(self.arr_elevation)
+                rae_r = np.repeat(np.repeat((self.arr_range).copy().reshape(n_r,1,1),n_a,1),n_e,2)
+                rae_a = np.repeat(np.repeat((self.arr_azimuth).copy().reshape(1,n_a,1),n_r,0),n_e,2)
+                rae_e = np.repeat(np.repeat((self.arr_elevation).copy().reshape(1,1,n_e),n_r,0),n_a,1)
+
+                # Radar polar to General polar coordinate
+                rae_a = -rae_a
+                rae_e = -rae_e
+                
+                # For flipped azimuth & elevation angle
+                xyz_x = rae_r * np.cos(rae_e) * np.cos(rae_a)
+                xyz_y = rae_r * np.cos(rae_e) * np.sin(rae_a)
+                xyz_z = rae_r * np.sin(rae_e)
+
+                self.rdr_polar_3d_xyz = np.stack((xyz_x,xyz_y,xyz_z),axis=0)
+                self.get_rdr_polar_3d_in_pc100p = True
+            else:
+                self.get_rdr_polar_3d_in_pc100p = False
     
     ### Setup ###
     def load_dict_item(self, path_data, split):
@@ -133,7 +172,12 @@ class KRadarDetection_v2_1(Dataset):
         list_seqs_w_header = []
         for path_header in path_data.list_dir_kradar:
             list_seqs = os.listdir(path_header)
-            list_seqs_w_header.extend([(seq, path_header) for seq in list_seqs])
+            if self.portion is None:
+                list_seqs_w_header.extend([(seq, path_header) for seq in list_seqs])
+            else:
+                for seq in list_seqs:
+                    if seq in self.portion:
+                        list_seqs_w_header.append((seq, path_header))
         list_seqs_w_header = sorted(list_seqs_w_header, key=lambda x: int(x[0]))
 
         list_dict_item = []
@@ -340,6 +384,40 @@ class KRadarDetection_v2_1(Dataset):
             dict_cam_calib[key_name] = get_matrices_from_dict_calib(dict_temp) # img_size, intrinsics, distortion, T_ldr2cam
         return dict_cam_calib
     
+    def get_dict_cam_calib_from_npy(self, dict_item): # from save_calibration_matrix_in_npy in util_calib.py
+        dir_cam_calib = self.cam_calib.dir_npy
+        list_npy = os.listdir(dir_cam_calib)
+
+        intrinsic = []
+        cam2ldr = []
+        ldr2cam = []
+        ldr2img = []
+
+        for npy_file_name in list_npy:
+            key_name = npy_file_name.split('.')[0].split('_')[1]
+            npy_file = osp.join(dir_cam_calib, npy_file_name)
+            temp = np.load(npy_file)
+            if key_name == 'cam2pix':
+                # temp[0,0] *= self.scale_x
+                # temp[1,1] *= self.scale_y
+                # temp[0,2] *= self.scale_x
+                # temp[1,2] *= self.scale_y
+                intrinsic.append(temp[:3, :3]) # [3, 3]
+            elif key_name == 'ldr2cam':
+                ldr2cam.append(temp)
+                temp_inv = np.linalg.inv(temp)
+                cam2ldr.append(temp_inv) #[4, 4]
+        
+        for i in range(len(intrinsic)):
+            lidar2image = intrinsic[i] @ ldr2cam[i][:3, :4]
+            ldr2img.append(lidar2image)
+        
+        dict_item['camera_intrinsics'] = intrinsic # [3, 3]
+        dict_item['camera2lidar'] = cam2ldr # [4, 4]
+        dict_item['lidar2image'] = ldr2img # [3, 4]
+
+        return dict_item
+    
     def get_calib_values(self, path_calib):
         f = open(path_calib, 'r')
         lines = f.readlines()
@@ -384,9 +462,62 @@ class KRadarDetection_v2_1(Dataset):
             dict_item['rear1'] = img_front[:,1280:,:]
         
         return dict_item
+    
+    def save_undistorted_camera_imgs(self, key_cam='front', root_path='/media/donghee/HDD_3/undistorted_imgs'):
+        root_path0 = osp.join(root_path, key_cam+'0')
+        root_path1 = osp.join(root_path, key_cam+'1')
+        
+        os.makedirs(root_path0, exist_ok=True)
+        os.makedirs(root_path1, exist_ok=True)
 
+        for seq_name in range(58):
+            seq_folder0 = osp.join(root_path0, f'{seq_name+1}')
+            seq_folder1 = osp.join(root_path1, f'{seq_name+1}')
+            os.makedirs(seq_folder0, exist_ok=True)
+            os.makedirs(seq_folder1, exist_ok=True)
+
+        key_idx = 'camf' if key_cam == 'front' else 'camr'
+        
+        list_params0 = self.dict_cam_calib[key_cam+'0']
+        list_params1 = self.dict_cam_calib[key_cam+'1']
+
+        # for img 0
+        img_size0, intrinsics0, distortion0, T_ldr2cam0 = list_params0
+        ncm0, _ = cv2.getOptimalNewCameraMatrix(intrinsics0, distortion0, img_size0, alpha=0.0)
+        for j in range(3):
+            for i in range(3):
+                intrinsics0[j,i] = ncm0[j, i]
+        map_x0, map_y0 = cv2.initUndistortRectifyMap(intrinsics0, distortion0, None, ncm0, img_size0, cv2.CV_32FC1)
+
+        # for img 1
+        img_size1, intrinsics1, distortion1, T_ldr2cam1 = list_params1
+        ncm1, _ = cv2.getOptimalNewCameraMatrix(intrinsics1, distortion1, img_size1, alpha=0.0)
+        for j in range(3):
+            for i in range(3):
+                intrinsics1[j,i] = ncm1[j, i]
+        map_x1, map_y1 = cv2.initUndistortRectifyMap(intrinsics1, distortion1, None, ncm1, img_size1, cv2.CV_32FC1)
+
+        for idx_sample in tqdm(range(len(self))):
+            dict_item = self.__getitem__(idx_sample)
+
+            dict_meta = dict_item['meta']
+            seq_name = dict_meta['seq']
+            cam_idx = dict_meta['idx'][key_idx]
+
+            img_temp = cv2.imread(dict_meta['path']['front'])
+            img0 = img_temp[:,:1280,:]
+            img1 = img_temp[:,1280:,:]
+
+            img0_undistorted = cv2.remap(img0, map_x0, map_y0, cv2.INTER_LINEAR)
+            img1_undistorted = cv2.remap(img1, map_x1, map_y1, cv2.INTER_LINEAR)
+
+            path_img0 = osp.join(root_path0, seq_name, f'cam_{cam_idx}.png')
+            path_img1 = osp.join(root_path1, seq_name, f'cam_{cam_idx}.png')
+            
+            cv2.imwrite(path_img0, img0_undistorted)
+            cv2.imwrite(path_img1, img1_undistorted)
     ### Camera ###
-
+    
     ### LiDAR ###
     def get_ldr64(self, dict_item):
         if self.ldr64.processed: # with attr & calib & roi
@@ -397,12 +528,12 @@ class KRadarDetection_v2_1(Dataset):
                 pc_lidar = [point.split() for point in lines]
                 f.close()
             pc_lidar = np.array(pc_lidar, dtype = float).reshape(-1, self.ldr64.n_attr)
-
+            
             if self.ldr64.inside_ldr64:
                 pc_lidar = pc_lidar[np.where(
                     (pc_lidar[:, 0] > 0.01) | (pc_lidar[:, 0] < -0.01) |
                     (pc_lidar[:, 1] > 0.01) | (pc_lidar[:, 1] < -0.01))]
-            
+
             if self.ldr64.calib:
                 n_pts, _ = pc_lidar.shape
                 calib_vals = np.array(dict_item['meta']['calib']).reshape(-1,3).repeat(n_pts, axis=0)
@@ -465,16 +596,31 @@ class KRadarDetection_v2_1(Dataset):
 
         return dict_item
     
-    def save_polar_3d(self, root_path='/media/donghee/kradar/rdr_polar_3d', idx_start=3667, idx_end=None):
+    def save_polar_3d(self, root_path='/media/donghee/kradar/rdr_polar_3d', idx_start=3500, idx_end=4605):
         for seq_name in range(58):
             seq_folder = osp.join(root_path, f'{seq_name+1}')
             os.makedirs(seq_folder, exist_ok=True)
         
         for idx_sample in tqdm(range(len(self))):
-            if idx_sample < idx_start:
+            if (idx_sample < idx_start) or (idx_sample > idx_end):
                 continue
             try:
+                # dict_item = self.__getitem__(idx_sample)
+                # dict_meta = dict_item['meta']
+                # seq_name = dict_meta['seq']
+                # rdr_idx = dict_meta['idx']['rdr']
+                # print('* seq:', seq_name, ', rdr:', rdr_idx)
+
                 dict_item = self.__getitem__(idx_sample)
+                
+                dict_meta = dict_item['meta']
+                seq_name = dict_meta['seq']
+                rdr_idx = dict_meta['idx']['rdr']
+
+                path_polar_3d = osp.join(root_path, seq_name, f'polar3d_{rdr_idx}.npy')
+                if os.path.exists(path_polar_3d):
+                    continue
+
                 dict_item = self.get_cube_polar(dict_item)
                 
                 cube_pw = dict_item['cube_pw_polar']
@@ -483,12 +629,7 @@ class KRadarDetection_v2_1(Dataset):
                 # cube_polar = cube_polar.astype(np.float32)
                 # print(cube_polar.shape)
                 
-                dict_meta = dict_item['meta']
-                seq_name = dict_meta['seq']
-                rdr_idx = dict_meta['idx']['rdr']
-
-                path_quantized_indices = osp.join(root_path, seq_name, f'polar3d_{rdr_idx}.npy')
-                np.save(path_quantized_indices, cube_polar)
+                np.save(path_polar_3d, cube_polar)
 
                 # free memory (Killed error, checked with htop)
                 for k in dict_item.keys():
@@ -541,6 +682,137 @@ class KRadarDetection_v2_1(Dataset):
         dict_item['rdr_pc'] = np.stack((x,y,z,pw,dop), axis=1)
         
         return dict_item
+    
+    def get_rdr_polar_3d(self, dict_item):
+        cfg_rdr_polar_3d = self.rdr_polar_3d
+        
+        if cfg_rdr_polar_3d.processed:
+            dict_meta = dict_item['meta']
+            seq_name = dict_meta['seq']
+            rdr_idx = dict_meta['idx']['rdr']
+            path_polar_3d = osp.join(cfg_rdr_polar_3d.dir, seq_name, f'polar3d_{rdr_idx}.npy')
+            cube_polar = np.load(path_polar_3d)
+        else:
+            dict_item = self.get_cube_polar(dict_item)
+            cube_pw = dict_item['cube_pw_polar']
+            cube_dop = dict_item['cube_dop_cartesian']
+            cube_polar = np.stack((cube_pw, cube_dop), axis=0)
+        
+        if self.get_rdr_polar_3d_in_pc100p:
+            pc100p = np.concatenate((self.rdr_polar_3d_xyz, cube_polar), axis=0)
+            n_dim, _, _, _ = pc100p.shape
+            dict_item['pc100p'] = pc100p.reshape(n_dim,-1).transpose()
+        else:
+            dict_item['rdr_polar_3d'] = cube_polar
+        
+        return dict_item # 2, 256, 107, 37 (pw is normalized with 1e+13)
+    
+    def get_proportional_rdr_points(self, dict_item, rate=0.01, range_wise=False, with_rae_and_ind=False):
+        cube_polar = dict_item['rdr_polar_3d']
+        # print(cube_polar.shape)
+        cube_pw = cube_polar[0,:,:,:]
+        cube_dop = cube_polar[1,:,:,:]
+
+        if range_wise:
+            n_r, n_a, n_e = cube_pw.shape
+            quantile_value = np.quantile(cube_pw, 1-rate, axis=(1,2))
+            quantile_value = quantile_value.reshape(n_r,1,1)
+            quantile_value = np.repeat(quantile_value, n_a, 1)
+            quantile_value = np.repeat(quantile_value, n_e, 2)
+            extracted_ind = np.where(cube_pw > quantile_value)
+        else:
+            extracted_ind = np.where(cube_pw > np.quantile(cube_pw, 1-rate))
+
+        r_ind, a_ind, e_ind = extracted_ind
+        pw = cube_pw[extracted_ind]
+        dop = cube_dop[extracted_ind]
+        
+        r = self.arr_range[r_ind]
+        az = self.arr_azimuth[a_ind]
+        el = self.arr_elevation[e_ind]
+        
+        # Radar polar to General polar coordinate
+        az = -az
+        el = -el
+        
+        # For flipped azimuth & elevation angle
+        x = r * np.cos(el) * np.cos(az)
+        y = r * np.cos(el) * np.sin(az)
+        z = r * np.sin(el)
+
+        if with_rae_and_ind:
+            rdr_pc = np.stack((x,y,z,pw,dop,r,az,el,r_ind,a_ind,e_ind), axis=1)
+        else:
+            rdr_pc = np.stack((x,y,z,pw,dop), axis=1)
+        
+        dict_item['rdr_pc'] = rdr_pc
+
+        return dict_item
+    
+    def get_proportional_rdr_points_from_pc100p(self, dict_item, rate=0.01):
+        pc100p = dict_item['pc100p']
+        quantile_value = np.quantile(pc100p[:,3], 1-rate)
+        rdr_pc = pc100p[np.where(pc100p[:,3]>quantile_value)[0],:]
+        
+        dict_item['rdr_pc'] = rdr_pc
+        
+        return dict_item
+    
+    def save_proportional_rdr_pc(self, dict_save=None, root_path='/media/donghee/A4'):#'/media/donghee/kradar/rdr_pc'):
+        if dict_save is None:
+            dict_save = dict(
+                folder_name = 'pc10p-all',
+                rate = 0.1,
+                range_wise = False,
+            )
+        
+        folder_name = dict_save['folder_name']
+        rate = dict_save['rate']
+        range_wise = dict_save['range_wise']
+
+        root_path = osp.join(root_path, folder_name)
+
+        for seq_name in range(58):
+            seq_folder = osp.join(root_path, f'{seq_name+1}')
+            os.makedirs(seq_folder, exist_ok=True)
+
+        for idx_sample in tqdm(range(len(self))):
+            try:
+                dict_item = self.__getitem__(idx_sample)
+                        
+                dict_meta = dict_item['meta']
+                seq_name = dict_meta['seq']
+                rdr_idx = dict_meta['idx']['rdr']
+                
+                dict_item = self.get_proportional_rdr_points(dict_item, rate, range_wise, with_rae_and_ind=True)
+
+                path_rpc = osp.join(root_path, seq_name, f'rpc_{rdr_idx}.npy')
+
+                np.save(path_rpc, dict_item['rdr_pc'])
+
+                # free memory (Killed error, checked with htop)
+                for k in dict_item.keys():
+                    if k != 'meta':
+                        dict_item[k] = None
+            except:
+                seq = dict_item['meta']['seq']
+                rdr_idx = dict_item['meta']['idx']['rdr']
+                path_tesseract = osp.join(dict_item['meta']['header'],seq,'radar_tesseract',f'tesseract_{rdr_idx}.mat')  
+                print(f'* An error happens in {path_tesseract}')
+
+    def get_rpcs(self, dict_item):
+        if self.rpcs is None:
+            return dict_item
+        else:
+            keys = self.rpcs.keys
+            dict_meta = dict_item['meta']
+            seq_name = dict_meta['seq']
+            rdr_idx = dict_meta['idx']['rdr']
+
+            for temp_key in keys:
+                dict_item[temp_key] = np.load(osp.join(self.rpcs.dir, temp_key, seq_name, f'rpc_{rdr_idx}.npy'))
+
+        return dict_item
     ### 4D Radar ###
     
     ### Utils ###
@@ -567,8 +839,10 @@ class KRadarDetection_v2_1(Dataset):
         dict_item = self.list_dict_item[idx]
         dict_item = self.get_label(dict_item) if not self.load_label_in_advance else dict_item
         dict_item = self.get_ldr64(dict_item) if self.item['ldr64'] else dict_item
+        dict_item = self.get_rdr_polar_3d(dict_item) if self.item['rdr_polar_3d'] else dict_item
         dict_item = self.get_rdr_sparse(dict_item) if self.item['rdr_sparse'] else dict_item
         dict_item = self.get_camera_img(dict_item) if self.item['cam'] else dict_item
+        dict_item = self.get_rpcs(dict_item) if self.item['rpcs'] else dict_item
         dict_item = self.filter_roi(dict_item) if self.roi.filter else dict_item
         dict_item = self.get_description(dict_item)
         
@@ -633,6 +907,13 @@ class KRadarDetection_v2_1(Dataset):
             pcd_rdr.points = o3d.utility.Vector3dVector(rdr_sparse[:,:3])
             pcd_rdr.paint_uniform_color([0.,0.,0.])
             vis.add_geometry(pcd_rdr)
+
+        if 'rdr_pc' in vis_list:
+            rdr_sparse = dict_item['rdr_pc']
+            pcd_rdr = o3d.geometry.PointCloud()
+            pcd_rdr.points = o3d.utility.Vector3dVector(rdr_sparse[:,:3])
+            pcd_rdr.paint_uniform_color([0.,0.,0.])
+            vis.add_geometry(pcd_rdr)
         
         if 'label' in vis_list:
             label = dict_item['meta']['label']
@@ -657,9 +938,13 @@ class KRadarDetection_v2_1(Dataset):
         
         dict_for_dist = dict()
         dict_for_value = dict()
+        dict_for_min_xyz = dict()
+        dict_for_max_xyz = dict()
         for obj_name in dict_label.keys():
             dict_for_dist[obj_name] = 0
             dict_for_value[obj_name] = [0., 0., 0.]
+            dict_for_min_xyz[obj_name] = [10000., 10000., 10000.]
+            dict_for_max_xyz[obj_name] = [-10000., -10000., -10000.]
         
         if consider_avail:
             dict_avail = dict()
@@ -678,6 +963,16 @@ class KRadarDetection_v2_1(Dataset):
                 dict_for_value[cls_name][0] += l
                 dict_for_value[cls_name][1] += w
                 dict_for_value[cls_name][2] += h
+                dict_for_min_xyz[cls_name][0] = min(dict_for_min_xyz[cls_name][0], x)
+                dict_for_max_xyz[cls_name][0] = max(dict_for_max_xyz[cls_name][0], x)
+                dict_for_min_xyz[cls_name][1] = min(dict_for_min_xyz[cls_name][1], y)
+                dict_for_max_xyz[cls_name][1] = max(dict_for_max_xyz[cls_name][1], y)
+                dict_for_min_xyz[cls_name][2] = min(dict_for_min_xyz[cls_name][2], z)
+                dict_for_max_xyz[cls_name][2] = max(dict_for_max_xyz[cls_name][2], z)
+
+                # if x<0:
+                #     print(x)
+
                 try:
                     if consider_avail:
                         dict_avail[avail][cls_name] += 1
@@ -687,9 +982,13 @@ class KRadarDetection_v2_1(Dataset):
         for obj_name in dict_for_dist.keys():
             n_obj = dict_for_dist[obj_name]
             l, w, h = dict_for_value[obj_name]
+            min_x, min_y, min_z = dict_for_min_xyz[obj_name]
+            max_x, max_y, max_z = dict_for_max_xyz[obj_name]
             print('* # of ', obj_name, ': ', n_obj)
             divider = np.maximum(n_obj, 1)
             print('* lwh of ', obj_name, ': ', l/divider, ', ', w/divider, ', ', h/divider)
+            print('* min xyz of ', obj_name, ': ', min_x, ', ', min_y, ', ', min_z)
+            print('* max xyz of ', obj_name, ': ', max_x, ', ', max_y, ', ', max_z)
         
         if consider_avail:
             for avail in list_avails:
@@ -748,6 +1047,8 @@ class KRadarDetection_v2_1(Dataset):
             dict_batch['num_objs'] = []
             dict_batch['gt_boxes'] = []
 
+            list_sparse_keys = ['rdr_sparse', 'ldr64', 'pc100p', 'pc30p', 'pc20p', 'pc15p', 'pc10p', 'pc5p', 'pc1p'] # rpcs
+
             max_objs = 0 # for gt_boxes (M)
             for batch_idx, dict_item in enumerate(list_batch):
                 for k, v in dict_item.items():
@@ -765,8 +1066,12 @@ class KRadarDetection_v2_1(Dataset):
                         dict_batch['num_objs'].append(dict_item['meta']['num_obj'])
                         dict_batch['gt_boxes'].append(list_gt_boxes)
                         max_objs = max(max_objs, dict_item['meta']['num_obj'])
-                    elif k in ['rdr_sparse', 'ldr64']:
-                        dict_batch[k].append(torch.from_numpy(dict_item[k]).float())
+                    elif k in list_sparse_keys:
+                        temp_points = dict_item[k]
+                        if self.shuffle_points:
+                            shuffle_idx = np.random.permutation(temp_points.shape[0])
+                            temp_points = temp_points[shuffle_idx]
+                        dict_batch[k].append(torch.from_numpy(temp_points).float())
             dict_batch['batch_size'] = batch_idx+1
 
             batch_size = dict_batch['batch_size']
@@ -775,15 +1080,17 @@ class KRadarDetection_v2_1(Dataset):
                 gt_box = np.array(dict_batch['gt_boxes'][batch_idx])
                 gt_boxes[batch_idx,:dict_batch['num_objs'][batch_idx],:] = gt_box
             dict_batch['gt_boxes'] = torch.tensor(gt_boxes, dtype=torch.float32)
-
+            
             for k in list_keys:
-                if k in ['rdr_sparse', 'ldr64']:
+                if k in list_sparse_keys:
                     batch_indices = []
                     for batch_idx, pc in enumerate(dict_batch[k]):
                         batch_indices.append(torch.full((len(pc),), batch_idx))
                     
                     dict_batch[k] = torch.cat(dict_batch[k], dim=0)
                     dict_batch['batch_indices_'+k] = torch.cat(batch_indices)
+
+        dict_batch['pointer'] = list_batch # to release memory
 
         return dict_batch
     ### Collate ###
@@ -792,13 +1099,47 @@ if __name__ == '__main__':
     kradar_detection = KRadarDetection_v2_1(split='all')
     print(len(kradar_detection)) # 34994 for all
 
-    dict_item = kradar_detection[5000]
-    # kradar_detection.vis_in_open3d(dict_item, ['ldr64', 'label', 'rdr_sparse'])
-    # kradar_detection.save_polar_3d()
+    dict_item = kradar_detection[0]
+    dict_item = kradar_detection.get_dict_cam_calib_from_npy(dict_item)
     
-    key_name = 'front0' # ['front0', 'front1', 'left0', 'left1', 'right0', 'right1', 'rear0', 'rear1']
-    
-    img = dict_item[key_name]
-    ldr64 = kradar_detection.get_ldr64_from_path(dict_item['meta']['path']['ldr64'], is_calib=False) # calibration X
+    print(dict_item['camera_intrinsics']) # [3, 3]
+    print(dict_item['camera2lidar']) # [4, 4]
+    print(dict_item['lidar2image']) # [3, 4]
 
-    show_projected_point_cloud(img, ldr64, kradar_detection.dict_cam_calib[key_name])
+    print(kradar_detection.dict_cam_calib.keys())
+    print(kradar_detection.dict_cam_calib['front0'])
+    print(kradar_detection.dict_cam_calib['front1'])
+    
+    ### Camera calibration ###
+    # key_name = 'front0' # ['front0', 'front1', 'left0', 'left1', 'right0', 'right1', 'rear0', 'rear1']
+    # img = dict_item[key_name]
+    # ldr64 = kradar_detection.get_ldr64_from_path(dict_item['meta']['path']['ldr64'], is_calib=False) # calibration X
+    # show_projected_point_cloud(img, ldr64, kradar_detection.dict_cam_calib[key_name], undistort=True)
+    # save_calibration_matrix_in_npy(key_name, kradar_detection.dict_cam_calib[key_name], undistort=True)
+    ### Camera calibration ###
+
+    ### Save rdr polar 3d ###
+    # kradar_detection.save_polar_3d()
+    ### Save rdr polar 3d ###
+
+    ### Range-wise proportional rdr points ###
+    # dict_item = kradar_detection.get_proportional_rdr_points(dict_item) # pc100p=False
+    # dict_item = kradar_detection.get_proportional_rdr_points_from_pc100p(dict_item)
+    ### Range-wise proportional rdr points ###
+
+    # print(dict_item['rdr_sparse'].shape)
+    # print(dict_item['rdr_pc'].shape)
+
+    ### Vis ###
+    # kradar_detection.vis_in_open3d(dict_item, ['ldr64', 'label', 'rdr_pc']) # 'rdr_pc', 'rdr_sparse'
+    ### Vis ###
+
+    ### Save rdr pc ###
+    # kradar_detection.save_proportional_rdr_pc()
+    ### Save rdr pc ###
+
+    ### Save undistorted img ###
+    # kradar_detection.save_undistorted_camera_imgs()
+    ### Save undistorted img ###
+
+    # kradar_detection.get_distribution_of_label()
