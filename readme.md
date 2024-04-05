@@ -16,7 +16,7 @@ The URLs listed below are useful for using the K-Radar dataset and benchmark:
 * <a href="https://www.youtube.com/watch?v=MrFPvO1ZjTY"> The video clip that shows the GUI-based program for visualization and neural network inference </a>
 * <a href="https://www.youtube.com/watch?v=8mqxf58_ZAk"> The video clip that shows the information on tracking for multiple objects on the roads </a>
 
-## License
+# License and Commercialization Inquiries
 The `K-Radar` dataset is published under the CC BY-NC-ND License, and all codes are published under the Apache License 2.0.
 
 All technologies in this repository have been developed by [`AVELab`](http://ave.kaist.ac.kr/) and are being commercialized by `Zeta Mobility`. For commercialization inquiries, please contact `Zeta Mobility` (URL and e-mail will be provided).
