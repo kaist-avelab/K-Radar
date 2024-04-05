@@ -36,6 +36,15 @@ For more details, please refer to [the dataset documentation](/docs/dataset.md).
 
 ## Detection
 
+This is the documentation for how to use our detection frameworks with K-Radar dataset. We tested the K-Radar detection frameworks on the following environment:
+
+Python 3.8.13 (3.10+ does not support open3d.)
+Ubuntu 18.04/20.04
+Torch 1.11.0+cu113
+CUDA 11.3
+opencv 4.2.0.32
+open3d 0.15.2
+
 ### Requirements
 
 1. Clone the repository
@@ -75,7 +84,7 @@ cd ../../../ops
 python setup.py develop
 ```
 
-8. Unzip 'kradar_revised_label_v2_0.zip' in the 'tools/revise_label' directory
+8. Unzip 'kradar_revised_label_v2_0.zip' in the 'tools/revise_label' directory (For the updated labeling format, please refer to [the dataset documentation](/docs/dataset.md).)
 
 We use the operations from <a href="https://github.com/open-mmlab/OpenPCDet">OpenPCDet</a> repository and acknowledge that all code in `ops` directory is sourced from there.
 To align with our project requirements, we have made several modifications to the original code and have uploaded the revised versions to our repository.
