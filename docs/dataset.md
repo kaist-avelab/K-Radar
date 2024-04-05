@@ -78,9 +78,6 @@ Given the considerable size of our research dataset, distributing it via Google 
 If you're able to provide us with **a external hard drive of 16TB capacity or larger**, we can directly transfer the raw data to it and send it to your institution. The method of provision is flexible: you could opt for international shipping, make a purchase via Amazon, or consider other avenues.
 It's important to emphasize that we're offering this service on a **non-profit** basis. Several esteemed research institutions (like Washington Univ., KAIST, NYU, and National Yang Ming Chiao Tung Univ.) as well as companies (like Motional and GM) have previously received data using this method.
 
-The following image shows the universities and institutions that have received the dataset via shipping:
-![image](./imgs/institution.png)
-
 For shipping-related inquiries, please contact donghee.paek@kaist.ac.kr and woo-jin.jung@kaist.ac.kr.
 
 ## Sequence composition
