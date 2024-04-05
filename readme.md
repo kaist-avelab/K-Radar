@@ -52,7 +52,7 @@ This is the documentation for how to use our detection frameworks with K-Radar d
 For the preparation and quantitative results of the 4D Radar-based object detection, please refer to the following document: [Detection Pipeline Guide](/docs/detection.md).
 
 The images below showcase qualitative results, with green boxes representing detected objects using 4D Radar. From left to right, the images depict (1) front-facing camera images (for reference), (2) LiDAR point clouds (for reference), and (3) 4D Radar tensors (input for the neural network).
-It is important to note that the camera images and LiDAR point clouds are shown for reference purposes only, and the bounding boxes from the 4D Radar-only detection are projected onto these visualizations.
+Note that the camera images and LiDAR point clouds are shown for reference purposes only, and the bounding boxes from the 4D Radar-only detection are projected onto these visualizations.
 
 <p align="center">
   <img src = "./docs/imgs/detection1.gif" width="80%">
