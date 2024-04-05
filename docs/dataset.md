@@ -57,6 +57,14 @@ We provide camera images, Lidar point cloud, RTK-GPS, and Radar tensor (for netw
 
 <a href="https://drive.google.com/drive/folders/1IfKu-jKB1InBXmfacjMKQ4qTm8jiHrG_?usp=share_link"> Download link </a>
 
+* Via Sending 4D raw data via shipping (The total dataset)
+
+Given the considerable size of our research dataset, distributing it via Google Drive has proven difficult. Instead, we've been making it available through our local server. However, we're aware of the transfer speed limitations of our server and are seeking an alternative method.
+If you're able to provide us with **a external hard drive of 16TB capacity or larger**, we can directly transfer the raw data to it and send it to your institution. The method of provision is flexible: you could opt for international shipping, make a purchase via Amazon, or consider other avenues.
+It's important to emphasize that we're offering this service on a **non-profit** basis. Several esteemed research institutions (like Washington Univ., KAIST, NYU, and National Yang Ming Chiao Tung Univ.) as well as companies (like Motional and GM) have previously received data using this method.
+
+For shipping-related inquiries, please contact donghee.paek@kaist.ac.kr and woo-jin.jung@kaist.ac.kr.
+
 After downloading all the dataset, please arrange the sequence directory with the following structure:
 ```
 ├── sequence_number (i.e., 1, 2, ..., 58)
@@ -71,14 +79,6 @@ After downloading all the dataset, please arrange the sequence directory with th
       ├── os2-64
       ├── radar_zyx_cube
 ```
-
-* Via Sending 4D raw data via shipping (The total dataset)
-
-Given the considerable size of our research dataset, distributing it via Google Drive has proven difficult. Instead, we've been making it available through our local server. However, we're aware of the transfer speed limitations of our server and are seeking an alternative method.
-If you're able to provide us with **a external hard drive of 16TB capacity or larger**, we can directly transfer the raw data to it and send it to your institution. The method of provision is flexible: you could opt for international shipping, make a purchase via Amazon, or consider other avenues.
-It's important to emphasize that we're offering this service on a **non-profit** basis. Several esteemed research institutions (like Washington Univ., KAIST, NYU, and National Yang Ming Chiao Tung Univ.) as well as companies (like Motional and GM) have previously received data using this method.
-
-For shipping-related inquiries, please contact donghee.paek@kaist.ac.kr and woo-jin.jung@kaist.ac.kr.
 
 ## Sequence composition
 
