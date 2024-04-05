@@ -99,69 +99,6 @@ Sequence_number.zip (e.g. 1.zip)
 ├── time_info: Used for calibration
 ```
 
-## Requirements
-
-1. Clone the repository
-```
-git clone https://github.com/kaist-avelab/K-Radar.git
-cd K-Radar
-```
-
-2. Create a conda environment
-```
-conda create -n kradar python=3.8.13 -y
-conda activate kradar
-```
-
-3. Install PyTorch (We recommend pytorch 1.11.0.)
-
-4. Install the dependencies
-```
-pip install -r requirements.txt
-```
-
-5. Build packages for Rotated IoU
-```
-cd utils/Rotated_IoU/cuda_op
-python setup.py install
-```
-
-6. Modify the code in packages
-```
-Add line 11: 'from .nms import rboxes' for __init__.py of nms module.
-Add line 39: 'rrect = tuple(rrect)' and comment line 41: 'print(r)' in nms.py of nms module.
-```
-
-7. Build packages for OpenPCDet operations
-```
-cd ../../../ops
-python setup.py develop
-```
-
-8. Unzip 'kradar_revised_label_v2_0.zip' in the 'tools/revise_label' directory
-
-We use the operations from <a href="https://github.com/open-mmlab/OpenPCDet">OpenPCDet</a> repository and acknowledge that all code in `ops` directory is sourced from there.
-To align with our project requirements, we have made several modifications to the original code and have uploaded the revised versions to our repository.
-We extend our gratitude to MMLab for their great work.
-
-## Train & Evaluation
-* To train the model, prepare the total dataset and run
-```
-python main_train_0.py
-```
-
-* To evaluate the model, modify the path and run
-```
-python main_val_0.py (for evaluation)
-python main_cond_0.py (for conditional evaluation)
-```
-
-* To visualize the inference result, modify the path and run
-```
-python main_test_0.py (with code)
-python main_vis.py (with GUI)
-```
-
 ## Revising K-Radar Label
 
 There are two primary revisions to our K-Radar label:
