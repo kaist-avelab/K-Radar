@@ -21,8 +21,9 @@ The URLs listed below are useful for using the K-Radar dataset and benchmark:
 ## License and Commercialization Inquiries
 The `K-Radar` dataset is published under the CC BY-NC-ND License, and all codes are published under the Apache License 2.0.
 
-![image](./docs/imgs/zeta_mobility.png)
 All technologies in this repository have been developed by [`AVELab`](http://ave.kaist.ac.kr/) and are being commercialized by `Zeta Mobility`. For commercialization inquiries, please contact `Zeta Mobility` (URL and e-mail will be provided).
+
+![image](./docs/imgs/zeta_mobility.png)
 
 # K-Radar Dataset
 For the preparation of the dataset and pipeline, please refer to the following document: [Dataset Preparation Guide](/docs/dataset.md)
