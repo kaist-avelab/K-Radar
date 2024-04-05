@@ -51,7 +51,7 @@ This is the documentation for how to use our detection frameworks with K-Radar d
 
 For the preparation of the dataset and pipeline, please refer to the following document: [Detection Pipeline Guide](/docs/detection.md)
 
-GIF for detection results
+![image](./docs/imgs/detection1.gif)
 
 ## Pre-processing
 
