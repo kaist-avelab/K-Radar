@@ -28,7 +28,7 @@ All technologies in this repository have been developed by [`AVELab`](http://ave
 </p>
 
 # K-Radar Dataset
-For the preparation of the dataset and pipeline, please refer to the following document: [Dataset Preparation Guide](/docs/dataset.md)
+For the preparation of the dataset and pipeline, please refer to the following document: [Dataset Preparation Guide](/docs/dataset.md).
 
 We provide the K-Radar dataset in three ways to ensure effective deployment of the large-sized data (total 16TB):
 
@@ -49,7 +49,10 @@ This is the documentation for how to use our detection frameworks with K-Radar d
 * opencv 4.2.0.32
 * open3d 0.15.2
 
-For the preparation of the dataset and pipeline, please refer to the following document: [Detection Pipeline Guide](/docs/detection.md)
+For the preparation and quantitative results of the 4D Radar-based object detection, please refer to the following document: [Detection Pipeline Guide](/docs/detection.md).
+
+The images below showcase qualitative results, with green boxes representing detected objects using 4D Radar. From left to right, the images depict (1) front-facing camera images (for reference), (2) LiDAR point clouds (for reference), and (3) 4D Radar tensors (input for the neural network).
+It is important to note that the camera images and LiDAR point clouds are shown for reference purposes only, and the bounding boxes from the 4D Radar-only detection are projected onto these visualizations.
 
 <p align="center">
   <img src = "./docs/imgs/detection1.gif" width="80%">
