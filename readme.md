@@ -18,7 +18,7 @@ The URLs listed below are useful for using the K-Radar dataset and benchmark:
 * <a href="https://www.youtube.com/watch?v=MrFPvO1ZjTY"> The video clip that shows the GUI-based program for visualization and neural network inference </a>
 * <a href="https://www.youtube.com/watch?v=8mqxf58_ZAk"> The video clip that shows the information on tracking for multiple objects on the roads </a>
 
-# License and Commercialization Inquiries
+## License and Commercialization Inquiries
 The `K-Radar` dataset is published under the CC BY-NC-ND License, and all codes are published under the Apache License 2.0.
 
 All technologies in this repository have been developed by [`AVELab`](http://ave.kaist.ac.kr/) and are being commercialized by `Zeta Mobility`. For commercialization inquiries, please contact `Zeta Mobility` (URL and e-mail will be provided).
@@ -34,9 +34,9 @@ We provide the K-Radar dataset in three ways to ensure effective deployment of t
 
 For more details, please refer to [the dataset documentation](/docs/dataset.md).
 
-# Detection (RTNH)
+## Detection
 
-## Requirements
+### Requirements
 
 1. Clone the repository
 ```
@@ -81,7 +81,7 @@ We use the operations from <a href="https://github.com/open-mmlab/OpenPCDet">Ope
 To align with our project requirements, we have made several modifications to the original code and have uploaded the revised versions to our repository.
 We extend our gratitude to MMLab for their great work.
 
-## Train & Evaluation
+### Train & Evaluation
 * To train the model, prepare the total dataset and run
 ```
 python main_train_0.py
@@ -99,7 +99,7 @@ python main_test_0.py (with code)
 python main_vis.py (with GUI)
 ```
 
-## Model Zoo
+### Model Zoo
 The reported values are ${AP_{3D}}$ for Sedan class. (based on the label v1.0)
 |Name|Total|Normal|Overcast|Fog|Rain|Sleet|LightSnow|HeavySnow|Pretrained|Logs|
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
@@ -132,7 +132,7 @@ For the model below, please check the configuration in configs/cfg_RTNH_wide.yml
 | Sedan        | 56.7  | 53.8   | 68.3     | 89.6 | 49.3 | 55.6  | 69.4      | 60.3      |
 | Bus or Truck | 45.3  | 31.8   | 32.0     | -    | -    | 34.4  | 89.3      | 78.0      |
 
-# Pre-processing
+## Pre-processing
 
 <a href="https://drive.google.com/file/d/1hTHAHEYdhl6yEDdTz3uxv08vsdG4lxu7/view?usp=drive_link">Link</a>
 Wide range, Quantile (RTNH) / 2 stage CFAR for Sidelobe filtering (RTNH+): code will be uploaded soon. (gif)
@@ -140,16 +140,16 @@ Function: datasetv1_1 generate~
 Density: ref Enhanced
 TODO
 
-# Auto-labeling
+## Auto-labeling
 
 TODO
 
-# Odometry
+## Odometry
 We provide the location of a GPS antenna, essential for accurate ground-truth odometry. This location is precisely processed by integrating data from high-resolution LiDAR, RTK-GPS, and IMU data. To ensure the utmost accuracy, we verify the vehicle's location by correlating the LiDAR sensor data against a detailed, high-resolution map, as illustrated below. For security purposes, we present this location information in local coordinates rather than global coordinates (i.e., UTM). The data of Sequence 1 is accessible in the `resources/odometry` directory. The repository for the odometry will be made available within the next few weeks.
 
 ![image](./docs/imgs/processed_odometry.png)
 
-# Acknowledgement
+## Acknowledgement
 The K-Radar dataset is contributed by [Dong-Hee Paek](http://ave.kaist.ac.kr/bbs/board.php?bo_table=sub1_2&wr_id=5), [Kevin Tirta Wijaya](https://www.ktirta.xyz), [Dong-In Kim](http://ave.kaist.ac.kr/bbs/board.php?bo_table=sub1_2&wr_id=13), [Min-Hyeok Sun](http://ave.kaist.ac.kr/bbs/board.php?bo_table=sub1_2&wr_id=14), [Sangjae Cho](https://ave.kaist.ac.kr/bbs/board.php?bo_table=sub1_2&wr_id=3), [Hong-Woo Seok](https://ave.kaist.ac.kr/bbs/board.php?bo_table=sub1_2&wr_id=25), advised by [Seung-Hyun Kong](http://ave.kaist.ac.kr/bbs/board.php?bo_table=sub1_1).
 
 We thank the maintainers of the following projects that enable us to develop `K-Radar`:
@@ -159,7 +159,7 @@ We extend our gratitude to Jen-Hao Cheng, Sheng-Yao Kuan, Aishi Huang, Hou-I Liu
 
 This work was partly supported by Institute of Information & communications Technology Planning & Evaluation (IITP) grant funded by the Korea government (MSIT) (No. 01210790) and the National Research Foundation of Korea (NRF) grant funded by the Korea government (MSIT) (No. 2021R1A2C3008370).
 
-# Citation
+## Citation
 If you find this work is useful for your research, please consider citing:
 ```
 @inproceedings{
