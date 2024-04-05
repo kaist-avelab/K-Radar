@@ -81,6 +81,8 @@ It's important to emphasize that we're offering this service on a **non-profit**
 The following image shows the universities and institutions that have received the dataset via shipping:
 ![image](./imgs/institution.png)
 
+For shipping-related inquiries, please contact donghee.paek@kaist.ac.kr and woo-jin.jung@kaist.ac.kr.
+
 ## Sequence composition
 
 Each of the 58 sequences consists of listed files or folders as follows.
