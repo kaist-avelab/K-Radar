@@ -53,11 +53,7 @@ For the preparation of the dataset and pipeline, please refer to the following d
 
 <p align="center">
   <img src = "./docs/imgs/detection1.gif" width="80%">
-</p>
-<p align="center">
   <img src = "./docs/imgs/detection2.gif" width="80%">
-</p>
-<p align="center">
   <img src = "./docs/imgs/detection3.gif" width="80%">
 </p>
 
