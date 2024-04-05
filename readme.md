@@ -24,7 +24,7 @@ The `K-Radar` dataset is published under the CC BY-NC-ND License, and all codes 
 All technologies in this repository have been developed by [`AVELab`](http://ave.kaist.ac.kr/) and are being commercialized by `Zeta Mobility`. For commercialization inquiries, please contact `Zeta Mobility` (URL and e-mail will be provided).
 
 # K-Radar Dataset
-For the preparation of the dataset and pipeline, please refer to the following document: <a href="https://ieeexplore.ieee.org/document/10186820">Dataset Preparation Guide</a>
+For the preparation of the dataset and pipeline, please refer to the following document: [Dataset Preparation Guide](/docs/dataset.md)
 
 ## Sending 4D raw data via shipping
 
