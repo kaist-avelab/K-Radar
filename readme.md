@@ -26,15 +26,78 @@ All technologies in this repository have been developed by [`AVELab`](http://ave
 # K-Radar Dataset
 For the preparation of the dataset and pipeline, please refer to the following document: [Dataset Preparation Guide](/docs/dataset.md)
 
-## Sending 4D raw data via shipping
+We provide the K-Radar dataset in three ways to ensure effective deployment of the large-sized data (total 16TB):
 
-Given the considerable size of our research dataset, distributing it via Google Drive has proven difficult. Instead, we've been making it available through our local server. However, we're aware of the transfer speed limitations of our server and are seeking an alternative method.
+1. Access to the total dataset via our local server
+2. A portion of the dataset via Google Drive
+3. The total dataset via shipped HDD (Hard Disk Drive)
 
-If you're able to provide us with **a external hard drive of 16TB capacity or larger**, we can directly transfer the raw data to it and send it to your institution. The method of provision is flexible: you could opt for international shipping, make a purchase via Amazon, or consider other avenues.
+For more details, please refer to [the dataset documentation](/docs/dataset.md).
 
-It's important to emphasize that we're offering this service on a **non-profit** basis. Several esteemed research institutions (like Washington Univ., KAIST, NYU, and National Yang Ming Chiao Tung Univ.) as well as companies (like Motional and GM) have previously received data using this method.
+# Detection (RTNH)
 
-# Detection
+## Requirements
+
+1. Clone the repository
+```
+git clone https://github.com/kaist-avelab/K-Radar.git
+cd K-Radar
+```
+
+2. Create a conda environment
+```
+conda create -n kradar python=3.8.13 -y
+conda activate kradar
+```
+
+3. Install PyTorch (We recommend pytorch 1.11.0.)
+
+4. Install the dependencies
+```
+pip install -r requirements.txt
+```
+
+5. Build packages for Rotated IoU
+```
+cd utils/Rotated_IoU/cuda_op
+python setup.py install
+```
+
+6. Modify the code in packages
+```
+Add line 11: 'from .nms import rboxes' for __init__.py of nms module.
+Add line 39: 'rrect = tuple(rrect)' and comment line 41: 'print(r)' in nms.py of nms module.
+```
+
+7. Build packages for OpenPCDet operations
+```
+cd ../../../ops
+python setup.py develop
+```
+
+8. Unzip 'kradar_revised_label_v2_0.zip' in the 'tools/revise_label' directory
+
+We use the operations from <a href="https://github.com/open-mmlab/OpenPCDet">OpenPCDet</a> repository and acknowledge that all code in `ops` directory is sourced from there.
+To align with our project requirements, we have made several modifications to the original code and have uploaded the revised versions to our repository.
+We extend our gratitude to MMLab for their great work.
+
+## Train & Evaluation
+* To train the model, prepare the total dataset and run
+```
+python main_train_0.py
+```
+
+* To evaluate the model, modify the path and run
+```
+python main_val_0.py (for evaluation)
+python main_cond_0.py (for conditional evaluation)
+```
+
+* To visualize the inference result, modify the path and run
+```
+python main_test_0.py (with code)
+python main_vis.py (with GUI)
+```
 
 ## Model Zoo
 The reported values are ${AP_{3D}}$ for Sedan class. (based on the label v1.0)
