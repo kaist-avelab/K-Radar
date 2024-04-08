@@ -16,6 +16,7 @@ from scipy.spatial.transform import Rotation as R
 __all__ = [
     'get_matrices_from_dict_calib',
     'show_projected_point_cloud',
+    'save_calibration_matrix_in_npy',
 ]
 
 dict_front0 = dict(
@@ -75,7 +76,7 @@ def get_matrices_from_dict_calib(dict_calib=dict_front0):
     z_ldr2cam = dict_calib['z_ldr2cam']
     T_ldr2cam = np.concatenate([r_ldr2cam, np.array([x_ldr2cam,y_ldr2cam,z_ldr2cam]).reshape(-1,1)], axis=1)
     # L to C
-
+    
     return img_size, intrinsics, distortion, T_ldr2cam
 
 def show_projected_point_cloud(img, pcd, list_params, undistort=True):
@@ -91,6 +92,17 @@ def show_projected_point_cloud(img, pcd, list_params, undistort=True):
         
         map_x, map_y = cv2.initUndistortRectifyMap(intrinsics, distortion, None, ncm, img_size, cv2.CV_32FC1)
         img_process = cv2.remap(img_process, map_x, map_y, cv2.INTER_LINEAR)
+
+    ### Scaling ###
+    # scale_x = 0.2
+    # scale_y = 0.5
+    # img_process = cv2.resize(img_process, (0,0), fx=scale_x, fy=scale_y)
+    # print(img_process.shape)
+    # intrinsics[0,0] = intrinsics[0,0]*scale_x
+    # intrinsics[0,2] = intrinsics[0,2]*scale_x
+    # intrinsics[1,1] = intrinsics[1,1]*scale_y
+    # intrinsics[1,2] = intrinsics[1,2]*scale_y
+    ### Scaling ###
 
     T_cam2pix = np.insert(np.insert(intrinsics, 3, [0,0,0], axis=1), 3, [0,0,0,1], axis=0)
     # * A: [fx 0 px 0], B: [fx 0 0 px] -> A is right one (d*px, d*py) [m] should be translation
@@ -122,6 +134,33 @@ def show_projected_point_cloud(img, pcd, list_params, undistort=True):
     plt.yticks([])
     plt.show()
     plt.close()
+
+def save_calibration_matrix_in_npy(key_cam, list_params, undistort=True, dir_save='./resources/cam_calib/T_npy'):
+    img_size, intrinsics, distortion, T_ldr2cam = list_params
+
+    if undistort:
+        ncm, _ = cv2.getOptimalNewCameraMatrix(intrinsics, distortion, img_size, alpha=0.0)
+        for j in range(3):
+            for i in range(3):
+                intrinsics[j,i] = ncm[j, i]
+
+    T_cam2pix = np.insert(np.insert(intrinsics, 3, [0,0,0], axis=1), 3, [0,0,0,1], axis=0)
+    # * A: [fx 0 px 0], B: [fx 0 0 px] -> A is right one (d*px, d*py) [m] should be translation
+    # *    [fy 0 py 0]     [fy 0 0 py]
+    # *    [0  0  1 0]     [0  0 1  0]
+    # *    [0  0  0 1]     [0  0 0  1]
+    
+    T_ldr2cam = np.insert(T_ldr2cam, 3, [0,0,0,1], axis=0)
+    # T_ldr2pix = T_cam2pix@T_ldr2cam
+
+    path_T_cam2pix = os.path.join(dir_save, f'T_cam2pix_{key_cam}.npy')
+    path_T_ldr2cam = os.path.join(dir_save, f'T_ldr2cam_{key_cam}.npy')
+    
+    print(T_cam2pix)
+    print(T_ldr2cam)
+    
+    np.save(path_T_cam2pix, T_cam2pix)
+    np.save(path_T_ldr2cam, T_ldr2cam)
 
 if __name__ == '__main__':
     ### Get new calib params reflecting tr_default in ui_labeling ###
