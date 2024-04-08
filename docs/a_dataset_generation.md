@@ -1,8 +1,8 @@
-# A. K-Radar Dataset Generation Process
+# K-Radar Dataset Generation Process (from .bag files)
 
 This is the documentation on the process of dataset generation in K-Radar
 
-## A.1. Generating Lidar point clouds (LPCs), camera images, RTK-GPS, and IMU data from rosbag files
+## Generating Lidar point clouds (LPCs), camera images, RTK-GPS, and IMU data from rosbag files
 We have recorded the LPCs, camera images, RTK-GPS, and IMU data based on rosbag record function of ROS Melodic.
 
 You can generate files LPCs, images, RTK-GPS, and IMU data in '.pcd', '.png', and '.txt' as follows:
