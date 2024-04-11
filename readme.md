@@ -71,8 +71,13 @@ TODO
 GIF for pre-processing
 
 ## Auto-labeling
+This is the documentation for how to use our auto-labeling frameworks with the K-Radar dataset:
 
-TODO
+For the preparation and quantitative results of the 4D Radar-based object detection, please refer to the following document: [Auto-labeling Pipeline Guide](/docs/labeling.md).
+
+TODO (qualitative results)
+
+Regarding the commercialization and the usage of auto-labeling technologies, please contact Zeta Mobility.
 
 ## Odometry
 We provide the location of a GPS antenna, essential for accurate ground-truth odometry. This location is precisely processed by integrating data from high-resolution LiDAR, RTK-GPS, and IMU data. To ensure the utmost accuracy, we verify the vehicle's location by correlating the LiDAR sensor data against a detailed, high-resolution map, as illustrated below. For security purposes, we present this location information in local coordinates rather than global coordinates (i.e., UTM). The data of Sequence 1 is accessible in the `resources/odometry` directory. The repository for the odometry will be made available within the next few weeks.
