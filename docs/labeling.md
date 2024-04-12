@@ -256,8 +256,7 @@ $ python main_inf_vis_cond.py
 * RTNH-PVRCNN-NO: Radar detection network (based on the auto-label from PVRCNN++) with `Normal, Overcast` condition
 * RTNH-PVRCNN-NOFRL: Radar detection network (based on the auto-label from PVRCNN++) with `Normal, Overcast, Fog, Rain, Light snow` condition
 
-<center><img src="/docs/imgs/label-cond.png" width="450" height="300"></center>
-
+<center><img src="/docs/imgs/label_cond.png" width="450" height="300"></center>
 
 (1) The reported values are ${AP}$ for `Sedan` class. 
 |Model|View|Overall|Normal|Overcast|Fog|Rain|Sleet|LightSnow|HeavySnow|
