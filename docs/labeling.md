@@ -8,6 +8,7 @@ This is the documentation for how to use our auto-labeling with K-Radar dataset.
 * opencv 4.2.0.32
 * open3d 0.15.2
 
+All codes are available in <a href="https://github.com/kaist-avelab/K-Radar_auto-labeling">the repository of auto-labeling for 4D Radar</a>.
 
 ## Requirements
 
@@ -60,6 +61,42 @@ python setup.py develop
 We use the operations from <a href="https://github.com/open-mmlab/OpenPCDet">OpenPCDet</a> repository and acknowledge that all code in `ops` directory is sourced from there.
 To align with our project requirements, we have made several modifications to the original code and have uploaded the revised versions to our repository.
 We extend our gratitude to MMLab for their great work.
+
+## Directory Structure
+```
+K-Radar_auto_labeling_project
+      ├── configs
+      ├── datasets
+      ├── docs
+      ├── logs
+      ├── models
+      ├── ops
+      ├── pipelines
+      ├── project
+            ├── auto-label
+                  ├── auto-labels (download from below URL)
+                  ├── configs
+                  ├── datasets
+                  ├── LODN_model_log (download from below URL)
+                  ├── logs
+                  ├── pipelines
+                  ├── plt_save_folder
+                  ├── RTNH_model_log (download from below URL)
+                  ├── utils   
+      ├── resources (from K-Radar repository)
+      ├── tools (from K-Radar repository)
+      ├── uis
+      ├── utils
+```
+
+Auto-labels resulting from generation and refinement (using PVRCNN++) URL: <a href="https://drive.google.com/file/d/1D5Y90S1ib-68r1IKsqt7R7PglGwjwSgr/view?usp=drive_link">auto-labels</a>
+
+Pretrained LiDAR object detection model download URL: <a href="https://drive.google.com/file/d/1wckO9tPC75chCGrQL7al-pCmTBmBYyQ5/view?usp=drive_link">LODN_model_log</a>
+
+Pretrained 4D Radar object detection model download URL: <a href="https://drive.google.com/file/d/1xBEC2zNQVwtOv8aBqslnKQVbUE-LXlki/view?usp=drive_link">RTNH_model_log</a>
+
+
+
 
 ## Auto-label Generation
 Generate auto-labels of 4D Radar data by run the LiDAR object detection networks. We use `PVRCNN++` and `SECOND` as the LiDAR object detection networks. We utilize the output from a 0.3 confidence score threshold.
@@ -170,9 +207,8 @@ $ python main_inf_vis_cond.py
 
 ## Model Zoo
 
-Pretrained model download link: <a href="https://drive.google.com/drive/folders/1Z9f0yiddLKkygkg-QKBsrCDK2OvNWGIA?usp=drive_link">Link</a>
-
 ### LiDAR Object Detection Network
+
 (1) The reported values are ${AP}$ for `Sedan` class. (based on the hand label)
 |Model|View|Overall|Normal|Overcast|Fog|Rain|Sleet|LightSnow|HeavySnow|
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
@@ -224,7 +260,7 @@ Pretrained model download link: <a href="https://drive.google.com/drive/folders/
 * RTNH-PVRCNN-NO: Radar detection network (based on the auto-label from PVRCNN++) with `Normal, Overcast` condition
 * RTNH-PVRCNN-NOFRL: Radar detection network (based on the auto-label from PVRCNN++) with `Normal, Overcast, Fog, Rain, Light snow` condition
 
-<center><img src="cond_auto.png" width="450" height="300"></center>
+<center><img src="label-cond.png" width="450" height="300"></center>
 
 
 (1) The reported values are ${AP}$ for `Sedan` class. 
