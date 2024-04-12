@@ -76,7 +76,9 @@ This is the documentation for how to use our auto-labeling frameworks with the K
 
 For the preparation and quantitative results of the 4D Radar-based object detection, please refer to the following document: [Auto-labeling Pipeline Guide](/docs/labeling.md).
 
-TODO (qualitative results)
+<p align="center">
+  <img src = "./docs/imgs/label_results.gif" width="70%">
+</p>
 
 Regarding the commercialization and the usage of auto-labeling technologies, please contact `Zeta Mobility`.
 
