@@ -68,10 +68,8 @@ For the preparation and quantitative results of the 4D Radar-based object detect
 The images below showcase importance of preprocessing of 4D Radar. (TODO)
 
 <p align="center">
-  <img src = "./docs/imgs/preprocessing.gif" width="80%">
+  <img src = "./docs/imgs/preprocessing.gif" width="70%">
 </p>
-
-GIF for pre-processing
 
 ## Auto-labeling
 This is the documentation for how to use our auto-labeling frameworks with the K-Radar dataset:
