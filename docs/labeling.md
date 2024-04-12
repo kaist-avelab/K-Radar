@@ -67,10 +67,9 @@ We extend our gratitude to MMLab for their great work.
 K-Radar_auto_labeling_project
       ├── configs
       ├── datasets
-      ├── docs
       ├── logs
       ├── models
-      ├── ops
+      ├── ops (from K-Radar repository)
       ├── pipelines
       ├── project
             ├── auto-label
@@ -94,9 +93,6 @@ Auto-labels resulting from generation and refinement (using PVRCNN++) URL: <a hr
 Pretrained LiDAR object detection model download URL: <a href="https://drive.google.com/file/d/1wckO9tPC75chCGrQL7al-pCmTBmBYyQ5/view?usp=drive_link">LODN_model_log</a>
 
 Pretrained 4D Radar object detection model download URL: <a href="https://drive.google.com/file/d/1xBEC2zNQVwtOv8aBqslnKQVbUE-LXlki/view?usp=drive_link">RTNH_model_log</a>
-
-
-
 
 ## Auto-label Generation
 Generate auto-labels of 4D Radar data by run the LiDAR object detection networks. We use `PVRCNN++` and `SECOND` as the LiDAR object detection networks. We utilize the output from a 0.3 confidence score threshold.
@@ -260,7 +256,7 @@ $ python main_inf_vis_cond.py
 * RTNH-PVRCNN-NO: Radar detection network (based on the auto-label from PVRCNN++) with `Normal, Overcast` condition
 * RTNH-PVRCNN-NOFRL: Radar detection network (based on the auto-label from PVRCNN++) with `Normal, Overcast, Fog, Rain, Light snow` condition
 
-<center><img src="label-cond.png" width="450" height="300"></center>
+<center><img src="/docs/imgs/label-cond.png" width="450" height="300"></center>
 
 
 (1) The reported values are ${AP}$ for `Sedan` class. 
