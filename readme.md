@@ -61,12 +61,15 @@ Note that the camera images and LiDAR point clouds are shown for reference purpo
 </p>
 
 ## Pre-processing
+This is the documentation for how to use our auto-labeling frameworks with the K-Radar dataset:
 
-<a href="https://drive.google.com/file/d/1hTHAHEYdhl6yEDdTz3uxv08vsdG4lxu7/view?usp=drive_link">Link</a>
-Wide range, Quantile (RTNH) / 2 stage CFAR for Sidelobe filtering (RTNH+): code will be uploaded soon. (gif)
-Function: datasetv1_1 generate~
-Density: ref Enhanced
-TODO
+For the preparation and quantitative results of the 4D Radar-based object detection, please refer to the following document: [Pre-processing Pipeline Guide](/docs/preprocessing.md).
+
+The images below showcase importance of preprocessing of 4D Radar. (TODO)
+
+<p align="center">
+  <img src = "./docs/imgs/preprocessing.gif" width="80%">
+</p>
 
 GIF for pre-processing
 
