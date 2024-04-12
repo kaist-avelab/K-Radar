@@ -8,7 +8,8 @@
 
 The URLs listed below are useful for using the K-Radar dataset and benchmark:
 * <a href="https://arxiv.org/abs/2206.08171"> K-Radar paper and appendix </a>
-* <a href="https://ieeexplore.ieee.org/document/10186820"> Radar object detection network of input with various density </a>
+* <a href="https://arxiv.org/abs/2303.06342"> 4D Radar object detection network of input with various density </a>
+* <a href="https://arxiv.org/abs/2310.17659"> Enhanced network for 4D Radar using two-stage pre-processing </a>
 * <a href="https://github.com/kaist-avelab/K-Radar_auto-labeling"> Repository of Auto-labeling for 4D Radar </a>
 * <a href=""> Repository of Odometry for 4D Radar </a>
 * <a href="https://www.youtube.com/watch?v=TZh5i2eLp1k"> The video clip that shows each sensor measurement dynamically changing during driving under the heavy snow condition </a>
