@@ -68,13 +68,15 @@ For the preparation and quantitative results of the 4D Radar-based object detect
 The images below showcase importance of preprocessing of 4D Radar. (TODO)
 
 <p align="center">
-  <img src = "./docs/imgs/preprocessing.gif" width="70%">
+  <img src = "./docs/imgs/preprocessing.gif" width="65%">
 </p>
 
 ## Auto-labeling
 This is the documentation for how to use our auto-labeling frameworks with the K-Radar dataset:
 
 For the preparation and quantitative results of the 4D Radar-based object detection, please refer to the following document: [Auto-labeling Pipeline Guide](/docs/labeling.md).
+
+The figure below shows the auto-labeling results for six road environments in the K-Radar dataset for each cell. From left to right, each cell shows the handmade labels created by humans for K-Radar, the detection results of the 4D Radar detection network trained with the handmade labels (RTNH), and the 4D Radar detection network trained with the automatically generated labels (i.e., auto-labels). We note that the RTNH trained with auto-labels only from clear weather conditions operates robustly even in inclement weather. Auto-labels for inclement weather are excluded due to the decreased performance of the LiDAR detection network in adverse conditions. In other words, it implies that a 4D Radar detection network that is resilient to all-weather conditions can be trained using only auto-labels from clear weather conditions. For more detailed information, including quantitative results, please refer to [the auto-labeling document](/docs/labeling.md).
 
 <p align="center">
   <img src = "./docs/imgs/label_results.gif" width="80%">
@@ -85,7 +87,9 @@ Regarding the commercialization and the usage of auto-labeling technologies, ple
 ## Odometry
 We provide the location of a GPS antenna, essential for accurate ground-truth odometry. This location is precisely processed by integrating data from high-resolution LiDAR, RTK-GPS, and IMU data. To ensure the utmost accuracy, we verify the vehicle's location by correlating the LiDAR sensor data against a detailed, high-resolution map, as illustrated below. For security purposes, we present this location information in local coordinates rather than global coordinates (i.e., UTM). The data of Sequence 1 is accessible in the `resources/odometry` directory. The repository for the odometry will be made available within the next few weeks.
 
-![image](./docs/imgs/processed_odometry.png)
+<p align="center">
+  <img src = "./docs/imgs/processed_odometry.png" width="80%">
+</p>
 
 ## Acknowledgement
 The K-Radar dataset is contributed by [Dong-Hee Paek](http://ave.kaist.ac.kr/bbs/board.php?bo_table=sub1_2&wr_id=5), [Kevin Tirta Wijaya](https://www.ktirta.xyz), [Dong-In Kim](http://ave.kaist.ac.kr/bbs/board.php?bo_table=sub1_2&wr_id=13), [Min-Hyeok Sun](https://ave.kaist.ac.kr/bbs/board.php?bo_table=sub1_3&wr_id=27), [Sangjae Cho](https://ave.kaist.ac.kr/bbs/board.php?bo_table=sub1_2&wr_id=3), and [Hong-Woo Seok](https://ave.kaist.ac.kr/bbs/board.php?bo_table=sub1_2&wr_id=25), and advised by [Seung-Hyun Kong](http://ave.kaist.ac.kr/bbs/board.php?bo_table=sub1_1).
