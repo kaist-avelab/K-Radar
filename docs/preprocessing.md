@@ -4,7 +4,7 @@ This is the documentation for Pre-processing of 4D Radar data with K-Radar datas
 
 You can download the pre-processed 4D Radar data in google drive link: TODO link URL
 
-<center><img src="/docs/imgs/4DRT_level.png" width="450" height="300"></center>
+<center><img src="/docs/imgs/preprocessing_density" width="450" height="300"></center>
 
 The density level of the pre-processed 4D Radar tensor data uploaded on Google Drive ranges from 0.01% to 10%. 
 If you need data with different levels of density, please refer to the information below.
@@ -16,7 +16,7 @@ The first stage extracts the main measurements with high power from the 4D Radar
 
 We provide pre-processing code in two versions: Cartesian coordinates and Polar coordinates.
 
-<center><img src="/docs/imgs/Pre_processing.png" width="450" height="300"></center>
+<center><img src="/docs/imgs/preprocessing_stage2.png" width="450" height="300"></center>
 
 
 1. Cartesian Coordinates
