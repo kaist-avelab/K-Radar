@@ -16,7 +16,7 @@ The first stage extracts the main measurements with high power from the 4D Radar
 
 We provide pre-processing code in two versions: Cartesian coordinates and Polar coordinates.
 
-<center><img src="/docs/imgs/preprocessing_stage2.png" width="450" height="300"></center>
+<center><img src="/docs/imgs/preprocessing_stage1.png" width="450" height="300"></center>
 
 
 1. Cartesian Coordinates
