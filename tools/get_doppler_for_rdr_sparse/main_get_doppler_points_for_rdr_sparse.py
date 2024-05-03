@@ -51,7 +51,7 @@ class GetDopplerPoints(object):
 
         self.label = self.cfg.label
         self.label_version = self.cfg.get('label_version', 'v2_0')
-
+        
         self.item = self.cfg.item
         self.calib = self.cfg.calib
         self.ldr64 = self.cfg.ldr64
