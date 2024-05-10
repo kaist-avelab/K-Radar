@@ -28,8 +28,11 @@ __all__ = [ 'func_show_radar_tensor_bev', \
             'func_generate_gaussian_conf_labels', \
             'func_show_radar_cube_bev', \
             'func_show_sliced_radar_cube', \
-            'func_show_rdr_pc_cube', 
-            'func_show_rdr_pc_tesseract', ]
+            'func_show_rdr_pc_cube', \
+            'func_show_rdr_pc_tesseract', \
+            'func_save_undistorted_camera_imgs_w_projected_params', \
+            'func_get_distribution_of_label', \
+            ]
 
 def func_show_radar_tensor_bev(p_pline, dict_item, bboxes=None, \
         roi_x = [0, 0.4, 100], roi_y = [-50, 0.4, 50], is_return_bbox_bev_tensor=False, alpha=0.9, lthick=1, infer=None, infer_gt=None, norm_img=None):
@@ -146,7 +149,7 @@ def func_show_lidar_point_cloud(p_pline, dict_item, bboxes=None, \
                 [4, 5], [6, 7], #[5, 6],[4, 7],
                 [0, 4], [1, 5], [2, 6], [3, 7],
                 [0, 2], [1, 3], [4, 6], [5, 7]]
-        colors_bbox = [p_pline.cfg.VIS.DIC_CLASS_RGB[cls_name] for _ in range(len(lines))]
+        colors_bbox = [p_pline.cfg.VIS.CLASS_RGB[cls_name] for _ in range(len(lines))]
 
     line_sets_bbox = []
     for gt_obj in bboxes_o3d:
@@ -589,7 +592,7 @@ def func_show_rdr_pc_cube(p_pline, dict_item, bboxes=None, cfar_params = [25, 8,
                     [4, 5], [6, 7], #[5, 6],[4, 7],
                     [0, 4], [1, 5], [2, 6], [3, 7],
                     [0, 2], [1, 3], [4, 6], [5, 7]]
-            colors_bbox = [p_pline.cfg.VIS.DIC_CLASS_RGB[cls_name] for _ in range(len(lines))]
+            colors_bbox = [p_pline.cfg.CLASS_RGB[cls_name] for _ in range(len(lines))]
 
         line_sets_bbox = []
         for gt_obj in bboxes_o3d:
@@ -632,3 +635,356 @@ def func_show_rdr_pc_tesseract(p_pline, dict_item, bboxes=None, cfar_params = [2
         o3d.visualization.draw_geometries([rdr, ldr] + line_sets_bbox)
     else:
         o3d.visualization.draw_geometries([rdr] + line_sets_bbox)
+
+def func_save_undistorted_camera_imgs_w_projected_params(p_ds, dict_args=None, vis=False, save=True):
+    if dict_args is None:
+        dict_args = dict(
+            option = dict(
+                undistort = True,
+                to_radar_coord = True,
+                list_process_cams = ['front0','front1','right0','right1','rear0','rear1','left0','left1'],
+                process = dict( # resize -> crop
+                    is_process=True,
+                    ori_shape=(1280,720), # W, H
+                    resize=0.7,
+                    crop=(96,170,800,426), # final img shape = (256, 704)
+                    flip=False,
+                    rotate=0.,
+                    is_normalize=True,
+                ),
+                normalize = dict(
+                    mean=[0.303, 0.303, 0.307], # rgb (tools/calc_rgb_distribution)
+                    std=[0.113, 0.119, 0.107]
+                )
+                # normalize = dict(
+                #     mean=[0.485, 0.456, 0.406], # from nuscenes
+                #     std=[0.229, 0.224, 0.225]
+                # )
+            ),
+            dir_save = dict(
+                img_undistorted = '/media/donghee/HDD_0/kradar_imgs/undistorted',
+                img_cropped = '/media/donghee/HDD_0/kradar_imgs/cropped',
+                # img_processed = '/media/donghee/HDD_0/kradar_imgs/norm_kradar', # norm_nuscenes
+                dict_calib = './resources/cam_calib/T_params_seq'
+            ),
+        )
+    
+    import pickle
+    from easydict import EasyDict
+    import torch
+    import torchvision
+    from tqdm import tqdm
+    import copy
+    from PIL import Image
+    
+    dict_args = EasyDict(dict_args)
+    dict_option = dict_args.option
+    dict_save = dict_args.dir_save
+
+    dict_process = dict_option.process
+    is_process = dict_process.is_process
+    is_normalize = dict_process.is_normalize
+
+    if is_normalize:
+        mean = dict_option.normalize.mean
+        std = dict_option.normalize.std
+        compose = torchvision.transforms.Compose(
+        [
+            torchvision.transforms.ToTensor(),
+            torchvision.transforms.Normalize(mean=mean, std=std),
+        ]
+    )
+    
+    to_radar_coord = dict_option.to_radar_coord
+    ego_coord_sensor = 'radar' if to_radar_coord else 'lidar'
+
+    prev_seq = [-1 for _ in range(len(dict_option.list_process_cams))]
+
+    dict_calib_cam = dict()
+    for idx_seq in range(58):
+        seq = f'{idx_seq+1}'
+        dict_calib_cam[seq] = dict()
+
+        for key_cam in dict_option.list_process_cams:
+            dict_calib_cam[seq][key_cam] = dict()
+
+    for idx_seq in range(58):
+        seq = f'{idx_seq+1}'
+        
+        os.makedirs(osp.join(dict_save.img_undistorted, seq), exist_ok=True)
+        for key_cam in dict_option.list_process_cams:
+            os.makedirs(osp.join(dict_save.img_undistorted, seq, key_cam), exist_ok=True)
+
+        os.makedirs(osp.join(dict_save.img_cropped, seq), exist_ok=True)
+        for key_cam in dict_option.list_process_cams:
+            os.makedirs(osp.join(dict_save.img_cropped, seq, key_cam), exist_ok=True)
+
+        # os.makedirs(osp.join(dict_save.img_processed, seq), exist_ok=True)
+        # for key_cam in dict_option.list_process_cams:
+        #     os.makedirs(osp.join(dict_save.img_processed, seq, key_cam), exist_ok=True)
+
+        # os.makedirs(osp.join(dict_save.dict_calib, seq), exist_ok=True)
+    
+    if is_process:
+        resize = dict_process.resize
+        crop = dict_process.crop
+        flip = dict_process.flip
+        rotate = dict_process.rotate
+
+        rotation = torch.eye(2)
+        translation = torch.zeros(2)
+        # post-homography transformation
+        rotation *= resize
+        translation -= torch.Tensor(crop[:2])
+        if flip:
+            A = torch.Tensor([[-1, 0], [0, 1]])
+            b = torch.Tensor([crop[2] - crop[0], 0])
+            rotation = A.matmul(rotation)
+            translation = A.matmul(translation) + b
+        theta = rotate / 180 * np.pi
+        A = torch.Tensor(
+            [
+                [np.cos(theta), np.sin(theta)],
+                [-np.sin(theta), np.cos(theta)],
+            ]
+        )
+        b = torch.Tensor([crop[2] - crop[0], crop[3] - crop[1]]) / 2
+        b = A.matmul(-b) + b
+        rotation = A.matmul(rotation)
+        translation = A.matmul(translation) + b
+        transform = torch.eye(4)
+        transform[:2, :2] = rotation
+        transform[:2, 3] = translation
+        transform = transform.numpy()
+
+        W, H = dict_process.ori_shape
+        resize_dims = (int(W * resize), int(H * resize))
+    
+    for idx_item in tqdm(range(len(p_ds.list_dict_item))):
+        dict_item = p_ds.__getitem__(idx_item)
+        dict_meta = dict_item['meta']
+        
+        seq = dict_meta['seq']
+        dict_idx = dict_meta['idx']
+        dict_path = dict_meta['path']
+
+        calib_l2r = dict_meta['calib']
+
+        for idx_cam, key_cam in enumerate(dict_option.list_process_cams):
+            img_temp = dict_item[key_cam]
+
+            ### Calibration ###
+            # get calibration for new sequence
+            if prev_seq[idx_cam] != int(seq):
+                print(f'* new sequence: {seq} / cams: {key_cam}')
+                # Should deepcopy variables of self (prevent recursive calculation of pointer)
+                img_size_ret, intrinsics_ret, distortion_ret, T_ldr2cam_ret = p_ds.dict_cam_calib[seq][key_cam]
+
+                img_size = copy.deepcopy(img_size_ret)
+                intrinsics = copy.deepcopy(intrinsics_ret)
+                distortion = copy.deepcopy(distortion_ret)
+                T_ldr2cam = copy.deepcopy(T_ldr2cam_ret)
+                
+                if dict_option.undistort:
+                    ncm, _ = cv2.getOptimalNewCameraMatrix(intrinsics, distortion, img_size, alpha=0.0)
+                
+                    for j in range(3):
+                        for i in range(3):
+                            intrinsics[j,i] = ncm[j, i]
+                    
+                    map_x, map_y = cv2.initUndistortRectifyMap(intrinsics, distortion, None, ncm, img_size, cv2.CV_32FC1)
+                    img_temp = cv2.remap(img_temp, map_x, map_y, cv2.INTER_LINEAR)
+
+                T_cam2pix = np.insert(np.insert(intrinsics, 3, [0,0,0], axis=1), 3, [0,0,0,1], axis=0)
+                T_ldr2cam = np.insert(T_ldr2cam, 3, [0,0,0,1], axis=0)  # 4x4
+
+                if to_radar_coord:
+                    dx, dy, dz = calib_l2r
+                    T_ldr2rdr = np.eye(4)
+                    T_ldr2rdr[0,3] = dx
+                    T_ldr2rdr[1,3] = dy
+                    T_ldr2rdr[2,3] = dz
+
+                    T_rdr2ldr = np.linalg.inv(T_ldr2rdr)
+                    # print(T_rdr2ldr)
+
+                    T_sen2cam = T_ldr2cam@T_rdr2ldr
+                    # print(T_sen2cam)
+                else:
+                    T_sen2cam = T_ldr2cam
+
+                T_cam2sen = np.linalg.inv(T_sen2cam)                    # 4x4
+                T_sen2pix = T_cam2pix@T_sen2cam                         # 4x4
+
+                if is_process:
+                    dict_calib_cam[seq][key_cam]['img_aug_matrix'] = transform
+                #     print(dict_calib_cam[seq][key_cam]['img_aug_matrix'])
+
+                # print(T_sen2pix)
+                # print(T_cam2sen)
+                # print(T_sen2cam)
+                # print(T_sen2cam@T_cam2sen)
+
+                dict_calib_cam[seq][key_cam]['camera_intrinsics'] = T_cam2pix
+                dict_calib_cam[seq][key_cam][ego_coord_sensor+'2image'] = T_sen2pix
+                dict_calib_cam[seq][key_cam][ego_coord_sensor+'2camera'] = T_sen2cam
+                dict_calib_cam[seq][key_cam]['camera2'+ego_coord_sensor] = T_cam2sen
+
+                ### Save dict_calib_cam ###
+                if save:
+                    with open(osp.join(dict_save.dict_calib, seq), 'wb') as pickle_file:
+                        pickle.dump(dict_calib_cam[seq], pickle_file)
+                ### Save dict_calib_cam ###
+
+                prev_seq[idx_cam] = int(seq)
+
+            ### Ori img -> processed img ###
+            img_undistorted = Image.fromarray(np.flip(img_temp, axis=2)) # bgr to rgb
+            # print(resize_dims)
+            img_process = img_undistorted.resize(resize_dims)
+            img_process = img_process.crop(crop)
+            # print(img_process.size)
+            # plt.imshow(img_process)
+            # plt.show()
+
+            img_cropped = img_process.copy()
+            img_process = compose(img_process)
+
+            # img_process = np.array(img_process).transpose(1,2,0)
+            # plt.imshow(img_process)
+            # plt.show()
+            ### Ori img -> processed img ###
+            
+            if save:
+                # print(dict_idx.keys())
+                cam_idx = dict_idx['camf'] # lrr are synchronized to camf
+                img_undistorted.save(osp.join(dict_save.img_undistorted, seq, key_cam, f'{cam_idx}.png'))
+                img_cropped.save(osp.join(dict_save.img_cropped, seq, key_cam, f'{cam_idx}.png'))
+                # np.save(osp.join(dict_save.img_processed, seq, key_cam, f'{cam_idx}.npy'), np.array(img_process))
+
+            if vis:
+                if to_radar_coord:
+                    ldr_points = p_ds.get_ldr64(dict_item)['ldr64']
+                else:
+                    ldr_points = p_ds.get_ldr64_from_path(dict_path['ldr64'], is_calib=False) # wo_calib
+                
+                ### Ori ###
+                pc_ldr = (np.insert(ldr_points[:,:3], 3, [1], axis=1)).T
+                pc_cam = dict_calib_cam[seq][key_cam][ego_coord_sensor+'2image']@pc_ldr
+                pc_cam[:2,:] /= pc_cam[2,:]
+                
+                plt.figure(figsize=(20,15),dpi=96,tight_layout=True)
+                img_w,img_h = img_undistorted.size
+                plt.axis([0,img_w,img_h,0])
+                plt.imshow(img_undistorted)
+                pc_cam = (pc_cam.T)[:,:3]
+                pc_cam = pc_cam[np.where(
+                    (pc_cam[:,0]>=0) & (pc_cam[:,0]<img_w) &
+                    (pc_cam[:,1]>=0) & (pc_cam[:,1]<img_h) &
+                    (pc_cam[:,2]>3))]
+                
+                plt.scatter(pc_cam[:,0],pc_cam[:,1],c=1/pc_cam[:,2],cmap='rainbow_r',alpha=0.5,s=10.0)
+                plt.xticks([])
+                plt.yticks([])
+                ### Ori ###
+
+                ### Resize & Cropped ###
+                if is_process:
+                    pc_ldr = (np.insert(ldr_points[:,:3], 3, [1], axis=1)).T
+                    pc_cam = dict_calib_cam[seq][key_cam][ego_coord_sensor+'2image']@pc_ldr
+                    pc_cam[:2,:] /= pc_cam[2,:]
+                    pc_cam = dict_calib_cam[seq][key_cam]['img_aug_matrix']@pc_cam
+                    
+                    plt.figure(figsize=(20,13),dpi=96,tight_layout=True)
+                    img_w,img_h = img_cropped.size
+                    plt.axis([0,img_w,img_h,0])
+                    plt.imshow(img_cropped)
+                    pc_cam = (pc_cam.T)[:,:3]
+                    pc_cam = pc_cam[np.where(
+                        (pc_cam[:,0]>=0) & (pc_cam[:,0]<img_w) &
+                        (pc_cam[:,1]>=0) & (pc_cam[:,1]<img_h) &
+                        (pc_cam[:,2]>3))]
+                    
+                    plt.scatter(pc_cam[:,0],pc_cam[:,1],c=1/pc_cam[:,2],cmap='rainbow_r',alpha=0.5,s=10.0)
+                    plt.xticks([])
+                    plt.yticks([])
+
+                plt.show()
+                plt.close()
+                ### Ori ###
+
+        # free memory (Killed error, checked with htop)
+        for k in dict_item.keys():
+            if k != 'meta':
+                dict_item[k] = None
+
+def func_get_distribution_of_label(p_ds, consider_avail=True):
+    from tqdm import tqdm
+
+    dict_label = p_ds.label.copy()
+    dict_label.pop('calib')
+    dict_label.pop('onlyR')
+    dict_label.pop('Label')
+    dict_label.pop('consider_cls')
+    dict_label.pop('consider_roi')
+    dict_label.pop('remove_0_obj')
+    
+    dict_for_dist = dict()
+    dict_for_value = dict()
+    dict_for_min_xyz = dict()
+    dict_for_max_xyz = dict()
+    for obj_name in dict_label.keys():
+        dict_for_dist[obj_name] = 0
+        dict_for_value[obj_name] = [0., 0., 0.]
+        dict_for_min_xyz[obj_name] = [10000., 10000., 10000.]
+        dict_for_max_xyz[obj_name] = [-10000., -10000., -10000.]
+    
+    if consider_avail:
+        dict_avail = dict()
+        list_avails = ['R', 'L', 'L1']
+        for avail in list_avails:
+            dict_temp = dict()
+            for obj_name in dict_label.keys():
+                dict_temp[obj_name] = 0
+            dict_avail[avail] = dict_temp
+
+    for dict_item in tqdm(p_ds.list_dict_item):
+        dict_item = p_ds.get_label(dict_item)
+        for obj in dict_item['meta']['label']:
+            cls_name, (x, y, z, th, l, w, h), trk, avail = obj
+            dict_for_dist[cls_name] += 1
+            dict_for_value[cls_name][0] += l
+            dict_for_value[cls_name][1] += w
+            dict_for_value[cls_name][2] += h
+            dict_for_min_xyz[cls_name][0] = min(dict_for_min_xyz[cls_name][0], x)
+            dict_for_max_xyz[cls_name][0] = max(dict_for_max_xyz[cls_name][0], x)
+            dict_for_min_xyz[cls_name][1] = min(dict_for_min_xyz[cls_name][1], y)
+            dict_for_max_xyz[cls_name][1] = max(dict_for_max_xyz[cls_name][1], y)
+            dict_for_min_xyz[cls_name][2] = min(dict_for_min_xyz[cls_name][2], z)
+            dict_for_max_xyz[cls_name][2] = max(dict_for_max_xyz[cls_name][2], z)
+
+            # if x<0:
+            #     print(x)
+
+            try:
+                if consider_avail:
+                    dict_avail[avail][cls_name] += 1
+            except:
+                print(dict_item['meta']['label_v2_1'])
+
+    for obj_name in dict_for_dist.keys():
+        n_obj = dict_for_dist[obj_name]
+        l, w, h = dict_for_value[obj_name]
+        min_x, min_y, min_z = dict_for_min_xyz[obj_name]
+        max_x, max_y, max_z = dict_for_max_xyz[obj_name]
+        print('* # of ', obj_name, ': ', n_obj)
+        divider = np.maximum(n_obj, 1)
+        print('* lwh of ', obj_name, ': ', l/divider, ', ', w/divider, ', ', h/divider)
+        print('* min xyz of ', obj_name, ': ', min_x, ', ', min_y, ', ', min_z)
+        print('* max xyz of ', obj_name, ': ', max_x, ', ', max_y, ', ', max_z)
+    
+    if consider_avail:
+        for avail in list_avails:
+            print('-'*30, avail, '-'*30)
+            for obj_name in dict_avail[avail].keys():
+                print('* # of ', obj_name, ': ', dict_avail[avail][obj_name])
