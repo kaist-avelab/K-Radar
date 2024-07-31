@@ -223,7 +223,6 @@ def odom_vis_from_filepath(odom_path):
 
 if __name__ == '__main__':
     
-    #* 3. 수정된 odom
     for i in range(2,3):
         odom_path = f'../gt_pose/gt_{str(i).zfill(2)}.txt'
         odom_vis_from_filepath(odom_path)
