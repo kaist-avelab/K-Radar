@@ -8,21 +8,18 @@ All odometry labels utilize LeGO-LOAM, as well as GPS and camera data for qualit
 
 <p align="center">
   <img src="./imgs/odometry_seq_01.png" width="75%">
-  <br><em>Figure 1: Odometry of sequence 01 - LeGO-LOAM vs GPS</em>
 </p>
 
 The odometry data for all sequences is based on the info_label of the K-Radar dataset. Consequently, some sequences may have fewer odometry poses than the number of lidar frames. When using odometry, please refer to the info_label to determine which radar and lidar frames correspond to which odometry frames. Below is an image representing the odometry of the second sequence based on LeGO-LOAM results and GPS measurements:
 
 <p align="center">
   <img src="./imgs/odometry_seq_02.png" width="75%">
-  <br><em>Figure 2: Odometry of sequence 02 - LeGO-LOAM vs GPS</em>
 </p>
 
 In some sequences, the GPS covariance is very high. In such cases, the results from LeGO-LOAM are used as the odometry for that sequence instead of the GPS. Below is an image representing the odometry of the seventeenth sequence based on LeGO-LOAM results and GPS measurements:
 
 <p align="center">
   <img src="./imgs/odometry_seq_17.png" width="75%">
-  <br><em>Figure 3: Odometry of sequence 17 - LeGO-LOAM vs GPS</em>
 </p>
 
 ## Detailed information of sequences
@@ -31,7 +28,6 @@ In some sequences, the vehicle passes through tunnels or travels in adverse weat
 
 <p align="center">
   <img src="./imgs/odometry_sequence_listup.png" width="75%">
-  <br><em>Table 1: Sequences requiring special attention for odometry experiments</em>
 </p>
 
 ## Visualization
@@ -40,5 +36,4 @@ We provide code to visualize the odometry from .txt files, available in `K-Radar
 
 <p align="center">
   <img src="./imgs/odometry_seq_01.gif" width="75%">
-  <br><em>Figure 4: Visualization of odometry for sequence 01</em>
 </p>
