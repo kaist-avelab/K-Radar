@@ -27,7 +27,7 @@ In some sequences, the GPS covariance is very high. In such cases, the results f
 In some sequences, the vehicle passes through tunnels or travels in adverse weather conditions, significantly degrading the performance of LeGO-LOAM. The table below lists the sequences which require special attention for odometry experiments:
 
 <p align="center">
-  <img src="./imgs/odometry_sequence_listup.png" width="75%">
+  <img src="./imgs/odometry_sequence_table.png" width="75%">
 </p>
 
 ## Visualization
