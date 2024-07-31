@@ -9,19 +9,19 @@ from mpl_toolkits.mplot3d.axes3d import Axes3D
 from mpl_toolkits.mplot3d.proj3d import proj_transform
 from mpl_toolkits.mplot3d.art3d import Path3DCollection, Line3D, Line3DCollection
 
-from typing import Dict
 from typing import Dict, List
 
 import os
-
-linestyle_list = ['solid', 'dotted', 'dashed']
-prop_cycle = plt.rcParams['axes.prop_cycle']
-colors = prop_cycle.by_key()['color']
 
 global_pose = np.array([[1., 0., 0., 0.],
                         [0., 1., 0., 0.],
                         [0., 0., 1., 0.],
                         [0., 0., 0., 1.]])
+
+linestyle_list = ['solid', 'dotted', 'dashed']
+prop_cycle = plt.rcParams['axes.prop_cycle']
+colors = prop_cycle.by_key()['color']
+
 
 def cal_odom_rel(pre_pose:np.ndarray, nxt_pose:np.ndarray)->np.ndarray:
     '''
@@ -223,8 +223,10 @@ def odom_vis_from_filepath(odom_path):
 
 if __name__ == '__main__':
     
-    for i in range(2,3):
+    for i in range(1, 59):
         odom_path = f'../gt_pose/gt_{str(i).zfill(2)}.txt'
-        odom_vis_from_filepath(odom_path)
-    
+        odom_vis_from_filepath(odom_path)      
 
+
+            
+    
