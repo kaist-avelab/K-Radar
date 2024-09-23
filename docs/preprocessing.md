@@ -2,7 +2,7 @@
 This is the documentation for Pre-processing of 4D Radar data with K-Radar dataset (refer to <a href="https://arxiv.org/abs/2303.06342">the paper</a>).
  
 
-You can download the pre-processed 4D Radar data in google drive link: [URL](https://drive.google.com/drive/folders/1IfKu-jKB1InBXmfacjMKQ4qTm8jiHrG_?usp=drive_link)
+You can download the pre-processed 4D Radar data in google drive link: [URL](https://drive.google.com/drive/folders/1KwzaAx-k8sGx8k-0D7bFVooTkCfbXTfC?usp=drive_link)
 
 <center><img src="/docs/imgs/preprocessing_density.png" width="90%"></center>
 
