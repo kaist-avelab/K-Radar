@@ -21,6 +21,7 @@ GENERAL:
     IS_SAVE_MODEL: True
     INTERVAL_EPOCH_MODEL: 1
     INTERVAL_EPOCH_UTIL: 5
+is_validation_updated: True
 ### ----- General ----- ###
 
 ### ----- Dataset ----- ###
