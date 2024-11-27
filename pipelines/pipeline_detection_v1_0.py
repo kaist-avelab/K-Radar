@@ -29,6 +29,7 @@ from utils.util_config import cfg, cfg_from_yaml_file
 from utils.util_point_cloud import Object3D
 import utils.kitti_eval.kitti_common as kitti
 from utils.kitti_eval.eval import get_official_eval_result
+from utils.kitti_eval.eval_revised import get_official_eval_result_revised
 
 from utils.util_optim import clip_grad_norm_
 
@@ -88,6 +89,34 @@ class PipelineDetection_v1_0():
         self.set_vis()
         
         # self.show_pline_description()
+        
+        # Thanks to Felix Fent (in TUM) and Miao Zhang (in Bosch Research)
+        # Fixed mixed interpolation (issue #28) and z_center (issue #36) in evaluation
+        self.is_validation_updated = self.cfg.get('is_validation_updated', False)
+
+        ### Distil ###
+        cfg_distil = self.cfg.get('DISTIL', None)
+        if cfg_distil is not None:
+            self.distil = True
+            self.infer_head_of_distil_model = cfg_distil.get('INFER_HEAD', False)
+            import yaml
+            from easydict import EasyDict
+            with open(cfg_distil.CFG, 'r') as f:
+                new_config = yaml.safe_load(f)
+            from models.skeletons import build_skeleton
+            distil_model = build_skeleton(EasyDict(new_config))
+            
+            if not self.infer_head_of_distil_model:
+                if hasattr(distil_model, 'head'):
+                    import torch.nn as nn
+                    distil_model.head = nn.Identity()
+            distil_model.load_state_dict(torch.load(cfg_distil.PTH), strict=False)
+            self.distil_model = distil_model.cuda().eval()
+            # inactivate self.head in distilation model
+            print('* The model for distilation is loaded.')
+        else:
+            self.distil = False
+        ### Distil ###
 
     def update_cfg_regarding_mode(self):
         '''
@@ -267,10 +296,15 @@ class PipelineDetection_v1_0():
                 if self.optim_fastai:
                     self.scheduler.step(accumulated_iter, epoch)
                 
-                try:
-                    dict_net = self.network(dict_datum)
-                except:
-                    print('* error: ', dict_datum['meta'])
+                if self.distil:
+                    with torch.no_grad():
+                        dict_datum = self.distil_model(dict_datum)
+                        dict_datum['ldr_bev_feat'] = dict_datum['spatial_features_2d']
+                
+                # try:
+                dict_net = self.network(dict_datum)
+                # except:
+                #     print('* error: ', dict_datum['meta'])
                 
                 if self.get_loss_from == 'head':
                     loss = self.network.head.loss(dict_net)
@@ -608,7 +642,12 @@ class PipelineDetection_v1_0():
 
             list_metrics = []
             for idx_cls_val in self.list_val_care_idx:
-                dict_metrics, result_log = get_official_eval_result(gt_annos, dt_annos, idx_cls_val, is_return_with_dict=True)
+                if self.is_validation_updated:
+                    # Thanks to Felix Fent (in TUM) and Miao Zhang (in Bosch Research)
+                    # Fixed mixed interpolation (issue #28) and z_center (issue #36) in evaluation
+                    dict_metrics, result_log = get_official_eval_result_revised(gt_annos, dt_annos, idx_cls_val, is_return_with_dict=True)
+                else:
+                    dict_metrics, result_log = get_official_eval_result(gt_annos, dt_annos, idx_cls_val, is_return_with_dict=True)
                 print(f'-----conf{conf_thr}-----')
                 print(result_log)
                 list_metrics.append(dict_metrics)
@@ -946,7 +985,12 @@ class PipelineDetection_v1_0():
                     list_metrics = []
                     list_results = []
                     for idx_cls_val in self.list_val_care_idx:
-                        dict_metrics, result = get_official_eval_result(gt_annos, dt_annos, idx_cls_val, is_return_with_dict=True)
+                        if self.is_validation_updated:
+                            # Thanks to Felix Fent (in TUM) and Miao Zhang (in Bosch Research)
+                            # Fixed mixed interpolation (issue #28) and z_center (issue #36) in evaluation
+                            dict_metrics, result = get_official_eval_result_revised(gt_annos, dt_annos, idx_cls_val, is_return_with_dict=True)
+                        else:
+                            dict_metrics, result = get_official_eval_result(gt_annos, dt_annos, idx_cls_val, is_return_with_dict=True)
                         list_metrics.append(dict_metrics)
                         list_results.append(result)
                     print('Conf thr: ', str(conf_thr), ', Condition: ', condition)
