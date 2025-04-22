@@ -22,7 +22,7 @@ The URLs listed below are useful for using the K-Radar dataset and benchmark:
 ## License and Commercialization Inquiries
 The `K-Radar` dataset is published under the CC BY-NC-ND License, and all codes are published under the Apache License 2.0.
 
-The technologies in this repository have been developed by [`AVELab`](http://ave.kaist.ac.kr/) and are being commercialized by `Zeta Mobility`. For commercialization inquiries, please contact `Zeta Mobility` (e-mail: zeta@zetamobility.com).
+The technologies in this repository have been developed by [`AVELab`](http://ave.kaist.ac.kr/) and are being commercialized by [`Zeta Mobility`](https://zetamobility-company.imweb.me/). For commercialization inquiries, please contact [`Zeta Mobility`](https://zetamobility-company.imweb.me/) (e-mail: zeta@zetamobility.com).
 
 <p align="center">
   <img src = "./docs/imgs/zeta_mobility.png" width="60%">
@@ -40,7 +40,10 @@ We provide the K-Radar dataset in three ways to ensure effective deployment of t
 For more details, please refer to [the dataset documentation](/docs/dataset.md).
 
 ## Sensor Fusion
-TODO
+
+For the preparation and quantitative results of the camera, LiDAR, and 4D Radar sensor fusion, please refer to the following document: [Sensor Fusion Pipeline Guide](/docs/sensor_fusion.md).
+
+The images below showcase qualitative results, with yellow boxes representing detected objects from our sensor fusion AI (camera + LiDAR + 4D Radar), which we refer to as [`Availability-aware Sensor Fusion (ASF)`](https://arxiv.org/abs/2503.07029). From left to right, the images depict: (1) front-facing camera images, (2) LiDAR point clouds, (3) 4D Radar tensors, and (4) sensor attention maps (SAMs). ASF stands out with three key advantages: **sensor availability awareness** that maintains performance even when sensors fail or degrade in adverse conditions by automatically prioritizing available sensors (in the SAMs, red, green, and blue represent attention scores for Camera, LiDAR, and 4D Radar, with predominantly blue SAMs in adverse weather indicating 4D Radar automatically received the highest attention); **efficient computation structure** with minimal memory usage (1.5-1.6GB) and high processing speeds (13.5-20.5Hz); and **superior detection performance** (87.4% AP3D at IoU=0.3 and 73.6% AP3D at IoU=0.5) even including challenging weather conditions. For more details, please refer to [our paper](https://arxiv.org/abs/2503.07029).
 
 ## Detection & Tracking
 
