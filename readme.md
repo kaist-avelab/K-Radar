@@ -39,6 +39,9 @@ We provide the K-Radar dataset in three ways to ensure effective deployment of t
 
 For more details, please refer to [the dataset documentation](/docs/dataset.md).
 
+## Sensor Fusion
+TODO
+
 ## Detection
 
 This is the documentation for how to use our detection frameworks with K-Radar dataset. We tested the K-Radar detection frameworks on the following environment:
@@ -84,6 +87,9 @@ The figure below shows the auto-labeling results for six road environments in th
 </p>
 
 Regarding the commercialization and the usage of auto-labeling technologies, please contact `Zeta Mobility`.
+
+## Radar Synthesis
+TODO
 
 ## Odometry
 We provide the location of a GPS antenna, essential for accurate ground-truth odometry. This location is precisely processed by integrating data from high-resolution LiDAR, RTK-GPS, and IMU data. To ensure the utmost accuracy, we verify the vehicle's location by correlating the LiDAR sensor data against a detailed, high-resolution map, as illustrated below. For security purposes, we present this location information in local coordinates rather than global coordinates (i.e., UTM). For more details, refer to [the odometry document](/docs/odometry.md).
