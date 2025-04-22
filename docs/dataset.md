@@ -49,13 +49,17 @@ KRadarFrameworks
             ├── 58
 ```
 
-* Via Google Drive Urls (A portion of the dataset)
+* Via Google Drive Urls (A portion of the dataset for 4D Radar tensor or full 4D Radar point clouds dataset)
 
 The `K-Radar` dataset is being uploaded to Google Drive. It will take time to upload our entire dataset.
 The 4D Radar tensor is only available on our server because it is too large to upload to Google Drive. (We can charge for up to 2TB of Google Drive storage space.)
 We provide camera images, Lidar point cloud, RTK-GPS, and Radar tensor (for network input) via Google Drive for flexibility.
 
 <a href="https://drive.google.com/drive/folders/1IfKu-jKB1InBXmfacjMKQ4qTm8jiHrG_?usp=share_link"> Download link </a>
+
+We note that the 4D Radar tensor data is large (as a fully populated 4-dimensional tensor, the DRAE Radar tensor requires 260MB assuming 32-bit float per cell, calculated as 64×256×107×37 * 32 / 8).
+We are providing the radar tensor with power values removed along the Doppler axis (as rdr_polar_3d.zip) and Radar point clouds preprocessed at various densities (zip files in `from_rdr_poloar_3d` and `from_rdr_cube_xyz` in `RadarTensor` directory). through above Google Drive link ([https://drive.google.com/drive/folders/1IfKu-jKB1InBXmfacjMKQ4qTm8jiHrG_](https://drive.google.com/drive/folders/1IfKu-jKB1InBXmfacjMKQ4qTm8jiHrG_?usp=share_link)).
+Additionally, we continue to provide the complete DRAE 4D Radar tensor dataset on hard drives for non-profit purposes to institutions that require it. We are receiving shipping requests, and we sincerely apologize if there have been any delays or inconveniences in the delivery process. We will continue to strive for the smooth provision of the dataset.
 
 * Via Sending 4D raw data via shipping (The total dataset)
 
