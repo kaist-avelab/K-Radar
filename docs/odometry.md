@@ -1,6 +1,6 @@
 # Odometry
 
-This document is about odometry in the K-Radar dataset. You can find the odometry labels in `K-Radar/resources/odometry/gt`, which is in the format of [KITTI](https://www.cvlibs.net/datasets/kitti/eval_odometry.php). The odometry labels have been generated using [LeGO-LOAM](https://github.com/RobustFieldAutonomyLab/LeGO-LOAM), which uses 360-degree LiDAR point clouds. 
+This document is about odometry in the K-Radar dataset. You can find the odometry labels in `K-Radar/resources/odometry/gt`, which is in the format of [KITTI](https://www.cvlibs.net/datasets/kitti/eval_odometry.php). The odometry labels have been generated using [LeGO-LOAM](https://github.com/RobustFieldAutonomyLab/LeGO-LOAM), which uses 360-degree LiDAR point clouds.
 
 Additionally, you can use the `K-Radar/resources/odometry/gt_rel` file, which contains relative pose information. This file is derived from the ground truth (gt) and its format is (qw, qx, qy, qz, tx, ty, tz), where qw, qx, qy, qz represent quaternions and tx, ty, tz represent translations of relative frames. Timestamps and corresponding (relative) GPS (x, y, and z) information are provided in `K-Radar/resources/odometry/gps`.
 
@@ -37,3 +37,7 @@ We provide code to visualize the odometry from .txt files, available in `K-Radar
 <p align="center">
   <img src="./imgs/odometry_seq_01.gif" width="75%">
 </p>
+
+## IMU
+
+The IMU data for K-Radar can be found [here](https://drive.google.com/drive/folders/1iNdsVoe88kXAQ_xcMrEegp0FR6A5x_NW). The topic `/os_cloud_node_1/imu` contains IMU data from the Ouster 128-channel LiDAR sensor, and `/os_cloud_node_2/imu` contains IMU data from the Ouster 64-channel LiDAR sensor.
