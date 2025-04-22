@@ -44,15 +44,6 @@ TODO
 
 ## Detection & Tracking
 
-This is the documentation for how to use our detection frameworks with K-Radar dataset. We tested the K-Radar detection frameworks on the following environment:
-
-* Python 3.8.13 (3.10+ does not support open3d.)
-* Ubuntu 18.04/20.04
-* Torch 1.11.0+cu113
-* CUDA 11.3
-* opencv 4.2.0.32
-* open3d 0.15.2
-
 For the preparation and quantitative results of the 4D Radar-based object detection, please refer to the following document: [Detection Pipeline Guide](/docs/detection.md).
 
 The images below showcase qualitative results, with green boxes representing detected objects using 4D Radar. From left to right, the images depict (1) front-facing camera images (for reference), (2) LiDAR point clouds (for reference), and (3) 4D Radar tensors (input for the neural network).
@@ -63,6 +54,8 @@ Note that the camera images and LiDAR point clouds are shown for reference purpo
   <img src = "./docs/imgs/detection2.gif" width="80%">
   <img src = "./docs/imgs/detection3.gif" width="80%">
 </p>
+
+For the preparation and quantitative results of the 4D Radar-based object tracking, please refer to the following document: [Tracking Pipeline Guide](/docs/tracking.md).
 
 ## Pre-processing
 This is the documentation for how to use our auto-labeling frameworks with the K-Radar dataset:
