@@ -1,6 +1,6 @@
 # Sensor Fusion
 
-This is the documentation for how to use our sensor fusion frameworks with K-Radar dataset. We tested the K-Radar detection frameworks on the following environment:
+This is the documentation for how to use our sensor fusion frameworks with K-Radar dataset. We tested the sensor fusion frameworks on the following environment:
 
 * Python 3.8.13
 * Ubuntu 20.04
