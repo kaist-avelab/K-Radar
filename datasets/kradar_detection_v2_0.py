@@ -157,6 +157,8 @@ class KRadarDetection_v2_0(Dataset):
             for line in lines[1:]:
                 # print(line)
                 list_vals = line.rstrip('\n').split(', ')
+                if list_vals[0] != '*':
+                    continue
                 if len(list_vals) != 11:
                     print('* split err in ', path_label)
                     continue
@@ -307,7 +309,11 @@ class KRadarDetection_v2_0(Dataset):
     
     def get_ldr64(self, dict_item):
         if self.ldr64.processed: # with attr & calib & roi
-            pass # TODO
+            dir_ldr64 = self.ldr64.dir
+            seq = dict_item['meta']['seq']
+            ldr_idx = dict_item['meta']['idx']['ldr64']
+            path_ldr = osp.join(dir_ldr64, seq, f'lpc_{ldr_idx}.npy')
+            pc_lidar = np.load(path_ldr)
         else:
             with open(dict_item['meta']['path']['ldr64'], 'r') as f:
                 lines = [line.rstrip('\n') for line in f][self.ldr64.skip_line:]
