@@ -8,6 +8,7 @@ from .rdr_base import RadarBase
 from .ldr_base import LidarBase
 from .pvrcnn_pp import PVRCNNPlusPlus
 from .second_net import SECONDNet
+from .spiking_rtnh import SpikingRTNH
 
 def build_skeleton(cfg):
     return __all__[cfg.MODEL.SKELETON](cfg)
@@ -17,4 +18,5 @@ __all__ = {
     'LidarBase': LidarBase,
     'PVRCNNPlusPlus': PVRCNNPlusPlus,
     'SECONDNet': SECONDNet,
+    'SpikingRTNH': SpikingRTNH,
 }
