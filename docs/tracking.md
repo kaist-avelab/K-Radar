@@ -1,6 +1,6 @@
 # Tracking
 
-This is the documentation for how to use our detection frameworks with K-Radar dataset. We tested the K-Radar detection frameworks on the following environment:
+This is the documentation for how to use our tracking frameworks with K-Radar dataset. We tested the K-Radar tracking frameworks on the following environment:
 
 * Python 3.8.13 (3.10+ does not support open3d.)
 * Ubuntu 18.04/20.04
