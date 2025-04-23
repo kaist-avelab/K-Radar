@@ -6,8 +6,6 @@ This is the documentation for how to use our synthesis frameworks with K-Radar d
 * Ubuntu 18.04/20.04
 * Torch 1.11.0+cu113
 * CUDA 11.3
-* opencv 4.2.0.32
-* open3d 0.15.2
 
 All code, logs, and guidelines will be made public after review.
 
