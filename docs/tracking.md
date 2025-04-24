@@ -9,6 +9,8 @@ This is the documentation for how to use our tracking frameworks with K-Radar da
 * opencv 4.2.0.32
 * open3d 0.15.2
 
+For more details, please refer to [the paper](https://arxiv.org/abs/2502.01357).
+
 ## Requirements
 
 1. Clone the repository
@@ -63,7 +65,7 @@ We use the operations from <a href="https://github.com/open-mmlab/OpenPCDet">Ope
 To align with our project requirements, we have made several modifications to the original code and have uploaded the revised versions to our repository.
 We extend our gratitude to MMLab for their great work.
 
-## Directory Structure
+## Directories
 
 The code and pre-processed data for Bayes-4DRTrack are available as `code_processed_data.zip` in [this URL](https://drive.google.com/drive/folders/1H993jlQPXehxBhag9e7HQTlVYDLQ4Kpt?usp=drive_link).
 
@@ -86,7 +88,7 @@ K-Radar # Object Detection
     ├── main_cond_0_for_tracking_mc_dropout.py # for preprocess detection results
 ```
 
-## Multi-Object Tracking 
+## Multi-Object Tracking
 
 ### Modify Config
 If you want run mot using detection results with MC Dropout and Loss attenuation, 
