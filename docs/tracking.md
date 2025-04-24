@@ -213,7 +213,7 @@ $ bash .../Bayes-4DRTrack/preprocessing/kradar_data/kradar_preprocess.sh
 
 ### Logs and pretrained pth
 
-All the codes, logs, and pretrained pth files are available in [this URL](https://drive.google.com/drive/folders/1H993jlQPXehxBhag9e7HQTlVYDLQ4Kpt?usp=drive_link) as:
+All the codes, logs, and pretrained pth files are available at [this URL](https://drive.google.com/drive/folders/1H993jlQPXehxBhag9e7HQTlVYDLQ4Kpt?usp=drive_link):
 
 - Bayes-4DRTrack
 
