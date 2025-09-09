@@ -28,9 +28,9 @@ The characteristics of existing 4D Radar datasets are as follows:
 2) Even when released in tensor form, as shown in the [`Uniqueness of K-Radar`](./docs/uniqueness.md) page, the datasets were collected with real 4D Radar sensors but only **partial RAED dimensions (2D or 3D tensor)** were included for public release.
 3) To date, only **K-Radar and RaDelft** provide full 4DRT across all RAED dimensions, with **K-Radar being the largest dataset** in terms of scale.
 
-For points (1) and (2), it is widely understood that most 4D Radar hardware providers restricted external release of raw tensor data due to **technology protection and security policies**, which made it difficult to access complete 4D tensor.
+For points (1) and (2), it is widely understood that most 4D Radar hardware providers restricted external release of raw tensor data due to **technology protection and security policies**, which made it difficult to access complete 4DRT.
 
-K-Radar overcame these technical and policy barriers by **publicly releasing full 4D tensor data for the first time**, enabling high-quality training for more accurate and robust object detection and tracking.
+K-Radar overcame these technical and policy barriers by **publicly releasing full 4DRT data for the first time**, enabling high-quality training for more accurate and robust object detection and tracking.
 
 More details on the unique features of K-Radar, including the full references for these claims, can be found on the [`Uniqueness of K-Radar`](./docs/uniqueness.md) page.
 
