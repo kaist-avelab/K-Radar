@@ -1,5 +1,5 @@
 # Uniqueness of K-Radar  
-K-Radar is the **world's largest** publicly available 4D radar dataset for autonomous driving. It is also the **world’s first** to provide full **RAED (Range–Azimuth–Elevation–Doppler)** tensor (4D tensor) data without any loss of dimensionality. 
+K-Radar is the **world’s largest** publicly available 4D radar dataset for autonomous driving, with the **highest number of labeled frames** among existing datasets. It is also the **world’s first** to provide full **RAED (Range–Azimuth–Elevation–Doppler)** tensor data without any loss of dimensionality. Among 4D radar datasets, **K-Radar** features the **most diverse adverse weather scenarios**, making it a uniquely comprehensive resource for robust perception research.
 
 
 The characteristics of existing 4D radar datasets are as follows:     
@@ -19,7 +19,7 @@ K-Radar overcame these technical and policy barriers by **publicly releasing ful
 
 ---
 
-## Available Public 4D Radar Datasets (as of 2025.09.09)
+## Available Public 4D Radar Datasets (as of 2025.09.09) [1-17]
 
 ![K-Radar Table Comparison](./imgs/Comparsion_4D_radar_table.png)
 > **Note:**  
@@ -35,8 +35,10 @@ K-Radar overcame these technical and policy barriers by **publicly releasing ful
 ---
 - Datasets with low elevation resolution are considered **Effectively 3D**, even if all RAED dimensions are included, as they are limited in capturing detailed height information.   
 - **K-Radar** is the **world’s first** dataset to publicly release full RAED 4D radar tensors.   
-- With a total of **35K frames**, it holds the record as the **world’s largest** publicly available 4D radar dataset.   
-- Among 4D _tensor_ datasets, **K-Radar** includes the **most diverse adverse weather scenarios** [8].     
+- With a total of **35K labeled frames**, it is the  **largest number of labeled frames** among publicly available 4D radar datasets.
+- It also provides the **largest number of frames in 4D radar tensor dataset**.
+- To the best of our knowledge, **K-Radar** provides full RAED tensors (~300 MB per frame) and the largest number of labeled frames among 4D radar datasets, resulting in a total size of ~16 TB — making it likely **the largest 4D radar dataset** available.
+- Among 4D radar datasets, **K-Radar** includes the **most diverse adverse weather scenarios** [8].     
 - With these unique features, **K-Radar has been requested by more than 65 leading institutions worldwide** and has made significant contributions to advancing autonomous driving research with 4D radar.    
 
 ---
