@@ -2,20 +2,18 @@
 K-Radar is the **world’s largest** publicly available 4D radar dataset for autonomous driving, with the **highest number of labeled frames** among existing datasets. It is also the **world’s first** to provide full **RAED (Range–Azimuth–Elevation–Doppler)** tensor data without any loss of dimensionality. Among 4D radar datasets, **K-Radar** features the **most diverse adverse weather scenarios**, making it a uniquely comprehensive resource for robust perception research.
 
 
-The characteristics of existing 4D radar datasets are as follows:     
+Comparison of characteristics of existing 4D radar datasets is as follows:     
 
 
-1. Most datasets provide **sparse point cloud representations** pre-processed from raw radar tensors. This sparsity leads to degraded 3D object detection performance, which is why recent works are shifting towards direct tensor-based methods [1–6].   
+1. Most datasets provide **point cloud formats** that deliver a sparse representation after pre-processing of raw radar tensors data. This sparsity leads to degraded 3D object detection performance, which is why recent works are shifting towards utilizing tensor data that has high density [1–6].   
 
-2. Even when radar data is released in tensor form, most datasets include only **partial RAED dimensions (2D or 3D tensor)**, despite being collected using full 4D radar sensors [2, 7, 8].    
+2. Even when 4D radar data is collected in tensor format, released datasets include only **partial RAED dimensions (2D or 3D tensor)** [2, 7, 8].    
 
-3. To date, only **K-Radar [1]** and **RaDelft [7]** provide tensor data across all RAED dimensions. However, RaDelft has relatively low elevation resolution, which limits its ability to capture detailed height information [7]. In addition, **K-Radar** is the **largest** 4D radar dataset currently available [2, 8].   
+3. To date, **K-Radar [1]** and **RaDelft [7]** provide tensor data across all RAED dimensions (4D). However, RaDelft has relatively low elevation resolution, resulting in unreliable height information, has limited utilization due to the insufficient number of data frames with labels [7]. In addition, **K-Radar** provides the **largest** number of data frames with labels among 4D radar dataset currently available [2, 8].   
 
 
 
-For points (1) and (2), it is assumed that most 4D radar hardware providers restricted external release of raw tensor data due to **technology protection and security policies**, which made it difficult to access complete 4D tensor.   
-
-K-Radar overcame these technical and policy barriers by **publicly releasing full 4D tensor data for the first time**, enabling high-quality training for more accurate and robust object detection and tracking.    
+It is assumed that most 4D radar hardware providers restricted external release of raw tensor data due to **technology protection and security policies**, which made it difficult to open a complete 4D tensor dataset to public.  On the contrary, K-Radar overcame these technical and policy barriers by **publicly releasing full 4D tensor data for the first time**, enabling high-quality training for more accurate and robust object detection and tracking.    
 
 ---
 
@@ -33,13 +31,10 @@ K-Radar overcame these technical and policy barriers by **publicly releasing ful
 > **4D Tensor**: **K-Radar** [1]    
  
 ---
-- Datasets with low elevation resolution are considered **Effectively 3D**, even if all RAED dimensions are included, as they are limited in capturing detailed height information.   
-- **K-Radar** is the **world’s first** dataset to publicly release full RAED 4D radar tensors.   
-- With a total of **35K labeled frames**, it is the  **largest number of labeled frames** among publicly available 4D radar datasets.
-- It also provides the **largest number of frames in 4D radar tensor dataset**.
-- To the best of our knowledge, **K-Radar** provides full RAED tensors (~300 MB per frame) and the largest number of labeled frames among 4D radar datasets, resulting in a total size of ~16 TB — making it likely **the largest 4D radar dataset** available.
+- Datasets with low elevation resolution are considered **Effectively 3D**, even if all RAED dimensions are included, as there is high uncertainty in the provided height information.   
+- With a total of **35K labeled frames**, it is the  **largest number of labeled frames** among publicly available 4D radar datasets that are sufficient for various AI training.
+- **K-Radar** provides full RAED tensors (~300 MB per frame and a total size of ~16 TB) and the largest number of labeled frames among 4D radar datasets — known as **the largest 4D radar dataset** among the publicly available datasets.
 - Among 4D radar datasets, **K-Radar** includes the **most diverse adverse weather scenarios** [8].     
-- With these unique features, **K-Radar has been requested by more than 65 leading institutions worldwide** and has made significant contributions to advancing autonomous driving research with 4D radar.    
 
 ---
 
