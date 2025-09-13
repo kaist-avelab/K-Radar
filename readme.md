@@ -2,16 +2,16 @@
   <img src = "./docs/imgs/readme_logo.png" width="60%">
 </p>
 
-`KAIST-Radar (K-Radar)` (provided by ['AVELab'](http://ave.kaist.ac.kr/)) is a novel large-scale object detection dataset and benchmark that contains 35K frames of 4D Radar tensor (4DRT) data with power measurements along the Doppler, range, azimuth, and elevation dimensions, together with carefully annotated 3D bounding box labels of objects on the roads. K-Radar includes challenging driving conditions such as adverse weathers (fog, rain, and snow) on various road structures (urban, suburban roads, alleyways, and highways). In addition to the 4DRT, we provide auxiliary measurements from carefully calibrated high-resolution Lidars, surround stereo cameras, and RTK-GPS. This repository provides the `K-Radar` dataset, annotation tool for 3d bounding boxes, and the visualization tool for showing the inference results and calibrating the sensors.
+`KAIST-Radar (K-Radar)` (provided by ['AVELab'](http://ave.kaist.ac.kr/)) is a novel large-scale object detection dataset and benchmark that contains 35K frames of 4D radar tensor (4DRT) data with power measurements along the Doppler, range, azimuth, and elevation dimensions, together with carefully annotated 3D bounding box labels of objects on the roads. K-Radar includes challenging driving conditions such as adverse weathers (fog, rain, and snow) on various road structures (urban, suburban roads, alleyways, and highways). In addition to the 4DRT, we provide auxiliary measurements from carefully calibrated high-resolution Lidars, surround stereo cameras, and RTK-GPS. This repository provides the `K-Radar` dataset, annotation tool for 3d bounding boxes, and the visualization tool for showing the inference results and calibrating the sensors.
 
 ![image](./docs/imgs/kradar_examples.png)
 
 The URLs listed below are useful for using the K-Radar dataset and benchmark:
 * <a href="https://arxiv.org/abs/2206.08171"> K-Radar paper and appendix </a>
-* <a href="https://arxiv.org/abs/2303.06342"> 4D Radar object detection network of input with various density </a>
-* <a href="https://arxiv.org/abs/2310.17659"> Enhanced network for 4D Radar using two-stage pre-processing </a>
-* <a href="https://github.com/kaist-avelab/K-Radar_auto-labeling"> Repository of Auto-labeling for 4D Radar </a>
-* <a href=""> Repository of Odometry for 4D Radar </a>
+* <a href="https://arxiv.org/abs/2303.06342"> 4D radar object detection network of input with various density </a>
+* <a href="https://arxiv.org/abs/2310.17659"> Enhanced network for 4D radar using two-stage pre-processing </a>
+* <a href="https://github.com/kaist-avelab/K-Radar_auto-labeling"> Repository of Auto-labeling for 4D radar </a>
+* <a href=""> Repository of Odometry for 4D radar </a>
 * <a href="https://www.youtube.com/watch?v=TZh5i2eLp1k"> The video clip that shows each sensor measurement dynamically changing during driving under the heavy snow condition </a>
 * <a href="https://www.youtube.com/watch?v=ylG0USHCBpU"> The video clip that shows the 4D radar tensor & Lidar point cloud (LPC) calibration and annotation process </a>
 * <a href="https://www.youtube.com/watch?v=ILlBJJpm4_4"> The video clip that shows the annotation process in the absence of LPC measurements of objects  </a>
@@ -21,14 +21,14 @@ The URLs listed below are useful for using the K-Radar dataset and benchmark:
 
 ## Uniqueness of K-Radar: The World's First and Largest 4DRT
 
-K-Radar is the **world’s first** and **largest** publicly available autonomous driving 4D Radar dataset that provides full **RAED (Range–Azimuth–Elevation–Doppler)** data as a **4D Radar tensor (4DRT)** without any loss of dimensionality.
+K-Radar is the **world’s first** and **largest** publicly available autonomous driving 4D Radar dataset that provides full **RAED (Range–Azimuth–Elevation–Doppler)** data as a **4D radar tensor (4DRT)** without any loss of dimensionality.
 
 The characteristics of existing 4D Radar datasets are as follows:
 1) Most provide **sparse point cloud representations** pre-processed from raw tensor, which leads to performance degradation in 3D object detection due to sparsity.
-2) Even when released in tensor form, as shown in the [`Uniqueness of K-Radar`](./docs/uniqueness.md) page, the datasets were collected with real 4D Radar sensors but only **partial RAED dimensions (2D or 3D tensor)** were included for public release.
+2) Even when released in tensor form, as shown in the [`Uniqueness of K-Radar`](./docs/uniqueness.md) page, the datasets were collected with real 4D radar sensors but only **partial RAED dimensions (2D or 3D tensor)** were included for public release.
 3) To date, only **K-Radar and RaDelft** provide full 4DRT across all RAED dimensions, with **K-Radar being the largest dataset** in terms of scale.
 
-For points (1) and (2), it is widely understood that most 4D Radar hardware providers restricted external release of raw tensor data due to **technology protection and security policies**, which made it difficult to access complete 4DRT.
+For points (1) and (2), it is widely understood that most 4D radar hardware providers restricted external release of raw tensor data due to **technology protection and security policies**, which made it difficult to access complete 4DRT.
 
 K-Radar overcame these technical and policy barriers by **publicly releasing full 4DRT data for the first time**, enabling high-quality training for more accurate and robust object detection and tracking.
 
@@ -58,18 +58,18 @@ For more details, please refer to [the dataset documentation](/docs/dataset.md).
 
 ## Sensor Fusion
 
-For the preparation and quantitative results of the camera, LiDAR, and 4D Radar sensor fusion, please refer to the following document: [Sensor Fusion Pipeline Guide](/docs/sensor_fusion.md).
+For the preparation and quantitative results of the camera, LiDAR, and 4D radar sensor fusion, please refer to the following document: [Sensor Fusion Pipeline Guide](/docs/sensor_fusion.md).
 
 <p align="center">
   <img src = "./docs/imgs/sensor_fusion1.gif" width="80%">
   <img src = "./docs/imgs/sensor_fusion2.gif" width="80%">
 </p>
 
-The images above showcase qualitative results, with yellow boxes representing detected objects from our sensor fusion AI (camera + LiDAR + 4D Radar), which we refer to as [Availability-aware Sensor Fusion (ASF)](https://arxiv.org/abs/2503.07029). From left to right, the images depict: (1) front-facing camera images, (2) LiDAR point clouds, (3) 4D Radar tensors, and (4) sensor attention maps (SAMs). ASF stands out with three key advantages: **sensor availability awareness** that maintains performance even when sensors fail or degrade in adverse conditions by automatically prioritizing available sensors (in the SAMs, red, green, and blue represent attention scores for Camera, LiDAR, and 4D Radar, with predominantly blue SAMs in adverse weather indicating 4D Radar automatically received the highest attention); **efficient computation structure** with minimal memory usage (1.5-1.6GB) and high processing speeds (13.5-20.5Hz); and **superior detection performance** (87.4% AP3D at IoU=0.3 and 73.6% AP3D at IoU=0.5) even including challenging weather conditions. For more details, please refer to [the paper](https://arxiv.org/abs/2503.07029).
+The images above showcase qualitative results, with yellow boxes representing detected objects from our sensor fusion AI (camera + LiDAR + 4D radar), which we refer to as [Availability-aware Sensor Fusion (ASF)](https://arxiv.org/abs/2503.07029). From left to right, the images depict: (1) front-facing camera images, (2) LiDAR point clouds, (3) 4D radar tensors, and (4) sensor attention maps (SAMs). ASF stands out with three key advantages: **sensor availability awareness** that maintains performance even when sensors fail or degrade in adverse conditions by automatically prioritizing available sensors (in the SAMs, red, green, and blue represent attention scores for Camera, LiDAR, and 4D radar, with predominantly blue SAMs in adverse weather indicating 4D radar automatically received the highest attention); **efficient computation structure** with minimal memory usage (1.5-1.6GB) and high processing speeds (13.5-20.5Hz); and **superior detection performance** (87.4% AP3D at IoU=0.3 and 73.6% AP3D at IoU=0.5) even including challenging weather conditions. For more details, please refer to [the paper](https://arxiv.org/abs/2503.07029).
 
 ## Detection & Tracking
 
-For the preparation and quantitative results of the 4D Radar-based object detection, please refer to the following document: [Detection Pipeline Guide](/docs/detection.md).
+For the preparation and quantitative results of the 4D radar-based object detection, please refer to the following document: [Detection Pipeline Guide](/docs/detection.md).
 
 <p align="center">
   <img src = "./docs/imgs/detection1.gif" width="80%">
@@ -77,48 +77,48 @@ For the preparation and quantitative results of the 4D Radar-based object detect
   <img src = "./docs/imgs/detection3.gif" width="80%">
 </p>
 
-The images above showcase qualitative results, with green boxes representing detected objects using 4D Radar. From left to right, the images depict (1) front-facing camera images (for reference), (2) LiDAR point clouds (for reference), and (3) 4D Radar tensors (input for the neural network).
-Note that the camera images and LiDAR point clouds are shown for reference purposes only, and the bounding boxes from the 4D Radar-only detection are projected onto these visualizations.
+The images above showcase qualitative results, with green boxes representing detected objects using 4D radar. From left to right, the images depict (1) front-facing camera images (for reference), (2) LiDAR point clouds (for reference), and (3) 4D radar tensors (input for the neural network).
+Note that the camera images and LiDAR point clouds are shown for reference purposes only, and the bounding boxes from the 4D radar-only detection are projected onto these visualizations.
 
-For the preparation and quantitative results of the 4D Radar-based object tracking, please refer to the following document: [Tracking Pipeline Guide](/docs/tracking.md).
+For the preparation and quantitative results of the 4D radar-based object tracking, please refer to the following document: [Tracking Pipeline Guide](/docs/tracking.md).
 
 ## Pre-processing
 
-For the preparation and quantitative results of the pre-processing for 4D Radar, please refer to the following document: [Pre-processing Pipeline Guide](/docs/preprocessing.md).
+For the preparation and quantitative results of the pre-processing for 4D radar, please refer to the following document: [Pre-processing Pipeline Guide](/docs/preprocessing.md).
 
 <p align="center">
   <img src = "./docs/imgs/preprocessing.gif" width="65%">
 </p>
 
-As shown in the figure above, the pre-processing of 4D Radar consists of two stages. The first stage extracts the main measurements with high power from the 4D Radar tensor (e.g., percentile in RTNH and CFAR in common), while the second stage removes noise from the first stage output. In the first stage, it is important to exclude peripheral measurements with low power and extract measurements with an appropriate density (typically 3~10%) to allow the detection network to recognize the shape of the object (refer to <a href="https://arxiv.org/abs/2303.06342">the paper</a>). However, extracting measurements at this density introduces noise called sidelobe, which interferes with precise localization of the object, as shown in the figure above. Therefore, pre-processing that indicates sidelobe to the network is essential, and applying this alone greatly improves detection performance, particularly the localization performance of objects (refer to <a href="https://ieeexplore.ieee.org/document/10599871">the paper</a>). For quantitative results and pre-processed data, please refer to [the pre-processing document](/docs/preprocessing.md).
+As shown in the figure above, the pre-processing of 4D radar consists of two stages. The first stage extracts the main measurements with high power from the 4D radar tensor (e.g., percentile in RTNH and CFAR in common), while the second stage removes noise from the first stage output. In the first stage, it is important to exclude peripheral measurements with low power and extract measurements with an appropriate density (typically 3~10%) to allow the detection network to recognize the shape of the object (refer to <a href="https://arxiv.org/abs/2303.06342">the paper</a>). However, extracting measurements at this density introduces noise called sidelobe, which interferes with precise localization of the object, as shown in the figure above. Therefore, pre-processing that indicates sidelobe to the network is essential, and applying this alone greatly improves detection performance, particularly the localization performance of objects (refer to <a href="https://ieeexplore.ieee.org/document/10599871">the paper</a>). For quantitative results and pre-processed data, please refer to [the pre-processing document](/docs/preprocessing.md).
 
 ## Auto-labeling
 
-For the preparation and quantitative results of the auto-labeling for 4D Radar, please refer to the following document: [Auto-labeling Pipeline Guide](/docs/labeling.md).
+For the preparation and quantitative results of the auto-labeling for 4D radar, please refer to the following document: [Auto-labeling Pipeline Guide](/docs/labeling.md).
 
 <p align="center">
   <img src = "./docs/imgs/label_results.gif" width="80%">
 </p>
 
-The figure above shows the auto-labeling results for six road environments in the K-Radar dataset. Each cell, from left to right, displays the handmade labels, the detection results of the 4D Radar detection network trained with handmade labels (RTNH), and the network trained with automatically generated labels (i.e., auto-labels). Notably, the RTNH trained with auto-labels only from clear weather conditions performs robustly even in inclement weather. This implies that the distribution of 4D Radar data depends more on road conditions than weather conditions, allowing for the training of an all-weather resilient 4D Radar detection network using only clear weather auto-labels. For more details and quantitative results, refer to [the auto-labeling document](/docs/labeling.md).
+The figure above shows the auto-labeling results for six road environments in the K-Radar dataset. Each cell, from left to right, displays the handmade labels, the detection results of the 4D radar detection network trained with handmade labels (RTNH), and the network trained with automatically generated labels (i.e., auto-labels). Notably, the RTNH trained with auto-labels only from clear weather conditions performs robustly even in inclement weather. This implies that the distribution of 4D radar data depends more on road conditions than weather conditions, allowing for the training of an all-weather resilient 4D radar detection network using only clear weather auto-labels. For more details and quantitative results, refer to [the auto-labeling document](/docs/labeling.md).
 
 ## Radar Synthesis
 
-For the preparation and quantitative results of the 4D Radar data synthesis, please refer to the following document: [Data Synthesis Pipeline Guide](/docs/synthesizer.md).
+For the preparation and quantitative results of the 4D radar data synthesis, please refer to the following document: [Data Synthesis Pipeline Guide](/docs/synthesizer.md).
 
 <p align="center">
   <img src = "./docs/imgs/synthesized.gif" width="80%">
 </p>
 
-The figure above shows the synthesized 4D Radar tensor which is generated by AI, where the input is calibrated LiDAR point cloud (or camera image). We note that since 4D Radar allows lots of variations on HW design (e.g., chirp design, antenna pattern, and CFAR), it shows data with different distributions even for the same object, unlike camera and LiDAR (please refer to [the 4D Radar tutorial material](https://www.ieee-iv-4dradar.org/)). Therefore, 4D Radar AI developed for specific hardware only shows reasonable performance on that hardware, and whenever the hardware changes, datasets need to be built again. Moreover, since Radar is greatly affected by the material properties of the surrounding environment (metallic or non-metallic) and multi-path effects, it is difficult to develop a realistic heuristic simulator. This 4D Radar AI synthesizer, as shown in the figure above, generates 4D Radar data that reflects the physical characteristics of 4D Radar (i.e., power and sidelobe are similar to real data). Because the synthesized 4D Radar data is physically reasonable enough, detection AI shows detection performance on real data (about 80% of real data training) even when training only with synthesized Radar data. As the Radar synthesizer improves (i.e., as synthesized data becomes more sophisticated and closer to real data), we expect that the AI synthesizer will effectively enable efficient dataset construction and can be used as a simulator.
+The figure above shows the synthesized 4D radar tensor which is generated by AI, where the input is calibrated LiDAR point cloud (or camera image). We note that since 4D radar allows lots of variations on HW design (e.g., chirp design, antenna pattern, and CFAR), it shows data with different distributions even for the same object, unlike camera and LiDAR (please refer to [the 4D radar tutorial material](https://www.ieee-iv-4dradar.org/)). Therefore, 4D radar AI developed for specific hardware only shows reasonable performance on that hardware, and whenever the hardware changes, datasets need to be built again. Moreover, since Radar is greatly affected by the material properties of the surrounding environment (metallic or non-metallic) and multi-path effects, it is difficult to develop a realistic heuristic simulator. This 4D Radar AI synthesizer, as shown in the figure above, generates 4D radar data that reflects the physical characteristics of 4D radar (i.e., power and sidelobe are similar to real data). Because the synthesized 4D radar data is physically reasonable enough, detection AI shows detection performance on real data (about 80% of real data training) even when training only with synthesized radar data. As the radar synthesizer improves (i.e., as synthesized data becomes more sophisticated and closer to real data), we expect that the AI synthesizer will effectively enable efficient dataset construction and can be used as a simulator.
 
 ## Embedded Systems
 
 We are targeting the energy-efficient implementation of previously GPU-developed networks (in spiking neural networks) or their implementation on economical devices (in AI accelerators). Our developed spiking neural network (which we refer to as SpikingRTNH) achieves 78% energy reduction compared to its existing GPU-based counterpart (RTNH). For more details, please refer to [the paper](https://arxiv.org/abs/2502.00074).
 
-For the preparation and quantitative results of the spiking neural network for 4D Radar, please refer to the following document: [Spiking Neural Network Pipeline Guide](/docs/snn.md).
+For the preparation and quantitative results of the spiking neural network for 4D radar, please refer to the following document: [Spiking Neural Network Pipeline Guide](/docs/snn.md).
 
-For the preparation and quantitative results of the AI accelerator for 4D Radar, please refer to the following document: [AI Accelerator Pipeline Guide](/docs/hailo.md).
+For the preparation and quantitative results of the AI accelerator for 4D radar, please refer to the following document: [AI Accelerator Pipeline Guide](/docs/hailo.md).
 
 ## Odometry
 
