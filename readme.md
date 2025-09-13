@@ -21,7 +21,7 @@ The URLs listed below are useful for using the K-Radar dataset and benchmark:
 
 ## Uniqueness of K-Radar: The World's First and Largest 4DRT
 
-K-Radar is the **world’s first** and **largest** publicly available autonomous driving 4D radar dataset that provides full **RAED (Range–Azimuth–Elevation–Doppler)** data as a **4D radar tensor (4DRT)** without any loss of dimensionality.
+K-Radar is the **world’s first** and **largest** publicly available autonomous driving 4D radar dataset that provides full **RAED (Range–Azimuth–Elevation–Doppler)** data as a **4D radar tensor (4DRT)** without any loss of dimensionality, and features the **most diverse adverse weather** scenarios among existing datasets.
 
 The characteristics of existing 4D radar datasets are as follows:
 1) Most provide **sparse point cloud representations** pre-processed from raw tensor, which leads to performance degradation in 3D object detection due to sparsity.
