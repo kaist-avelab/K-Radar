@@ -23,14 +23,14 @@ The URLs listed below are useful for using the K-Radar dataset and benchmark:
 
 K-Radar is the **world’s first** and **largest** publicly available autonomous driving 4D radar dataset that provides full **RAED (Range–Azimuth–Elevation–Doppler)** data as a **4D radar tensor (4DRT)** without any loss of dimensionality, and features the **most diverse adverse weather** scenarios among existing datasets.
 
-The characteristics of existing 4D radar datasets are as follows:
-1) Most provide **sparse point cloud representations** pre-processed from raw tensor, which leads to performance degradation in 3D object detection due to sparsity.
-2) Even when released in tensor form, as shown in the [`Uniqueness of K-Radar`](./docs/uniqueness.md) page, the datasets were collected with real 4D radar sensors but only **partial RAED dimensions (2D or 3D tensor)** were included for public release.
-3) To date, only **K-Radar and RaDelft** provide full 4DRT across all RAED dimensions, with **K-Radar being the largest dataset** in terms of scale.
+Comparison of characteristics of existing 4D radar datasets is as follows:
+1) Most provide **point cloud formats** that deliver a sparse representation after pre-processing of raw radar tensors data, which leads to performance degradation in 3D object detection.
+2) Even when 4D radar data is collected in tensor format, as shown in the [`Uniqueness of K-Radar`](./docs/uniqueness.md) page, released datasets include only **partial RAED dimensions (2D or 3D tensor)**.
+3) To date, **K-Radar** and **RaDelft** provide tensor data across all RAED dimensions (4D), with **K-Radar being the largest dataset** in terms of scale.
 
-For points (1) and (2), it is widely understood that most 4D radar hardware providers restricted external release of raw tensor data due to **technology protection and security policies**, which made it difficult to access complete 4DRT.
+it is widely understood that most 4D radar hardware providers restricted external release of raw tensor data due to **technology protection and security policies**, which made it difficult to open a complete 4D tensor dataset to public.
 
-K-Radar overcame these technical and policy barriers by **publicly releasing full 4DRT data for the first time**, enabling high-quality training for more accurate and robust object detection and tracking.
+On the contrary, K-Radar overcame these technical and policy barriers by **publicly releasing full 4D tensor data for the first time**, enabling high-quality training for more accurate and robust object detection and tracking.
 
 More details on the unique features of K-Radar, including the full references for these claims, can be found on the [`Uniqueness of K-Radar`](./docs/uniqueness.md) page.
 
