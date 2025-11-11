@@ -84,6 +84,12 @@ After downloading all the dataset, please arrange the sequence directory with th
       ├── radar_zyx_cube
 ```
 
+* Sample sequences for initial testing
+
+We provide two sample sequences to help researchers get started with the K-Radar dataset:
+- [**Sequence 1**](https://drive.google.com/file/d/118hnNhJvoI894JAViHcpw6GgdtP2RNh5/view?usp=drive_link): Sequence collected under normal weather conditions
+- [**Sequence 58**](https://drive.google.com/file/d/11a5pGnJpl4fhgFiVPXP9jwjEiUoqm2Eb/view?usp=drive_link): Sequence collected under heavy snow conditions
+
 ## Sequence composition
 
 Each of the 58 sequences consists of listed files or folders as follows.
