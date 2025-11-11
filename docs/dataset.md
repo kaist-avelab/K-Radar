@@ -132,4 +132,4 @@ Most 4D Radar object detection datasets use LiDAR-detected 3D bounding boxes as 
 
 ## Calibration
 
-TODO
+For detailed information on calibration, please refer to [this link](https://github.com/kaist-avelab/k-radar-gui).
