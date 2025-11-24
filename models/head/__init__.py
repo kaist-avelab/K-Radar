@@ -11,6 +11,7 @@ from .anchor_head import AnchorHeadSingle
 from .point_head_simple import PointHeadSimple
 from .center_head import CenterHead
 from .rdr_filt_srt_head import RdrFiltSrtHead
+from .anchor_head_integrated import AnchorHeadSingleIntegrated
 
 __all__ = {
     'RdrSpcubeHead': RdrSpcubeHead,
@@ -20,4 +21,5 @@ __all__ = {
     'PointHeadSimple': PointHeadSimple,
     'CenterHead': CenterHead,
     'RdrFiltSrtHead': RdrFiltSrtHead,
+    'AnchorHeadSingleIntegrated': AnchorHeadSingleIntegrated,
 }
