@@ -14,9 +14,12 @@ def build_skeleton(cfg):
     return __all__[cfg.MODEL.SKELETON](cfg)
 
 __all__ = {
+    'CamBase': CamBase,
     'RadarBase': RadarBase,
     'LidarBase': LidarBase,
     'PVRCNNPlusPlus': PVRCNNPlusPlus,
     'SECONDNet': SECONDNet,
     'SpikingRTNH': SpikingRTNH,
+    'FusionBase': FusionBase,
+    'FusionBaseIntegrated': FusionBaseIntegrated,
 }
