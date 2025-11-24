@@ -9,6 +9,8 @@ from .ldr_base import LidarBase
 from .pvrcnn_pp import PVRCNNPlusPlus
 from .second_net import SECONDNet
 from .spiking_rtnh import SpikingRTNH
+from .fusion_base import FusionBase
+from .fusion_base_integrated import FusionBaseIntegrated
 
 def build_skeleton(cfg):
     return __all__[cfg.MODEL.SKELETON](cfg)
@@ -23,3 +25,4 @@ __all__ = {
     'FusionBase': FusionBase,
     'FusionBaseIntegrated': FusionBaseIntegrated,
 }
+
