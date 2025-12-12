@@ -53,7 +53,7 @@ DATASET:
     'n_attr': 9,
     'inside_ldr64': True,
     'calib': True,
-    'n_used': 4, # x, y, z, intensity
+    'n_used': 5, # x, y, z, intensity
   }
   rdr: {
     'cube': False,
