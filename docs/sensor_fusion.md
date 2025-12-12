@@ -37,9 +37,9 @@ python setup.py develop
 
 6. Unzip 'kradar_revised_label_v2_0.zip' in the 'tools/revise_label' directory.
 
-7. Download pretrained weights of sensor-specific encoders at <a href="">this link</a> and put them all in the './pretrained' folder.
+7. Download pretrained weights of sensor-specific encoders at <a href="https://drive.google.com/file/d/149P8OJ_AxfT0hDY62pfne7hhcarvCaiX/view?usp=drive_link">this link</a> and put them all in the './pretrained' folder.
 
-8. Download pre-processed <a href="">camera images</a>, <a href="">LiDAR point clouds</a>, and <a href="">4D Radar point clouds</a>.
+8. Download pre-processed <a href="https://drive.google.com/file/d/1-ukFZjUNEzapdESGTSeg3sKIGIU9GsJQ/view?usp=drive_link">camera images</a>, <a href="https://drive.google.com/file/d/10qV_1lCSmEoNg6Nx4ioIDcKob3Q0jiLY/view?usp=drive_link">LiDAR point clouds</a>, and <a href="https://drive.google.com/file/d/1hTHAHEYdhl6yEDdTz3uxv08vsdG4lxu7/view?usp=drive_link">4D Radar point clouds</a>.
 
 9. Link the folders of pre-processed data in the config yaml file.
 
@@ -57,7 +57,7 @@ python main_cond_0_args.py --config ./configs/ASF_v2_0_final.yml --model ./pretr
 
 ## Pretrained Weights, Logs, and Performance of ASF (4D Radar + LiDAR + Camera)
 
-- Benchmark v1.0 (narrow RoI, single class, label v1.0): <href="">Pretrained weights</a> and <href="">logs</a>
+- Benchmark v1.0 (narrow RoI, single class, label v1.0): <a href="">Pretrained weights</a> and <a href="https://drive.google.com/file/d/1GQzJP9x7G28Tg-cXUx0RTtMWU7Mz6279/view?usp=drive_link">logs</a>
 
 The reported values are ${AP_{3D}^{IoU=0.3}}$ and ${AP_{BEV}^{IoU=0.3}}$ for Sedan class.
 
@@ -66,7 +66,7 @@ The reported values are ${AP_{3D}^{IoU=0.3}}$ and ${AP_{BEV}^{IoU=0.3}}$ for Sed
 |3D|87.4|87.0|90.1|90.7|88.2|80.0|88.6|77.4|
 |BEV|88.6|88.2|90.2|98.9|89.0|80.4|89.2|78.4|
 
-- Benchmark v2.0 (wide RoI, multiple classes, label v2.0): <href="">Pretrained weights</a> and <href="">logs</a>
+- Benchmark v2.0 (wide RoI, multiple classes, label v2.0): <a href="https://drive.google.com/file/d/1Rh2JCan_uXrt3oAtEEMri0uEiEBclpia/view?usp=drive_link">Pretrained weights</a> and <a href="https://drive.google.com/file/d/1x1SiKB7LvIzYWIvkaqKnvogOdtHFCbZl/view?usp=drive_link">logs</a>
 
 The reported values are ${AP_{3D}^{IoU=0.3}}$ and ${AP_{BEV}^{IoU=0.3}}$ for Sedan and Bus and Truck classes.
 
@@ -82,10 +82,14 @@ The reported values are ${AP_{3D}^{IoU=0.3}}$ and ${AP_{BEV}^{IoU=0.3}}$ for Sed
 | Sedan        | 82.5  | 81.8   | 94.9     | 98.0 | 76.2 | 81.0  | 93.8      | 69.5      |
 | Bus or Truck | 70.2  | 58.3   | 81.5     | -    | 8.0  | 72.2  | 96.1      | 89.6      |
 
-Please refer to <href="">the logs</a> for the performance of ASF with various sensor combinations (e.g., 4D Radar-only, 4D Radar + LiDAR) and strict metrics (i.e., IoU=0.5).
+Please refer to <a href="https://drive.google.com/file/d/1x1SiKB7LvIzYWIvkaqKnvogOdtHFCbZl/view?usp=drive_link">the logs</a> for the performance of ASF with various sensor combinations (e.g., 4D Radar-only, 4D Radar + LiDAR) and strict metrics (i.e., IoU=0.5).
 
 ## Sensor Attention Map Visualization
 TODO
 
 ## t-SNE Visualization
 TODO
+
+## Real-time Demonstration
+TODO
+
