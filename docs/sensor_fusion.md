@@ -55,6 +55,8 @@ python main_cond_0_args.py
 ```
 
 ## Pretrained Weights and Logs
+- Pretrained weights and logs for the benchmark v2.0
+- Pretrained weights and logs for the benchmark v1.0
 
 ## Performance of ASF (4D Radar + LiDAR + Camera)
 The reported values are ${AP_{BEV}^{IoU=0.3}}$ and ${AP_{3D}^{IoU=0.3}}$ for Sedan class. (based on the benchmark v1.0)
@@ -64,15 +66,15 @@ The reported values are ${AP_{BEV}^{IoU=0.3}}$ and ${AP_{3D}^{IoU=0.3}}$ for Sed
 |BEV|88.6|88.2|90.2|98.9|89.0|80.4|89.2|78.4|
 |3D|87.4|87.0|90.1|90.7|88.2|80.0|88.6|77.4|
 
-The reported values are ${AP_{3D}^{IoU=0.3}$ and ${AP_{BEV}^{IoU=0.3}$ for Sedan and Bus and Truck classes. (based on the benchmark v2.0)
+The reported values are ${AP_{3D}^{IoU=0.3}}$ and ${AP_{BEV}^{IoU=0.3}}$ for Sedan and Bus and Truck classes. (based on the benchmark v2.0)
 
-(1) ${AP_{3D}}$
+(1) ${AP_{3D}^{IoU=0.3}}$
 | Class        | Total | Normal | Overcast | Fog  | Rain | Sleet | LightSnow | HeavySnow |
 |:------------:|:-----:|:------:|:--------:|:----:|:----:|:-----:|:---------:|:---------:|
 | Sedan        | 79.3  | 78.8   | 86.1     | 93.7 | 72.9 | 74.2  | 91.2      | 65.8      |
 | Bus or Truck | 60.4  | 52.7   | 77.4     | -    | 8.0  | 69.2  | 87.9      | 69.1      |
 
-(2) ${AP_{BEV}}$
+(2) ${AP_{BEV}^{IoU=0.3}}$
 | Class        | Total | Normal | Overcast | Fog  | Rain | Sleet | LightSnow | HeavySnow |
 |:------------:|:-----:|:------:|:--------:|:----:|:----:|:-----:|:---------:|:---------:|
 | Sedan        | 82.5  | 81.8   | 94.9     | 98.0 | 76.2 | 81.0  | 93.8      | 69.5      |
