@@ -57,9 +57,7 @@ python main_cond_0_args.py --config ./configs/ASF_v2_0_final.yml --model ./pretr
 
 ## Pretrained Weights, Logs, and Performance of ASF (4D Radar + LiDAR + Camera)
 
-- Benchmark v1.0 (narrow RoI, single class, label v1.0)
--- <href="">Pretrained weights</a>
--- <href="">Logs</a>
+- Benchmark v1.0 (narrow RoI, single class, label v1.0): <href="">Pretrained weights</a> and <href="">logs</a>
 
 The reported values are ${AP_{3D}^{IoU=0.3}}$ and ${AP_{BEV}^{IoU=0.3}}$ for Sedan class.
 
@@ -68,7 +66,7 @@ The reported values are ${AP_{3D}^{IoU=0.3}}$ and ${AP_{BEV}^{IoU=0.3}}$ for Sed
 |3D|87.4|87.0|90.1|90.7|88.2|80.0|88.6|77.4|
 |BEV|88.6|88.2|90.2|98.9|89.0|80.4|89.2|78.4|
 
-- Benchmark v2.0 (narrow RoI, single class, label v1.0)
+- Benchmark v2.0 (wide RoI, multiple classes, label v2.0): <href="">Pretrained weights</a> and <href="">logs</a>
 
 The reported values are ${AP_{3D}^{IoU=0.3}}$ and ${AP_{BEV}^{IoU=0.3}}$ for Sedan and Bus and Truck classes.
 
