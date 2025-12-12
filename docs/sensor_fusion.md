@@ -58,7 +58,8 @@ python main_cond_0_args.py
 
 ## Performance
 The reported values are ${AP_{3D}^{@0.3}$ and ${AP_{BEV}^{@0.3}$ for Sedan class. (based on the label v1.0)
-|Name|Total|Normal|Overcast|Fog|Rain|Sleet|LightSnow|HeavySnow|
+
+|Metric|Total|Normal|Overcast|Fog|Rain|Sleet|LightSnow|HeavySnow|
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 |${AP_{3D}^{@0.3}$|47.4|49.9|56.7|52.8|42.0|41.5|50.6|44.5|
 |${AP_{BEV}^{@0.3}$|40.1|45.6|48.8|46.9|32.9|22.6|36.8|36.8|
