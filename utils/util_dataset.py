@@ -32,6 +32,7 @@ __all__ = [ 'func_show_radar_tensor_bev', \
             'func_show_rdr_pc_tesseract', \
             'func_save_undistorted_camera_imgs_w_projected_params', \
             'func_get_distribution_of_label', \
+            'func_save_occupied_bev_map',
             ]
 
 def func_show_radar_tensor_bev(p_pline, dict_item, bboxes=None, \
@@ -149,7 +150,7 @@ def func_show_lidar_point_cloud(p_pline, dict_item, bboxes=None, \
                 [4, 5], [6, 7], #[5, 6],[4, 7],
                 [0, 4], [1, 5], [2, 6], [3, 7],
                 [0, 2], [1, 3], [4, 6], [5, 7]]
-        colors_bbox = [p_pline.cfg.VIS.CLASS_RGB[cls_name] for _ in range(len(lines))]
+        colors_bbox = [p_pline.cfg.VIS.DIC_CLASS_RGB[cls_name] for _ in range(len(lines))]
 
     line_sets_bbox = []
     for gt_obj in bboxes_o3d:
@@ -592,7 +593,7 @@ def func_show_rdr_pc_cube(p_pline, dict_item, bboxes=None, cfar_params = [25, 8,
                     [4, 5], [6, 7], #[5, 6],[4, 7],
                     [0, 4], [1, 5], [2, 6], [3, 7],
                     [0, 2], [1, 3], [4, 6], [5, 7]]
-            colors_bbox = [p_pline.cfg.CLASS_RGB[cls_name] for _ in range(len(lines))]
+            colors_bbox = [p_pline.cfg.VIS.DIC_CLASS_RGB[cls_name] for _ in range(len(lines))]
 
         line_sets_bbox = []
         for gt_obj in bboxes_o3d:
@@ -988,3 +989,579 @@ def func_get_distribution_of_label(p_ds, consider_avail=True):
             print('-'*30, avail, '-'*30)
             for obj_name in dict_avail[avail].keys():
                 print('* # of ', obj_name, ': ', dict_avail[avail][obj_name])
+
+def func_save_depth_labels_for_cams(p_ds, dict_args=None, vis=False, save=False):
+    if dict_args is None:
+        dict_args = dict(
+            list_key_cams = ['front0', 'front1'],
+            process = dict( # resize -> crop
+                is_process=True,
+                ori_shape=(1280,720), # W, H
+                resize=0.7,
+                crop=(96,170,800,426), # final img shape = (256, 704)
+                flip=False,
+                rotate=0.,
+                is_normalize=True,
+            ),
+            dir_save = dict(
+                depth_undistorted = '/media/donghee/HDD_0/kradar_depth_labels/undistorted',
+                depth_cropped = '/media/donghee/HDD_0/kradar_depth_labels/cropped',
+            ),
+        )
+    
+    from tqdm import tqdm
+    from matplotlib import pyplot as plt
+    from easydict import EasyDict
+    import torch
+
+    dict_args = EasyDict(dict_args)
+    dict_save = dict_args.dir_save
+    dict_process = dict_args.process
+
+    is_process = dict_process.is_process # resize -> crop
+    if is_process:
+        resize = dict_process.resize
+        crop = dict_process.crop
+        flip = dict_process.flip
+        rotate = dict_process.rotate
+
+        rotation = torch.eye(2)
+        translation = torch.zeros(2)
+        # post-homography transformation
+        rotation *= resize
+        translation -= torch.Tensor(crop[:2])
+        if flip:
+            A = torch.Tensor([[-1, 0], [0, 1]])
+            b = torch.Tensor([crop[2] - crop[0], 0])
+            rotation = A.matmul(rotation)
+            translation = A.matmul(translation) + b
+        theta = rotate / 180 * np.pi
+        A = torch.Tensor(
+            [
+                [np.cos(theta), np.sin(theta)],
+                [-np.sin(theta), np.cos(theta)],
+            ]
+        )
+        b = torch.Tensor([crop[2] - crop[0], crop[3] - crop[1]]) / 2
+        b = A.matmul(-b) + b
+        rotation = A.matmul(rotation)
+        translation = A.matmul(translation) + b
+        transform = torch.eye(4)
+        transform[:2, :2] = rotation
+        transform[:2, 3] = translation
+        transform = transform.numpy()
+
+        W, H = dict_process.ori_shape
+        resize_dims = (int(W * resize), int(H * resize))
+    
+    if save:
+        for idx_seq in range(58):
+            seq = f'{idx_seq+1}'
+            
+            os.makedirs(osp.join(dict_save.depth_undistorted, seq), exist_ok=True)
+            for key_cam in dict_args.list_key_cams:
+                os.makedirs(osp.join(dict_save.depth_undistorted, seq, key_cam), exist_ok=True)
+
+            os.makedirs(osp.join(dict_save.depth_cropped, seq), exist_ok=True)
+            for key_cam in dict_args.list_key_cams:
+                os.makedirs(osp.join(dict_save.depth_cropped, seq, key_cam), exist_ok=True)
+
+    for dict_item in tqdm(p_ds.list_dict_item):
+        dict_item = p_ds.get_label(dict_item) if not p_ds.load_label_in_advance else dict_item
+        dict_item = p_ds.get_camera_img(dict_item)
+
+        seq = dict_item['meta']['seq']
+        idx = dict_item['meta']['idx']
+        dict_path = dict_item['meta']['path']
+
+        # lidar coordinate
+        ldr64 = p_ds.get_ldr64_from_path(dict_path['ldr64'], is_calib=False)
+
+        # lidar coordinate to radar (i.e., ego) coordinate
+        n_pts, _ = ldr64.shape
+        calib_vals = np.array(dict_item['meta']['calib']).reshape(-1,3).repeat(n_pts, axis=0)
+        ldr64[:,:3] = ldr64[:,:3] + calib_vals
+
+        for key_cam in dict_args['list_key_cams']:
+            ldr_temp = ldr64.copy()
+
+            # Nx3 -> Nx4
+            ldr_hom = np.concatenate((ldr_temp[:,:3], np.ones((n_pts,1))), axis=1)
+
+            img = p_ds.get_camera_img_with_key_and_type(dict_item, key_cam, 'undistorted', is_compose=False)
+            
+            if vis:
+                plt.figure()
+                plt.imshow(img)
+                plt.title(f'{key_cam}, seq {seq}')
+                plt.show()
+                plt.close()
+
+            temp_dict_t_params = p_ds.dict_t_params[seq][key_cam]
+            
+            # print(temp_dict_t_params.keys())
+            # dict_keys(['img_aug_matrix', 'camera_intrinsics', 'radar2image', 'radar2camera', 'camera2radar'])
+            
+            # radar (ego) to camera
+            T_rdr2cam = temp_dict_t_params['radar2camera']
+            ldr_hom = ldr_hom@T_rdr2cam.T
+            
+            # view_points
+            intrinsic = temp_dict_t_params['camera_intrinsics']
+            ldr_hom = ldr_hom@intrinsic.T
+            ldr_hom[:,:2] /= ldr_hom[:,2:3] # normalize
+
+            # masking
+            margin_pixel = 1
+            img_w, img_h = img.size
+            ldr_hom = ldr_hom[:,:3]
+            ldr_hom = ldr_hom[np.where(
+                (ldr_hom[:,0]>margin_pixel) & (ldr_hom[:,0]<img_w-margin_pixel) &
+                (ldr_hom[:,1]>margin_pixel) & (ldr_hom[:,1]<img_h-margin_pixel) &
+                (ldr_hom[:,2]>0.0))]
+            
+            if save:
+                cam_idx = idx['camf'] # lrr are synchronized to camf
+                np.save(osp.join(dict_save.depth_undistorted, seq, key_cam, f'{cam_idx}.npy'), ldr_hom)
+
+            if vis:
+                plt.figure()
+                plt.axis([0,img_w,img_h,0])
+                plt.imshow(img)
+                plt.scatter(ldr_hom[:,0],ldr_hom[:,1],c=1/ldr_hom[:,2],cmap='rainbow_r',alpha=0.2,s=1.5)
+                plt.title(f'{key_cam}, seq {seq}, projected')
+                plt.show()
+                plt.close()
+
+            # resize and crop
+            min_u, min_v, max_u, max_v = crop
+            ldr_hom[:,:2] = ldr_hom[:,:2] * resize
+            ldr_hom[:,0] -= min_u
+            ldr_hom[:,1] -= min_v
+
+            margin_pixel_cropped = 1
+            cropped_u = max_u-min_u
+            cropped_v = max_v-min_v
+
+            ldr_hom = ldr_hom[np.where(
+                (ldr_hom[:,0]>margin_pixel_cropped) & (ldr_hom[:,0]<cropped_u-margin_pixel_cropped) &
+                (ldr_hom[:,1]>margin_pixel_cropped) & (ldr_hom[:,1]<cropped_v-margin_pixel_cropped) &
+                (ldr_hom[:,2]>0.0))]
+            
+            if save:
+                cam_idx = idx['camf'] # lrr are synchronized to camf
+                np.save(osp.join(dict_save.depth_cropped, seq, key_cam, f'{cam_idx}.npy'), ldr_hom) 
+
+            if vis:
+                plt.figure()
+                img_cropped = p_ds.get_camera_img_with_key_and_type(dict_item, key_cam, 'cropped', is_compose=False)
+                plt.axis([0,cropped_u,cropped_v,0])
+                plt.imshow(img_cropped)
+                plt.scatter(ldr_hom[:,0],ldr_hom[:,1],c=1/ldr_hom[:,2],cmap='rainbow_r',alpha=0.2,s=1.5)
+                plt.title(f'{key_cam}, seq {seq}, projected, cropped')
+                plt.show()
+                plt.close()
+
+            # free memory
+            ldr_temp = None
+            
+        # free memory (Killed error, checked with htop)
+        for k in dict_item.keys():
+            if k != 'meta':
+                dict_item[k] = None
+
+
+### [Vis Functions] ###
+def create_cylinder_mesh(radius, p0, p1, color=[1, 0, 0]):
+    cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=radius, height=np.linalg.norm(np.array(p1)-np.array(p0)))
+    cylinder.paint_uniform_color(color)
+    frame = np.array(p1) - np.array(p0)
+    frame /= np.linalg.norm(frame)
+    R = o3d.geometry.get_rotation_matrix_from_xyz((np.arccos(frame[2]), np.arctan2(-frame[0], frame[1]), 0))
+    cylinder.rotate(R, center=[0, 0, 0])
+    cylinder.translate((np.array(p0) + np.array(p1)) / 2)
+    return cylinder
+
+def draw_3d_box_in_cylinder(vis, center, theta, l, w, h, color=[1, 0, 0], radius=0.1, in_cylinder=True):
+    R = np.array([[np.cos(theta), -np.sin(theta), 0],
+                [np.sin(theta),  np.cos(theta), 0],
+                [0,              0,             1]])
+    corners = np.array([[l/2, w/2, h/2], [l/2, w/2, -h/2], [l/2, -w/2, h/2], [l/2, -w/2, -h/2],
+                        [-l/2, w/2, h/2], [-l/2, w/2, -h/2], [-l/2, -w/2, h/2], [-l/2, -w/2, -h/2]])
+    corners_rotated = np.dot(corners, R.T) + center
+    lines = [[0, 1], [0, 2], [1, 3], [2, 3], [4, 5], [4, 6], [5, 7], [6, 7],
+            [0, 4], [1, 5], [2, 6], [3, 7]]
+    line_set = o3d.geometry.LineSet()
+    line_set.points = o3d.utility.Vector3dVector(corners_rotated)
+    line_set.lines = o3d.utility.Vector2iVector(lines)
+    line_set.colors = o3d.utility.Vector3dVector([color for i in range(len(lines))])
+    if in_cylinder:
+        for line in lines:
+            cylinder = create_cylinder_mesh(radius, corners_rotated[line[0]], corners_rotated[line[1]], color)
+            vis.add_geometry(cylinder)
+    else:
+        vis.add_geometry(line_set)
+
+def create_sphere(radius=0.2, resolution=30, rgb=[0., 0., 0.], center=[0., 0., 0.]):
+    mesh_sphere = o3d.geometry.TriangleMesh.create_sphere(radius, resolution)
+    color = np.array(rgb)
+    mesh_sphere.vertex_colors = o3d.utility.Vector3dVector([color for _ in range(len(mesh_sphere.vertices))])
+    x, y, z = center
+    transform = np.identity(4)
+    transform[0, 3] = x
+    transform[1, 3] = y
+    transform[2, 3] = z
+    mesh_sphere.transform(transform)
+    return mesh_sphere
+
+def get_rectangle_corners(x, y, l, w, heading):
+    """
+    Calculate corners of a rotated rectangle
+    
+    Args:
+        x, y: Center coordinates
+        l, w: Length and width
+        heading: Heading angle
+    
+    Returns:
+        corners: Array of corner coordinates (5, 2)
+    """
+    # Convert to numpy if tensor
+    if hasattr(heading, 'detach'):
+        heading = heading.detach().cpu().numpy()
+    heading = float(heading)
+    
+    c = np.cos(heading)
+    s = np.sin(heading)
+    
+    x_corners = [-l/2, l/2, l/2, -l/2, -l/2]
+    y_corners = [-w/2, -w/2, w/2, w/2, -w/2]
+    
+    R = np.array([[c, -s], 
+                  [s, c]])
+    
+    corners_rotated = np.dot(R, np.vstack((x_corners, y_corners)))
+    corners_rotated[0, :] += x
+    corners_rotated[1, :] += y
+    
+    return np.transpose(corners_rotated)
+
+def draw_heading_arrow(x, y, heading, color, arrow_length):
+    """
+    Draw an arrow indicating heading direction
+    
+    Args:
+        x, y: Arrow starting point
+        heading: Heading angle
+        color: Arrow color
+        arrow_length: Length of the arrow
+    """
+    # Convert to numpy if tensor
+    if hasattr(heading, 'detach'):
+        heading = heading.detach().cpu().numpy()
+    heading = float(heading)
+    
+    dx = arrow_length * np.cos(heading)
+    dy = arrow_length * np.sin(heading)
+    
+    plt.arrow(x, y, dx, dy, 
+             head_width=0.3, head_length=0.5, 
+             color=color, alpha=0.8)
+### [Vis Functions] ###
+
+
+def show_bboxes_in_plt(pc_lidar=None, pc_radar=None, pred_dicts=None, label=None, confidence_thr=0.0):
+    """
+    Show the bounding boxes in matplotlib BEV view.
+    
+    Args:
+        pc_lidar (np.ndarray): LiDAR point cloud. (N, 3+)
+        pc_radar (np.ndarray): Radar point cloud. (N, 3+)
+        pred_dicts (dict): Prediction dictionary.
+        label (list): Label list.
+        confidence_thr (float): Confidence threshold for predictions.
+    """
+    plt.figure(figsize=(20, 10))
+    
+    # Plot point clouds
+    if pc_lidar is not None:
+        plt.scatter(pc_lidar[:, 0], pc_lidar[:, 1], 
+                    c='gray', s=0.5, alpha=0.5, 
+                    label='LiDAR Points')
+    
+    if pc_radar is not None:
+        plt.scatter(pc_radar[:, 0], pc_radar[:, 1], 
+                    c='red', s=2, alpha=0.7,
+                    label='Radar Points')
+    
+    # Draw predicted boxes
+    if pred_dicts is not None:
+        pred_boxes = pred_dicts['pred_boxes'].detach().cpu().numpy()
+        pred_scores = pred_dicts['pred_scores'].detach().cpu().numpy()
+        pred_labels = pred_dicts['pred_labels'].detach().cpu().numpy()
+        
+        for idx_pred in range(len(pred_labels)):
+            x, y, z, l, w, h, th = pred_boxes[idx_pred]
+            score = pred_scores[idx_pred]
+            label_id = pred_labels[idx_pred]
+            
+            if score > confidence_thr:
+                # Create rotated rectangle
+                rect = get_rectangle_corners(x, y, l, w, th)
+                
+                # Draw box
+                plt.fill(rect[:, 0], rect[:, 1], fill=False, edgecolor='green', linewidth=2, alpha=0.8)
+                
+                # Draw heading arrow
+                draw_heading_arrow(x, y, th, 'green', 2.0)
+                
+                # Display score and label
+                plt.text(x, y, f'{score:.2f}', 
+                        color='green', fontsize=15, 
+                        horizontalalignment='center',
+                        verticalalignment='center')
+    
+    # Draw ground truth boxes
+    if label is not None:
+        for obj in label:
+            cls_name, (x, y, z, th, l, w, h), trk_id, avail = obj
+            
+            # Create rotated rectangle
+            rect = get_rectangle_corners(x, y, l, w, th)
+            
+            # Draw box
+            plt.fill(rect[:, 0], rect[:, 1], fill=False, edgecolor='gray', linewidth=2, alpha=0.8)
+            
+            # Draw heading arrow
+            draw_heading_arrow(x, y, th, 'gray', 2.0)
+            
+            # Display class name and tracking ID
+            plt.text(x, y, f'TrID:{trk_id}', 
+                    color='gray', fontsize=15, 
+                    horizontalalignment='center',
+                    verticalalignment='center')
+    
+    # Set axes
+    plt.xlabel('X (m)')
+    plt.ylabel('Y (m)')
+
+    # Set plot range
+    plt.xlim(0, 72)
+    plt.ylim(-16, 16)
+
+    plt.legend()
+    plt.title('Bird\'s Eye View')
+
+def visualize_bev_map_coords(bev_map, arr_x, arr_y, pc_radar=None, label=None, title="BEV Occupation Map"):
+    """
+    Visualize BEV occupation map using real coordinates
+    
+    Args:
+        bev_map: Binary occupation map (H, W)
+        arr_x: x coordinates of BEV grid
+        arr_y: y coordinates of BEV grid
+        title: Plot title
+        save_path: If provided, save figure to this path
+    """
+    plt.figure(figsize=(12, 6))
+    
+    # Create meshgrid for all coordinates
+    X, Y = np.meshgrid(arr_x, arr_y)
+    
+    # Method 1: Using pcolormesh (보다 정확한 grid cell 표현)
+    plt.pcolormesh(X, Y, bev_map, cmap='binary', shading='auto')
+    
+    # Method 2: Using scatter (occupied points만 표시)
+    # occupied_mask = bev_map > 0
+    # plt.scatter(X[occupied_mask], Y[occupied_mask], 
+    #            c='black', s=5, alpha=0.5)
+    
+    # Add colorbar
+    plt.colorbar(label='Occupied')
+    
+    # Add grid
+    plt.grid(True, linestyle='--', alpha=0.3)
+    
+    # Set labels and title
+    plt.xlabel('X (meters)')
+    plt.ylabel('Y (meters)')
+    plt.title(title)
+    
+    # Add ego vehicle marker at (0,0)
+    plt.plot(0, 0, 'r^', markersize=10, label='Ego Vehicle')
+    
+    if pc_radar is not None:
+        plt.scatter(pc_radar[:, 0], pc_radar[:, 1], 
+                    c='red', s=2, alpha=0.7,
+                    label='Radar Points')
+    
+    # Draw ground truth boxes
+    if label is not None:
+        for obj in label:
+            cls_name, (x, y, z, th, l, w, h), trk_id, avail = obj
+            
+            # Create rotated rectangle
+            rect = get_rectangle_corners(x, y, l, w, th)
+            
+            # Draw box
+            plt.fill(rect[:, 0], rect[:, 1], fill=False, edgecolor='gray', linewidth=2, alpha=0.8)
+            
+            # Draw heading arrow
+            draw_heading_arrow(x, y, th, 'gray', 2.0)
+            
+            # Display class name and tracking ID
+            plt.text(x, y, f'TrID:{trk_id}', 
+                    color='gray', fontsize=15, 
+                    horizontalalignment='center',
+                    verticalalignment='center')
+
+    # Add legend
+    plt.legend()
+    
+    # Set axis limits to match actual coordinates
+    plt.xlim(arr_x[0]-1, arr_x[-1]+1)
+    plt.ylim(arr_y[0]-1, arr_y[-1]+1)
+    
+    # Make aspect ratio equal
+    # plt.axis('equal')
+
+def func_save_occupied_bev_map(p_ds, dict_args=None, vis=False, save=True):
+    ### Pre-defined functions ###
+    def get_corners(x, y, l, w, th):
+        """Get corners of rotated rectangle"""
+        # Create corner points of unrotated rectangle
+        corners = np.array([
+            [l/2, w/2],
+            [l/2, -w/2],
+            [-l/2, -w/2],
+            [-l/2, w/2]
+        ])
+        
+        # Rotation matrix
+        c, s = np.cos(th), np.sin(th)
+        R = np.array([[c, -s], [s, c]])
+        
+        # Rotate corners and add center position
+        corners = corners @ R.T + np.array([x, y])
+        return corners
+    
+    def point_in_polygon(x, y, corners):
+        """Check if point is inside polygon using ray casting algorithm"""
+        n = len(corners)
+        inside = False
+        p2x = 0.0
+        p2y = 0.0
+        xints = 0.0
+        p1x, p1y = corners[0]
+        for i in range(n+1):
+            p2x, p2y = corners[i % n]
+            if y > min(p1y, p2y):
+                if y <= max(p1y, p2y):
+                    if x <= max(p1x, p2x):
+                        if p1y != p2y:
+                            xints = (y-p1y)*(p2x-p1x)/(p2y-p1y)+p1x
+                        if p1x == p2x or x <= xints:
+                            inside = not inside
+            p1x, p1y = p2x, p2y
+        return inside
+    
+    def create_bev_occupation_map(labels, arr_x, arr_y, expand_obj_size=1.0):
+        """
+        Create BEV occupation map from object labels
+        
+        Args:
+            labels: List of objects with format [cls_name, _, (x,y,z,th,l,w,h), trk_id]
+            arr_x: x coordinates of BEV grid
+            arr_y: y coordinates of BEV grid
+        
+        Returns:
+            occupied: Binary occupation map (H, W)
+        """
+        H, W = len(arr_y), len(arr_x)
+        occupied = np.zeros((H, W), dtype=bool)
+        
+        # Process each object
+        for obj in labels:
+            cls_name, (x, y, z, th, l, w, h), trk_id, avail = obj
+            
+            # Get corners of object in BEV
+            expanded_l = expand_obj_size*l
+            expanded_w = expand_obj_size*w
+            corners = get_corners(x, y, expanded_l, expanded_w, th)
+            
+            # Find bounding box of rotated rectangle to reduce search space
+            min_x, min_y = np.min(corners, axis=0)
+            max_x, max_y = np.max(corners, axis=0)
+            
+            # Convert to array indices
+            start_x = np.searchsorted(arr_x, min_x) - 1
+            end_x = np.searchsorted(arr_x, max_x) + 1
+            start_y = np.searchsorted(arr_y, min_y) - 1
+            end_y = np.searchsorted(arr_y, max_y) + 1
+            
+            # Clamp to array bounds
+            start_x = max(0, start_x)
+            end_x = min(W, end_x)
+            start_y = max(0, start_y)
+            end_y = min(H, end_y)
+            
+            # Check each point in bounding box
+            for i in range(start_y, end_y):
+                for j in range(start_x, end_x):
+                    if point_in_polygon(arr_x[j], arr_y[i], corners):
+                        occupied[i, j] = True
+        return occupied
+    ### Pre-defined functions ###
+
+    from tqdm import tqdm
+    from easydict import EasyDict
+    
+    if dict_args is None:
+        dict_args = dict(
+            dir_save='/media/donghee/HDD_0/kradar_obj_mask_1_5_expand',
+            expand_obj_size=1.5,
+        )
+    # print(dict_args)
+    cfg = EasyDict(dict_args)
+
+    if save:
+        dir_save = cfg.dir_save
+        for idx_seq in range(58):
+            seq = f'{idx_seq+1}'
+            os.makedirs(osp.join(dir_save, seq), exist_ok=True)
+
+    for dict_item in tqdm(p_ds):
+        # print(dict_item)
+        dict_item = p_ds.get_label(dict_item)
+        dict_item = p_ds.get_ldr64(dict_item)
+        dict_item = p_ds.get_rdr_sparse(dict_item)
+
+        pc_lidar=dict_item['ldr64']
+        pc_radar = dict_item['rdr_sparse']
+        percentile_rate = 0.01 # [TBC] Change the percentile rate to the desired value.
+        pc_radar = pc_radar[np.where(pc_radar[:,3]>np.quantile(pc_radar[:,3], 1-percentile_rate))[0],:]
+
+        label = dict_item['meta']['label']
+        arr_x = np.arange(0, 72.0, 0.4) + 0.2
+        arr_y = np.arange(-16.0, 16.0, 0.4) + 0.2
+
+        bev_map = create_bev_occupation_map(label, arr_x, arr_y, cfg.expand_obj_size)
+
+        if vis:
+            show_bboxes_in_plt(pc_lidar, pc_radar, None, label)
+            visualize_bev_map_coords(bev_map, arr_x, arr_y, pc_radar, label)
+            print(bev_map.shape)
+            plt.show()
+
+        if save:
+            dict_meta = dict_item['meta']
+            seq = dict_meta['seq']
+            rdr_idx = dict_meta['idx']['rdr']
+            
+            path_save = osp.join(dir_save, seq, f'obj_mask_{rdr_idx}.npy')
+            np.save(path_save, bev_map)
+
+        # free memory (Killed error, checked with htop)
+        for k in dict_item.keys():
+            if k != 'meta':
+                dict_item[k] = None
