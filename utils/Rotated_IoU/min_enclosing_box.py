@@ -48,8 +48,8 @@ def generate_table():
     return line, points
 
 LINES, POINTS = generate_table()
-LINES = np.array(LINES).astype(np.int)
-POINTS = np.array(POINTS).astype(np.int)
+LINES = np.array(LINES).astype(np.int64)
+POINTS = np.array(POINTS).astype(np.int64)
 
 def gather_lines_points(corners:torch.Tensor):
     """get hull edge candidates and the rest points using the index
