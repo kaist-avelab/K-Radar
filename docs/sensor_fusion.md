@@ -54,32 +54,32 @@ python main_train_0_args.py
 python main_cond_0_args.py 
 ```
 
-## Pretrained weights and Logs
+## Pretrained Weights and Logs
 
 ## Performance of ASF (4D Radar + LiDAR + Camera)
-The reported values are ${AP_{BEV}^{IoU=0.3}$ and ${AP_{3D}^{IoU=0.3}$ for Sedan class. (based on the benchmark v1.0)
+The reported values are ${AP_{BEV}^{IoU=0.3}}$ and ${AP_{3D}^{IoU=0.3}}$ for Sedan class. (based on the benchmark v1.0)
 
 |Metric|Total|Normal|Overcast|Fog|Rain|Sleet|LightSnow|HeavySnow|
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-|${AP_{3D}^{IoU=0.3}$|88.6|49.9|56.7|52.8|42.0|41.5|50.6|44.5|
-|${AP_{BEV}^{IoU=0.3}$|40.1|45.6|48.8|46.9|32.9|22.6|36.8|36.8|
+|BEV|88.6|88.2|90.2|98.9|89.0|80.4|89.2|78.4|
+|3D|87.4|87.0|90.1|90.7|88.2|80.0|88.6|77.4|
 
 The reported values are ${AP_{3D}^{IoU=0.3}$ and ${AP_{BEV}^{IoU=0.3}$ for Sedan and Bus and Truck classes. (based on the benchmark v2.0)
 
 (1) ${AP_{3D}}$
 | Class        | Total | Normal | Overcast | Fog  | Rain | Sleet | LightSnow | HeavySnow |
 |:------------:|:-----:|:------:|:--------:|:----:|:----:|:-----:|:---------:|:---------:|
-| Sedan        | 48.2  | 45.5   | 58.8     | 79.3 | 40.3 | 48.1  | 65.6      | 52.6      |
-| Bus or Truck | 34.4  | 25.3   | 31.1     | -    | -    | 28.5  | 78.2      | 46.3      |
+| Sedan        | 79.3  | 78.8   | 86.1     | 93.7 | 72.9 | 74.2  | 91.2      | 65.8      |
+| Bus or Truck | 60.4  | 52.7   | 77.4     | -    | 8.0  | 69.2  | 87.9      | 69.1      |
 
 (2) ${AP_{BEV}}$
 | Class        | Total | Normal | Overcast | Fog  | Rain | Sleet | LightSnow | HeavySnow |
 |:------------:|:-----:|:------:|:--------:|:----:|:----:|:-----:|:---------:|:---------:|
-| Sedan        | 56.7  | 53.8   | 68.3     | 89.6 | 49.3 | 55.6  | 69.4      | 60.3      |
-| Bus or Truck | 45.3  | 31.8   | 32.0     | -    | -    | 34.4  | 89.3      | 78.0      |
+| Sedan        | 82.5  | 81.8   | 94.9     | 98.0 | 76.2 | 81.0  | 93.8      | 69.5      |
+| Bus or Truck | 70.2  | 58.3   | 81.5     | -    | 8.0  | 72.2  | 96.1      | 89.6      |
 
 Please refer to <href="">the logs<\a> for the performance of ASF with various sensor combinations (e.g., 4D Radar-only, 4D Radar + LiDAR) and strict metrics (i.e., IoU=0.5).
 
-## Sensor attention map visualization
+## Sensor Attention Map Visualization
 
-## t-SNE visualization
+## t-SNE Visualization
