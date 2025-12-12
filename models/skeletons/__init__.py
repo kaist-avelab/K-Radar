@@ -9,6 +9,7 @@ from .ldr_base import LidarBase
 from .pvrcnn_pp import PVRCNNPlusPlus
 from .second_net import SECONDNet
 from .spiking_rtnh import SpikingRTNH
+from .cam_base import CamBase
 from .fusion_base import FusionBase
 from .fusion_base_integrated import FusionBaseIntegrated
 
@@ -25,4 +26,5 @@ __all__ = {
     'FusionBase': FusionBase,
     'FusionBaseIntegrated': FusionBaseIntegrated,
 }
+
 
